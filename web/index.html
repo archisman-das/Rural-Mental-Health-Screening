@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rural Mental Health Dashboard</title>
+  <link rel="stylesheet" href="/web/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Dashboard-Only Workflow</p>
+        <h1>Rural Mental Health Screening Dashboard</h1>
+        <p class="hero-text">
+          Conduct assessments, score risk, explore analytics, fetch records, and export reports from one interactive dashboard.
+        </p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-visual-card">
+          <div class="hero-graphic">
+            <img src="/web/assets/mental-health-icon.svg" alt="Mental health icon" class="hero-graphic-image">
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="tab-bar panel reveal">
+      <button class="tab-btn active" data-view="workspaceView" type="button">Assessment Workspace</button>
+      <button class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
+      <button class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
+    </section>
+
+    <section class="workspace panel reveal view-section" id="workspaceView">
+      <div class="section-heading">
+        <div>
+          <h2>Assessment Workspace</h2>
+          <p>Create a new screening record directly from the dashboard.</p>
+        </div>
+      </div>
+
+      <section class="intake-strip">
+        <article class="intake-card intake-card-strong">
+          <p class="intake-kicker">Intake Flow</p>
+          <h3>Complete one screening from start to finish</h3>
+          <p>Enter the person’s details, capture their responses, review the live preview, and save one finalized assessment for analysis.</p>
+        </article>
+        <article class="intake-card">
+          <p class="intake-step">Step 1</p>
+          <h3>Capture profile and consent</h3>
+          <p>Start with identity, village, assessor, language, and consent so the screening record is complete.</p>
+        </article>
+        <article class="intake-card">
+          <p class="intake-step">Step 2</p>
+          <h3>Collect symptoms and narrative</h3>
+          <p>Use the questionnaire, written response, and optional speech or face inputs to build a stronger assessment.</p>
+        </article>
+        <article class="intake-card">
+          <p class="intake-step">Step 3</p>
+          <h3>Provide supporting inputs</h3>
+          <p>Add either a written response or a speech recording. For the image input, you can capture a live photo or upload an image file.</p>
+        </article>
+        <article class="intake-card">
+          <p class="intake-step">Step 4</p>
+          <h3>Review and save for analysis</h3>
+          <p>Once saved, the result moves into Analytics Hub and Records and Reports for visualization and follow-up.</p>
+        </article>
+      </section>
+
+      <form id="assessmentForm" class="assessment-form">
+        <div class="form-grid">
+          <div class="form-card">
+            <h3>Candidate Profile</h3>
+            <label>Full name <input id="fullName" type="text" placeholder="Enter full name"></label>
+            <label>Age <input id="age" type="number" min="10" max="100" value="25"></label>
+            <label>Gender
+              <select id="gender">
+                <option>Prefer not to say</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label>Village / Local area <input id="village" type="text" placeholder="Village or locality"></label>
+            <label>Phone / reference number <input id="phone" type="text" placeholder="Optional contact"></label>
+            <label>Assessor name <input id="assessor" type="text" placeholder="Health worker or counselor"></label>
+            <label>Preferred language
+              <select id="language">
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Bengali</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label class="checkbox-row"><input id="consent" type="checkbox"> Consent received for screening</label>
+          </div>
+
+          <div class="form-card">
+            <h3>Free Text and Upload Metadata</h3>
+            <label>Describe how the person has been feeling
+              <textarea id="textNarrative" rows="9" placeholder="Example: I have been feeling tired, disconnected, anxious, and unable to sleep well."></textarea>
+            </label>
+            <div class="capture-card">
+              <div class="capture-head">
+                <strong>Guided Speech Recording</strong>
+                <span class="capture-topic">Topic: Describe your last few days, your sleep, stress, and how connected you feel to people around you.</span>
+              </div>
+              <div class="capture-actions">
+                <button id="startRecordingBtn" class="ghost-btn small-btn" type="button">Start Recording</button>
+                <button id="stopRecordingBtn" class="ghost-btn small-btn" type="button" disabled>Stop Recording</button>
+                <button id="clearRecordingBtn" class="ghost-btn small-btn" type="button" disabled>Clear Recording</button>
+              </div>
+              <p id="recordingStatus" class="capture-status">No speech recording captured yet.</p>
+            </div>
+            <label>Voice sample
+              <input id="audioFile" type="file" accept=".wav,.mp3,.m4a">
+            </label>
+            <div class="capture-card">
+              <div class="capture-head">
+                <strong>Live Face Capture</strong>
+                <span class="capture-topic">Capture one clear front-facing photo from the webcam for live facial-cue analysis.</span>
+              </div>
+              <div class="capture-actions">
+                <button id="startCameraBtn" class="ghost-btn small-btn" type="button">Open Camera</button>
+                <button id="capturePhotoBtn" class="ghost-btn small-btn" type="button" disabled>Capture Photo</button>
+                <button id="stopCameraBtn" class="ghost-btn small-btn" type="button" disabled>Close Camera</button>
+                <button id="clearCapturedPhotoBtn" class="ghost-btn small-btn" type="button" disabled>Clear Photo</button>
+              </div>
+              <div class="camera-stage">
+                <video id="cameraPreview" class="camera-preview is-hidden" autoplay playsinline muted></video>
+                <img id="capturedPhotoPreview" class="camera-preview is-hidden" alt="Captured face preview">
+                <canvas id="captureCanvas" class="is-hidden"></canvas>
+              </div>
+              <p id="cameraStatus" class="capture-status">No live photo captured yet.</p>
+            </div>
+            <label>Face image
+              <input id="imageFile" type="file" accept=".png,.jpg,.jpeg">
+            </label>
+          </div>
+        </div>
+
+        <div class="form-card questionnaire-card">
+          <div class="section-heading inline-heading">
+            <h3>Questionnaire</h3>
+            <p>Rate how often each symptom appeared in the last two weeks.</p>
+          </div>
+          <div id="questionnaireContainer" class="questionnaire-grid"></div>
+        </div>
+
+        <div class="action-row">
+          <button class="primary-btn" type="submit">Save Assessment</button>
+          <button id="resetAssessmentBtn" class="ghost-btn" type="button">Reset Form</button>
+        </div>
+      </form>
+
+      <div id="workspaceStatus" class="status-banner">Complete the assessment and save it to generate the result.</div>
+
+      <div class="detail-grid compact-grid">
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Live Prediction Preview</h2>
+            <p>Combined questionnaire and NLP preview before save</p>
+          </div>
+          <div id="workspacePrediction" class="empty-state">Start filling the assessment to generate a live prediction preview.</div>
+        </article>
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Live NLP Insights</h2>
+            <p>Sentiment, emotions, and safety indicators from the narrative text</p>
+          </div>
+          <div id="workspaceNlp" class="empty-state">NLP signals will appear here while the narrative is being entered.</div>
+        </article>
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Intake Readiness</h2>
+            <p>Checks whether the record is ready to save and analyze</p>
+          </div>
+          <div id="workspaceReadiness" class="empty-state">Fill in candidate details, consent, questionnaire, and narrative to see readiness feedback.</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="panel reveal view-section is-hidden" id="analyticsView">
+      <div class="section-heading">
+        <h2>Analytics Hub</h2>
+        <p>Detailed component-wise analysis for the current assessment.</p>
+      </div>
+
+      <div id="analysisStatusBanner" class="status-banner">Complete and save an assessment to open detailed analysis here.</div>
+
+      <section class="analytics-intro analytics-intro-compact">
+        <article class="info-card">
+          <p class="intake-kicker">Current Result</p>
+          <h3>One assessment in focus</h3>
+          <p>Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.</p>
+        </article>
+        <article class="info-card">
+          <p class="intake-kicker">Model Insights</p>
+          <p>Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.</p>
+        </article>
+        <article class="info-card">
+          <p class="intake-kicker">Prediction Scope</p>
+          <p>Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.</p>
+        </article>
+      </section>
+
+      <section class="overview-grid overview-grid-compact reveal">
+        <article class="metric-card panel">
+          <p class="metric-label">Assessment ID</p>
+          <p id="analysisAssessmentId" class="metric-value metric-small">No data</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Overall Confidence</p>
+          <p id="analysisConfidence" class="metric-value">0%</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Strongest Signal</p>
+          <p id="analysisStrongestDomain" class="metric-value metric-small">No data</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Modalities Used</p>
+          <p id="analysisCoverage" class="metric-value metric-small">0/3</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Submission Time</p>
+          <p id="analysisSubmissionTime" class="metric-value metric-small">No data</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Overall Risk</p>
+          <p id="analysisOverallRisk" class="metric-value metric-small">No data</p>
+        </article>
+      </section>
+
+      <section class="analytics-grid analytics-grid-primary reveal">
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Domain Analysis</h2>
+            <p>Questionnaire versus combined AI score for each prediction domain</p>
+          </div>
+          <div id="riskDistribution" class="chart-stack empty-state">No assessment analysis available yet.</div>
+        </article>
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Component Contribution</h2>
+            <p>How text, audio, and image influenced the final assessment</p>
+          </div>
+          <div id="submissionTrend" class="chart-stack empty-state">No component breakdown available yet.</div>
+        </article>
+      </section>
+
+      <section class="analytics-grid analytics-grid-secondary reveal">
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Model Statistics</h2>
+            <p>Deep learning and NLP model details used in this assessment</p>
+          </div>
+          <div id="villageSummary" class="tile-grid empty-state">No model statistics available yet.</div>
+        </article>
+        <article class="panel">
+          <div class="section-heading">
+            <h2>NLP and Safety Signals</h2>
+            <p>Sentiment, emotion, self-harm language, and narrative interpretation</p>
+          </div>
+          <div id="assessorSummary" class="tile-grid empty-state">No NLP signal summary available yet.</div>
+        </article>
+      </section>
+
+      <section class="analytics-grid analytics-grid-secondary reveal">
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Modality Quality</h2>
+            <p>Availability, confidence, and processing quality for each input stream</p>
+          </div>
+          <div id="riskHotspots" class="chart-stack empty-state">No modality quality information available yet.</div>
+        </article>
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Recommendation and Follow-up</h2>
+            <p>End-user explanation, follow-up note, and screening disclaimer</p>
+          </div>
+          <div id="nlpTrends" class="chart-stack empty-state">No recommendation details available yet.</div>
+        </article>
+      </section>
+    </section>
+
+    <section class="panel reveal view-section is-hidden" id="recordsView">
+      <div class="section-heading">
+        <h2>Records and Reports</h2>
+        <p>Fetch records, inspect individual predictions, and export a PDF report.</p>
+      </div>
+
+      <div id="statusBanner" class="status-banner">Fetch a saved assessment by ID when you want to review or download an older report.</div>
+
+      <div class="fetch-row">
+        <input id="recordLookup" type="text" placeholder="Enter assessment ID to fetch">
+        <button id="fetchRecordBtn" class="primary-btn" type="button">Fetch Record</button>
+        <button id="downloadSelectedPdfBtn" class="ghost-btn" type="button">Download Selected PDF</button>
+      </div>
+
+      <section class="table-section panel inner-panel">
+        <div class="section-heading">
+          <h2>Assessment Explorer</h2>
+          <p>Click any row to inspect a single record in detail.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Assessment ID</th>
+                <th>Name</th>
+                <th>Village</th>
+                <th>Assessor</th>
+                <th>Submitted</th>
+                <th>Risk</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody">
+              <tr><td colspan="7" class="table-empty">No records loaded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination-row">
+          <button id="prevPageBtn" class="ghost-btn small-btn" type="button">Previous</button>
+          <p id="pageStatus" class="page-status">Page 1 of 1</p>
+          <button id="nextPageBtn" class="ghost-btn small-btn" type="button">Next</button>
+        </div>
+      </section>
+
+      <section class="detail-grid reveal">
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Assessment Detail</h2>
+            <p>Candidate profile and risk summary</p>
+          </div>
+          <div id="selectedAssessment" class="empty-state">No assessment selected.</div>
+        </article>
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Score Comparison</h2>
+            <p>Questionnaire versus dashboard prediction</p>
+          </div>
+          <div id="scoreComparison" class="empty-state">No assessment selected.</div>
+        </article>
+      </section>
+
+      <section class="detail-grid reveal">
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Modality Breakdown</h2>
+            <p>Text, audio metadata, and image metadata</p>
+          </div>
+          <div id="modalityBreakdown" class="empty-state">No assessment selected.</div>
+        </article>
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Feature Snapshot</h2>
+            <p>NLP and record features for the selected assessment</p>
+          </div>
+          <div id="featureSnapshot" class="empty-state">No assessment selected.</div>
+        </article>
+      </section>
+    </section>
+  </div>
+
+  <script src="/web/app.js"></script>
+</body>
+</html>

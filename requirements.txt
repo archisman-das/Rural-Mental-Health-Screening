@@ -1,0 +1,14 @@
+streamlit
+flask
+numpy
+pandas
+scipy
+librosa
+soundfile
+opencv-python
+mediapipe
+vaderSentiment
+transformers
+torch
+reportlab
+scikit-learn

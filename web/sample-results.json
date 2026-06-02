@@ -1,0 +1,242 @@
+[
+  {
+    "assessment_id": "MHS-DEMO001",
+    "created_at": "2026-06-02T06:30:00+00:00",
+    "profile": {
+      "full_name": "Sita Devi",
+      "age": 34,
+      "gender": "Female",
+      "village": "Mahadevpur",
+      "phone": "900000001",
+      "assessor": "Asha Worker Reena",
+      "language": "Hindi"
+    },
+    "questionnaire": {
+      "available": true,
+      "depression_score": 0.67,
+      "anxiety_score": 0.44,
+      "stress_score": 0.56,
+      "sleep_disorder_score": 0.78,
+      "burnout_score": 0.71,
+      "loneliness_score": 0.52,
+      "substance_abuse_score": 0.11,
+      "overall_score": 0.54,
+      "depression_risk": "high",
+      "anxiety_risk": "moderate",
+      "stress_risk": "moderate",
+      "sleep_disorder_risk": "high",
+      "burnout_risk": "high",
+      "loneliness_risk": "moderate",
+      "substance_abuse_risk": "low",
+      "notes": "Questionnaire scoring reflects self-reported frequency of emotional and functional symptoms over the last two weeks."
+    },
+    "multimodal": {
+      "text": {
+        "available": true,
+        "modality": "text",
+        "depression_score": 0.79,
+        "anxiety_score": 0.58,
+        "stress_score": 0.62,
+        "sleep_disorder_score": 0.72,
+        "burnout_score": 0.69,
+        "loneliness_score": 0.51,
+        "substance_abuse_score": 0.22,
+        "confidence": 0.45,
+        "notes": "Text signals include sentiment, distress vocabulary, and response style.",
+        "features": {
+          "word_count": 18,
+          "negative_word_count": 4,
+          "positive_word_count": 0,
+          "sentiment_compound": -0.42
+        }
+      },
+      "audio": {
+        "available": false
+      },
+      "image": {
+        "available": false
+      },
+      "overall": {
+        "depression": "high",
+        "anxiety": "moderate",
+        "stress": "moderate",
+        "sleep_disorder": "high",
+        "burnout": "high",
+        "loneliness": "moderate",
+        "substance_abuse": "low",
+        "confidence": 0.45,
+        "scores": {
+          "depression": 0.79,
+          "anxiety": 0.58,
+          "stress": 0.62,
+          "sleep_disorder": 0.72,
+          "burnout": 0.69,
+          "loneliness": 0.51,
+          "substance_abuse": 0.22
+        }
+      },
+      "recommendation": "This prototype flagged high depression, sleep_disorder, burnout risk. Arrange follow-up with a mental health professional or trained community health worker as soon as possible.",
+      "disclaimer": "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions."
+    }
+  },
+  {
+    "assessment_id": "MHS-DEMO002",
+    "created_at": "2026-06-02T07:15:00+00:00",
+    "profile": {
+      "full_name": "Rahul Mondal",
+      "age": 26,
+      "gender": "Male",
+      "village": "Rampur",
+      "phone": "900000002",
+      "assessor": "Field Counselor Anita",
+      "language": "Bengali"
+    },
+    "questionnaire": {
+      "available": true,
+      "depression_score": 0.22,
+      "anxiety_score": 0.56,
+      "stress_score": 0.44,
+      "sleep_disorder_score": 0.39,
+      "burnout_score": 0.61,
+      "loneliness_score": 0.28,
+      "substance_abuse_score": 0.17,
+      "overall_score": 0.38,
+      "depression_risk": "low",
+      "anxiety_risk": "moderate",
+      "stress_risk": "moderate",
+      "sleep_disorder_risk": "moderate",
+      "burnout_risk": "moderate",
+      "loneliness_risk": "low",
+      "substance_abuse_risk": "low",
+      "notes": "Questionnaire scoring reflects self-reported frequency of emotional and functional symptoms over the last two weeks."
+    },
+    "multimodal": {
+      "text": {
+        "available": true,
+        "modality": "text",
+        "depression_score": 0.31,
+        "anxiety_score": 0.52,
+        "stress_score": 0.49,
+        "sleep_disorder_score": 0.41,
+        "burnout_score": 0.57,
+        "loneliness_score": 0.29,
+        "substance_abuse_score": 0.18,
+        "confidence": 0.38,
+        "notes": "Text signals include sentiment, distress vocabulary, and response style.",
+        "features": {
+          "word_count": 15,
+          "negative_word_count": 2,
+          "positive_word_count": 1,
+          "sentiment_compound": -0.11
+        }
+      },
+      "audio": {
+        "available": false
+      },
+      "image": {
+        "available": false
+      },
+      "overall": {
+        "depression": "low",
+        "anxiety": "moderate",
+        "stress": "moderate",
+        "sleep_disorder": "moderate",
+        "burnout": "moderate",
+        "loneliness": "low",
+        "substance_abuse": "low",
+        "confidence": 0.38,
+        "scores": {
+          "depression": 0.31,
+          "anxiety": 0.52,
+          "stress": 0.49,
+          "sleep_disorder": 0.41,
+          "burnout": 0.57,
+          "loneliness": 0.29,
+          "substance_abuse": 0.18
+        }
+      },
+      "recommendation": "This prototype flagged moderate anxiety, stress, sleep_disorder, burnout risk. A guided follow-up interview and supportive check-in would be appropriate.",
+      "disclaimer": "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions."
+    }
+  },
+  {
+    "assessment_id": "MHS-DEMO003",
+    "created_at": "2026-06-02T08:45:00+00:00",
+    "profile": {
+      "full_name": "Karim Ali",
+      "age": 41,
+      "gender": "Male",
+      "village": "Nandigram",
+      "phone": "900000003",
+      "assessor": "Community Health Worker Salma",
+      "language": "English"
+    },
+    "questionnaire": {
+      "available": true,
+      "depression_score": 0.11,
+      "anxiety_score": 0.11,
+      "stress_score": 0.22,
+      "sleep_disorder_score": 0.18,
+      "burnout_score": 0.16,
+      "loneliness_score": 0.14,
+      "substance_abuse_score": 0.07,
+      "overall_score": 0.14,
+      "depression_risk": "low",
+      "anxiety_risk": "low",
+      "stress_risk": "low",
+      "sleep_disorder_risk": "low",
+      "burnout_risk": "low",
+      "loneliness_risk": "low",
+      "substance_abuse_risk": "low",
+      "notes": "Questionnaire scoring reflects self-reported frequency of emotional and functional symptoms over the last two weeks."
+    },
+    "multimodal": {
+      "text": {
+        "available": true,
+        "modality": "text",
+        "depression_score": 0.18,
+        "anxiety_score": 0.16,
+        "stress_score": 0.22,
+        "sleep_disorder_score": 0.2,
+        "burnout_score": 0.19,
+        "loneliness_score": 0.17,
+        "substance_abuse_score": 0.1,
+        "confidence": 0.35,
+        "notes": "Text signals include sentiment, distress vocabulary, and response style.",
+        "features": {
+          "word_count": 14,
+          "negative_word_count": 0,
+          "positive_word_count": 2,
+          "sentiment_compound": 0.33
+        }
+      },
+      "audio": {
+        "available": false
+      },
+      "image": {
+        "available": false
+      },
+      "overall": {
+        "depression": "low",
+        "anxiety": "low",
+        "stress": "low",
+        "sleep_disorder": "low",
+        "burnout": "low",
+        "loneliness": "low",
+        "substance_abuse": "low",
+        "confidence": 0.35,
+        "scores": {
+          "depression": 0.18,
+          "anxiety": 0.16,
+          "stress": 0.22,
+          "sleep_disorder": 0.2,
+          "burnout": 0.19,
+          "loneliness": 0.17,
+          "substance_abuse": 0.1
+        }
+      },
+      "recommendation": "Current multimodal signals are low risk, but this remains a prototype screening result rather than a diagnosis.",
+      "disclaimer": "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions."
+    }
+  }
+]

@@ -14,6 +14,7 @@ if SRC_PATH not in sys.path:
 from mental_health_screening.constants import PREDICTION_DOMAINS, PREDICTION_LABELS
 from mental_health_screening.predict import screen
 from mental_health_screening.report import create_assessment_pdf_bytes
+from mental_health_screening.model_store import summarize_all_bundles
 from mental_health_screening.storage import (
     create_assessment_record,
     fetch_assessment_record,
@@ -211,12 +212,14 @@ def _build_dashboard_multimodal(
         "confidence": normalize_score(overall_confidence),
         "scores": overall_scores,
     }
+    model_stats = summarize_all_bundles()
 
     return {
         "text": text_result,
         "audio": audio_result,
         "image": image_result,
         "overall": overall,
+        "model_stats": model_stats,
         "recommendation": _build_dashboard_recommendation(overall),
         "disclaimer": screening.get(
             "disclaimer",
@@ -354,6 +357,11 @@ def api_assessment_pdf(assessment_id: str):
 @app.get("/api/database")
 def api_database_metadata():
     return jsonify(get_database_metadata())
+
+
+@app.get("/api/model-stats")
+def api_model_stats():
+    return jsonify(summarize_all_bundles())
 
 
 @app.get("/api/sample")

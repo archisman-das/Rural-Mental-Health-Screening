@@ -598,6 +598,10 @@ textarea {
   gap: 14px;
 }
 
+.chart-stack .compare-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
 .analytics-grid .panel {
   padding: 18px;
 }

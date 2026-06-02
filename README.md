@@ -106,6 +106,83 @@ The training path supports two honest stages:
 - proxy pretraining from open emotion datasets such as `MELD` and `RAVDESS`
 - clinical retraining from `DAIC-WOZ` once you have approved access
 
+### Fastest end-to-end path
+
+If you already have the datasets on disk, use the orchestration script to validate the dataset roots, generate manifests, and run the repo's training commands in one flow.
+
+1. Copy the example config and update the dataset paths:
+
+```powershell
+Copy-Item examples\dataset_roots.example.json examples\dataset_roots.local.json
+```
+
+2. Dry-run the full pipeline first:
+
+```powershell
+python tools\run_real_training_pipeline.py --config examples\dataset_roots.local.json --dry-run
+```
+
+3. Run the full manifest + training pipeline:
+
+```powershell
+python tools\run_real_training_pipeline.py --config examples\dataset_roots.local.json
+```
+
+The script writes:
+
+- generated manifests to `data/manifests/`
+- extracted `RAVDESS` video frames to `data/ravdess_frames/`
+- trained bundles to `models/mental_health_screening/`
+- a pipeline run summary to `models/mental_health_screening/training_pipeline_summary.json`
+
+You can also pass the dataset roots directly instead of using a config file:
+
+```powershell
+python tools\run_real_training_pipeline.py `
+  --daic-woz-root C:\datasets\DAIC-WOZ `
+  --meld-root C:\datasets\MELD `
+  --ravdess-root C:\datasets\RAVDESS
+```
+
+Useful flags:
+
+- `--dry-run`: print the exact commands without executing them
+- `--skip-manifest-build`: reuse existing manifests in `data/manifests/`
+- `--skip-training`: build manifests only
+- `--skip-daic-woz`: run only the public proxy datasets until clinical access is approved
+- `--min-samples-per-domain 10`: require more labeled rows before domain training starts
+
+### Collect the public datasets locally first
+
+The repo also includes a helper that downloads the public parts of the training stack into `data/public_datasets/`.
+
+```powershell
+python tools\download_public_training_data.py --ravdess-video-actors 1,2,3,4
+```
+
+That will:
+
+- download `MELD` annotation CSVs for text training
+- download `RAVDESS` speech audio for all 24 actors
+- download `RAVDESS` speech-video archives for the chosen actor ids so image training has local video data to extract frames from
+- write a local `DAIC-WOZ` request note because that dataset cannot be auto-downloaded from the official site
+
+After download, these dataset roots work with the pipeline script:
+
+```powershell
+python tools\run_real_training_pipeline.py `
+  --skip-daic-woz `
+  --daic-woz-root data\public_datasets\DAIC-WOZ `
+  --meld-root data\public_datasets\MELD `
+  --ravdess-root data\public_datasets\RAVDESS
+```
+
+Important:
+
+- `DAIC-WOZ` still requires official approval before real clinical training can happen
+- the current `MELD` prep path uses the public annotation CSVs for text proxy training
+- for stronger image training from `RAVDESS`, download more speech-video actor archives over time, for example `--ravdess-video-actors 1,2,3,4,5,6,7,8`
+
 ### 1. Build manifests from supported datasets
 
 Generate a proxy text manifest from `MELD`:

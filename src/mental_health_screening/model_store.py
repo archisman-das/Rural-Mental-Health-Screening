@@ -32,3 +32,40 @@ def load_model_bundle(modality: str) -> dict | None:
         return None
     with path.open("rb") as handle:
         return pickle.load(handle)
+
+
+def bundle_summary(modality: str) -> dict | None:
+    bundle = load_model_bundle(modality)
+    if bundle is None:
+        return None
+    metrics = bundle.get("metrics", {}) or {}
+    return {
+        "modality": modality,
+        "bundle_path": str(get_model_bundle_path(modality).resolve()),
+        "domains": list(bundle.get("domains", [])),
+        "feature_names": list(bundle.get("feature_names", [])),
+        "confidence_hint": float(bundle.get("confidence_hint", 0.0)),
+        "sample_count": int(bundle.get("sample_count", 0)),
+        "sample_counts": dict(bundle.get("sample_counts", {}) or {}),
+        "train_counts": dict(bundle.get("train_counts", {}) or {}),
+        "test_counts": dict(bundle.get("test_counts", {}) or {}),
+        "manifest_path": bundle.get("manifest_path"),
+        "dataset_root": bundle.get("dataset_root"),
+        "trained_at": bundle.get("trained_at"),
+        "macro_r2": float(metrics.get("macro_r2", 0.0)),
+        "metrics": {
+            key: value for key, value in metrics.items()
+            if key != "macro_r2"
+        },
+        "skipped_domains": dict(bundle.get("skipped_domains", {}) or {}),
+        "model_source": "trained_bundle",
+    }
+
+
+def summarize_all_bundles() -> dict[str, dict]:
+    summaries: dict[str, dict] = {}
+    for modality in ("text", "audio", "image"):
+        summary = bundle_summary(modality)
+        if summary is not None:
+            summaries[modality] = summary
+    return summaries

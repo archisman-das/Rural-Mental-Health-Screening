@@ -241,6 +241,7 @@ function normalizeRecord(record) {
       audio: normalizeModality(safeRecord.multimodal?.audio, "audio"),
       image: normalizeModality(safeRecord.multimodal?.image, "image"),
       overall: normalizedOverall,
+      model_stats: safeRecord.multimodal?.model_stats || {},
       recommendation: safeRecord.multimodal?.recommendation || "No recommendation available.",
       disclaimer: safeRecord.multimodal?.disclaimer || "No disclaimer available.",
     },
@@ -941,6 +942,44 @@ function buildChartCard(title, subtitle, visual, footer = "") {
   `;
 }
 
+function formatMetricNumber(value, digits = 2) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "N/A";
+  return numeric.toFixed(digits);
+}
+
+function formatCompactPath(value) {
+  if (!value) return "Unavailable";
+  const parts = String(value).split(/[\\/]+/).filter(Boolean);
+  return parts.slice(-2).join("/");
+}
+
+function getModelStats(record) {
+  return record?.multimodal?.model_stats || {};
+}
+
+function getModelComparisonRows(record) {
+  const modelStats = getModelStats(record);
+  return ["text", "audio", "image"].map((modality) => {
+    const summary = modelStats[modality] || null;
+    const modalityPayload = record?.multimodal?.[modality] || {};
+    const features = modalityPayload.features || {};
+    return {
+      modality,
+      label: modality.charAt(0).toUpperCase() + modality.slice(1),
+      source: summary?.model_source || features.model_source || "backend_heuristic",
+      macroR2: Number(summary?.macro_r2 ?? features.model_macro_r2 ?? 0),
+      confidenceHint: Number(summary?.confidence_hint ?? modalityPayload.confidence ?? 0),
+      sampleCount: Number(summary?.sample_count ?? features.trained_samples ?? 0),
+      trainedAt: summary?.trained_at || "Unavailable",
+      datasetRoot: summary?.dataset_root || "Unavailable",
+      manifestPath: summary?.manifest_path || "Unavailable",
+      domains: Array.isArray(summary?.domains) ? summary.domains : (Array.isArray(features.trained_domains) ? features.trained_domains : []),
+      domainSampleCounts: summary?.sample_counts || features.domain_sample_counts || {},
+    };
+  });
+}
+
 function buildStackedDistributionSvg(items) {
   const width = 720;
   const rowHeight = 36;
@@ -1195,28 +1234,69 @@ function renderNlpTrends() {
 function renderModelStatistics() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.villageSummary.className = "tile-grid empty-state";
+    elements.villageSummary.className = "chart-stack empty-state";
     elements.villageSummary.textContent = "No model statistics available yet.";
     return;
   }
 
   const textFeatures = record.multimodal?.text?.features || {};
-  const audioFeatures = record.multimodal?.audio?.features || {};
-  const imageFeatures = record.multimodal?.image?.features || {};
-  const modelCards = [
-    { label: "Transformer model", value: textFeatures.transformer_model || "Unavailable" },
-    { label: "Sentiment model", value: textFeatures.sentiment_model || "Unavailable" },
-    { label: "Emotion model", value: textFeatures.emotion_model || "Unavailable" },
-    { label: "Model source", value: textFeatures.model_source || audioFeatures.model_source || imageFeatures.model_source || "Backend heuristic" },
-    { label: "Trained samples", value: textFeatures.trained_samples || audioFeatures.trained_samples || imageFeatures.trained_samples || "N/A" },
-    { label: "Macro R²", value: textFeatures.model_macro_r2 ?? audioFeatures.model_macro_r2 ?? imageFeatures.model_macro_r2 ?? "N/A" },
+  const modelRows = getModelComparisonRows(record);
+  const availableRows = modelRows.filter((item) => item.sampleCount > 0 || item.source === "trained_bundle");
+
+  if (!availableRows.length) {
+    elements.villageSummary.className = "chart-stack empty-state";
+    elements.villageSummary.textContent = "No trained model bundle statistics are available for this assessment yet.";
+    return;
+  }
+
+  const summaryCards = [
+    { label: "Text transformer", value: textFeatures.transformer_model || "Unavailable" },
+    { label: "Sentiment engine", value: textFeatures.sentiment_model || "Unavailable" },
+    { label: "Emotion engine", value: textFeatures.emotion_model || "Unavailable" },
+    { label: "Trained modalities", value: `${availableRows.length}/3` },
   ];
-  elements.villageSummary.className = "tile-grid";
-  elements.villageSummary.innerHTML = modelCards.map((item) => `
-    <div class="summary-tile">
-      <div class="tile-top"><span>${item.label}</span><strong>${item.value}</strong></div>
+
+  const metricChart = buildHorizontalMetricSvg(
+    availableRows.map((item) => ({
+      label: item.label,
+      value: Math.max(item.macroR2, 0),
+      display: `R2 ${formatMetricNumber(item.macroR2, 3)} | ${item.sampleCount} samples`,
+    })),
+    "#9e4d29"
+  );
+
+  const comparisonCards = availableRows.map((item) => `
+    <div class="detail-card">
+      <div class="detail-inline"><h3>${item.label}</h3><strong>${item.source === "trained_bundle" ? "Trained bundle" : "Fallback"}</strong></div>
+      ${scoreLine("Confidence Hint", item.confidenceHint)}
+      <p class="detail-muted">Macro R2: ${formatMetricNumber(item.macroR2, 3)}</p>
+      <p class="detail-muted">Samples: ${item.sampleCount}</p>
+      <p class="detail-muted">Domains: ${item.domains.length ? item.domains.map((domain) => DOMAIN_LABELS[domain] || domain).join(", ") : "Unavailable"}</p>
+      <p class="detail-muted">Manifest: ${formatCompactPath(item.manifestPath)}</p>
+      <p class="detail-muted">Dataset root: ${formatCompactPath(item.datasetRoot)}</p>
+      <p class="detail-muted">Trained at: ${item.trainedAt === "Unavailable" ? "Unavailable" : formatDate(item.trainedAt)}</p>
     </div>
   `).join("");
+
+  elements.villageSummary.className = "chart-stack";
+  elements.villageSummary.innerHTML = `
+    <div class="tile-grid">
+      ${summaryCards.map((item) => `
+        <div class="summary-tile">
+          <div class="tile-top"><span>${item.label}</span><strong>${item.value}</strong></div>
+        </div>
+      `).join("")}
+    </div>
+    ${buildChartCard(
+      "Trained Bundle Comparison",
+      "Macro R2 and sample coverage by modality",
+      metricChart,
+      "This compares the locally trained bundle quality for text, audio, and image using the current saved model metadata."
+    )}
+    <div class="compare-grid">
+      ${comparisonCards}
+    </div>
+  `;
 }
 
 function renderNlpSignalSummary() {
@@ -1228,6 +1308,8 @@ function renderNlpSignalSummary() {
   }
 
   const features = record.multimodal?.text?.features || {};
+  const modelRows = getModelComparisonRows(record).filter((item) => item.sampleCount > 0 || item.source === "trained_bundle");
+  const trainedDomainTotal = modelRows.reduce((sum, item) => sum + item.domains.length, 0);
   const cards = [
     { label: "Sentiment", value: features.sentiment_label || "Unknown" },
     { label: "Dominant emotion", value: features.dominant_emotion || "Unknown" },
@@ -1235,6 +1317,8 @@ function renderNlpSignalSummary() {
     { label: "Keyword matches", value: (features.self_harm_keyword_matches || []).join(", ") || "None" },
     { label: "Narrative word count", value: features.word_count || 0 },
     { label: "Emotion intensity", value: Number(features.emotion_intensity || 0).toFixed(2) },
+    { label: "Trained modalities", value: modelRows.length || 0 },
+    { label: "Domain coverage", value: trainedDomainTotal || 0 },
   ];
   elements.assessorSummary.className = "tile-grid";
   elements.assessorSummary.innerHTML = cards.map((item) => `

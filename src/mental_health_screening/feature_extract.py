@@ -213,8 +213,8 @@ def _transformer_text_features(text: str) -> dict:
         }
 
 
-def _sentiment_features(text: str, fallback_compound: float) -> dict:
-    sentiment_bundle = _load_sentiment_pipeline()
+def _sentiment_features(text: str, fallback_compound: float, use_ml_pipeline: bool = True) -> dict:
+    sentiment_bundle = _load_sentiment_pipeline() if use_ml_pipeline else None
     if sentiment_bundle is not None:
         try:
             result = sentiment_bundle["pipeline"](text[:512])[0]
@@ -238,8 +238,8 @@ def _sentiment_features(text: str, fallback_compound: float) -> dict:
     }
 
 
-def _emotion_features(lowered_words: list[str], text: str) -> dict:
-    emotion_bundle = _load_emotion_pipeline()
+def _emotion_features(lowered_words: list[str], text: str, use_ml_pipeline: bool = True) -> dict:
+    emotion_bundle = _load_emotion_pipeline() if use_ml_pipeline else None
     if emotion_bundle is not None:
         try:
             raw = emotion_bundle["pipeline"](text[:512])[0]
@@ -281,7 +281,11 @@ def _self_harm_features(text: str) -> dict:
     }
 
 
-def extract_text_features(text: str) -> dict:
+def extract_text_features(
+    text: str,
+    use_transformer: bool = True,
+    use_ml_pipelines: bool = True,
+) -> dict:
     if not text:
         return {"available": False}
 
@@ -297,9 +301,23 @@ def extract_text_features(text: str) -> dict:
     question_count = text.count("?")
     exclamation_count = text.count("!")
     unique_ratio = len(set(lowered_words)) / max(1, len(lowered_words))
-    transformer_features = _transformer_text_features(text)
-    sentiment_features = _sentiment_features(text, vader_sentiment["compound"])
-    emotion_features = _emotion_features(lowered_words, text)
+    transformer_features = _transformer_text_features(text) if use_transformer else {
+        "transformer_available": False,
+        "transformer_model": None,
+        "embedding_mean": 0.0,
+        "embedding_std": 0.0,
+        "token_count": 0,
+    }
+    sentiment_features = _sentiment_features(
+        text,
+        vader_sentiment["compound"],
+        use_ml_pipeline=use_ml_pipelines,
+    )
+    emotion_features = _emotion_features(
+        lowered_words,
+        text,
+        use_ml_pipeline=use_ml_pipelines,
+    )
     self_harm_features = _self_harm_features(text)
 
     features = {
@@ -330,7 +348,7 @@ def extract_text_features(text: str) -> dict:
     return features
 
 
-def extract_audio_features(audio_path: str) -> dict:
+def extract_audio_features(audio_path: str, include_pitch_features: bool = True) -> dict:
     if not audio_path or not os.path.exists(audio_path):
         return {"available": False}
     if librosa is None:
@@ -357,18 +375,23 @@ def extract_audio_features(audio_path: str) -> dict:
     tempo, _ = librosa.beat.beat_track(y=signal, sr=sr)
     zcr = float(np.mean(librosa.feature.zero_crossing_rate(signal)))
     rms = float(np.mean(librosa.feature.rms(y=signal)))
-    try:
-        pitch, voiced_flags, _ = librosa.pyin(
-            signal,
-            sr=sr,
-            fmin=librosa.note_to_hz("C2"),
-            fmax=librosa.note_to_hz("C7"),
-        )
-        valid_pitch = pitch[~np.isnan(pitch)] if pitch is not None else np.array([])
-        voiced_ratio = float(np.mean(voiced_flags)) if voiced_flags is not None else 0.0
-        pitch_mean = float(np.mean(valid_pitch)) if valid_pitch.size else 0.0
-        pitch_std = float(np.std(valid_pitch)) if valid_pitch.size else 0.0
-    except Exception:
+    if include_pitch_features:
+        try:
+            pitch, voiced_flags, _ = librosa.pyin(
+                signal,
+                sr=sr,
+                fmin=librosa.note_to_hz("C2"),
+                fmax=librosa.note_to_hz("C7"),
+            )
+            valid_pitch = pitch[~np.isnan(pitch)] if pitch is not None else np.array([])
+            voiced_ratio = float(np.mean(voiced_flags)) if voiced_flags is not None else 0.0
+            pitch_mean = float(np.mean(valid_pitch)) if valid_pitch.size else 0.0
+            pitch_std = float(np.std(valid_pitch)) if valid_pitch.size else 0.0
+        except Exception:
+            voiced_ratio = 0.0
+            pitch_mean = 0.0
+            pitch_std = 0.0
+    else:
         voiced_ratio = 0.0
         pitch_mean = 0.0
         pitch_std = 0.0

@@ -59,7 +59,8 @@ def _extract_feature_vector(record: dict, base_dir: Path, modality: str) -> tupl
         text = str(record.get("text", "") or "")
         if not text.strip():
             return None
-        features = extract_text_features(text)
+        # Use lightweight bulk features during training so large public datasets remain tractable.
+        features = extract_text_features(text, use_transformer=False, use_ml_pipelines=False)
         feature_names, vector = text_feature_vector(features)
         return features, feature_names, vector
 
@@ -67,7 +68,7 @@ def _extract_feature_vector(record: dict, base_dir: Path, modality: str) -> tupl
         audio_path = _resolve_path(base_dir, record.get("audio_path"))
         if not audio_path:
             return None
-        features = extract_audio_features(audio_path)
+        features = extract_audio_features(audio_path, include_pitch_features=False)
         feature_names, vector = audio_feature_vector(features)
         return features, feature_names, vector
 
@@ -82,30 +83,48 @@ def _extract_feature_vector(record: dict, base_dir: Path, modality: str) -> tupl
     raise ValueError(f"Unsupported modality: {modality}")
 
 
-def _extract_domain_training_rows(
+def _build_feature_cache(
     df: pd.DataFrame,
     base_dir: Path,
     modality: str,
-    domain: str,
-) -> tuple[np.ndarray, np.ndarray, list[str]]:
-    rows_x: list[list[float]] = []
-    rows_y: list[float] = []
+) -> tuple[list[dict], list[str] | None]:
+    cached_rows: list[dict] = []
     feature_names: list[str] | None = None
 
     for record in df.to_dict(orient="records"):
-        target_value = _parse_target_value(record.get(domain))
-        if target_value is None:
-            continue
-
         extracted = _extract_feature_vector(record, base_dir, modality)
         if extracted is None:
+            cached_rows.append({"record": record, "available": False, "vector": None})
             continue
 
-        features, feature_names, vector = extracted
-        if not features.get("available"):
-            continue
+        features, domain_feature_names, vector = extracted
+        if feature_names is None:
+            feature_names = domain_feature_names
+        cached_rows.append(
+            {
+                "record": record,
+                "available": bool(features.get("available")),
+                "vector": vector,
+            }
+        )
 
-        rows_x.append(vector)
+    return cached_rows, feature_names
+
+
+def _extract_domain_training_rows(
+    cached_rows: list[dict],
+    modality: str,
+    domain: str,
+    feature_names: list[str] | None,
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    rows_x: list[list[float]] = []
+    rows_y: list[float] = []
+
+    for item in cached_rows:
+        target_value = _parse_target_value(item["record"].get(domain))
+        if target_value is None or not item.get("available") or item.get("vector") is None:
+            continue
+        rows_x.append(item["vector"])
         rows_y.append(float(np.clip(target_value, 0.0, 1.0)))
 
     if not rows_x or feature_names is None:
@@ -163,6 +182,7 @@ def train_modality_model(
     manifest_path = Path(manifest_path)
     base_dir = Path(dataset_root) if dataset_root else manifest_path.parent
     df = _load_manifest(manifest_path)
+    cached_rows, cached_feature_names = _build_feature_cache(df, base_dir, modality)
 
     models: dict[str, RandomForestRegressor] = {}
     metrics: dict[str, dict] = {}
@@ -174,7 +194,12 @@ def train_modality_model(
 
     for domain in requested_domains:
         try:
-            features_x, targets_y, domain_feature_names = _extract_domain_training_rows(df, base_dir, modality, domain)
+            features_x, targets_y, domain_feature_names = _extract_domain_training_rows(
+                cached_rows=cached_rows,
+                modality=modality,
+                domain=domain,
+                feature_names=cached_feature_names,
+            )
         except Exception as error:
             skipped_domains[domain] = str(error)
             continue

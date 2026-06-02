@@ -59,7 +59,7 @@ Then open `http://127.0.0.1:8000/`.
 Inside the dashboard you can:
 
 - Create and save assessments directly from the `Assessment Workspace`
-- Review trends in the `Analytics Hub`
+- Review detailed single-assessment analysis in the `Analytics Hub`
 - Fetch records and export PDF reports from `Records and Reports`
 - Persist records through the backend API into the SQLite database
 
@@ -89,21 +89,19 @@ python dashboard_server.py
 ## Usage
 
 - Open the dashboard and complete the candidate profile, narrative, and symptom questionnaire in `Assessment Workspace`.
-- The live workspace now calls the Python backend so preview sentiment, emotion, self-harm detection, and transformer-backed text scoring match the saved analysis path.
-- Audio and image uploads are also sent to the backend during preview and save; if dependencies are installed and the media is usable, those modalities contribute real inference instead of metadata-only placeholders.
-- Audio must meet a minimum backend duration threshold before it is treated as analyzable, and image analysis requires a detectable face before facial cues are accepted as a live modality signal.
+- The live workspace calls the Python backend so preview sentiment, emotion, self-harm detection, and transformer-backed text scoring match the saved analysis path.
+- Audio and image uploads are sent to the backend during preview and save; if dependencies are installed and the media is usable, those modalities contribute real inference instead of metadata-only placeholders.
 - Save the assessment to generate a persistent `assessment_id` in the backend API and SQLite database.
-- Use `Analytics Hub` to filter the saved dataset by assessment ID, candidate name, risk, village, and assessor.
+- Open `Analytics Hub` after save to review component-wise analysis, model statistics, modality quality, and recommendation details for the current assessment.
 - Use `Records and Reports` to fetch a saved record by `assessment_id`, inspect the detailed result, and download a PDF report.
-- Use JSON import/export only when you want to demo, migrate, or share dashboard datasets outside the backend database.
 
 ## Notes
 
-This prototype still includes heuristic fallbacks, but the repo now also supports trained bundles from real manifests. At runtime, `predict.py` will use trained domain models when they exist and fall back to heuristics only for domains that are still unlabeled or untrained.
+This prototype still includes heuristic fallbacks, but the repo also supports trained bundles from real manifests. At runtime, `predict.py` uses trained domain models when they exist and falls back to heuristics only for domains that are still unlabeled or untrained.
 
 ## Training Real Models
 
-The training path now supports two honest stages:
+The training path supports two honest stages:
 
 - proxy pretraining from open emotion datasets such as `MELD` and `RAVDESS`
 - clinical retraining from `DAIC-WOZ` once you have approved access

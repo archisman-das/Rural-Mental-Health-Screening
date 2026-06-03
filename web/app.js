@@ -25,15 +25,27 @@ const RESPONSE_OPTIONS = [
   { label: "Nearly every day", value: 3 },
 ];
 
+const OFFLINE_DB_NAME = "mh-dashboard-offline";
+const OFFLINE_DB_VERSION = 1;
+const OFFLINE_RECORDS_STORE = "records";
+const OFFLINE_PENDING_STORE = "pending_assessments";
+
 const RESPONSE_OPTION_TRANSLATIONS = {
   English: ["Not at all", "Several days", "More than half the days", "Nearly every day"],
   Hindi: ["बिलकुल नहीं", "कुछ दिन", "आधे से अधिक दिन", "लगभग हर दिन"],
   Bengali: ["একদম না", "কয়েক দিন", "অর্ধেকের বেশি দিন", "প্রায় প্রতিদিন"],
 };
 
+const ADAPTIVE_CHOOSE_ONE_TRANSLATIONS = {
+  English: "Choose one",
+  Hindi: "एक चुनें",
+  Bengali: "একটি নির্বাচন করুন",
+};
+
 const UI_TRANSLATIONS = {
   English: {
     workspaceTab: "Assessment Workspace",
+    adaptiveTab: "Adaptive Test",
     analyticsTab: "Analytics Hub",
     recordsTab: "Records and Reports",
     intakeFlowTitle: "Complete one screening from start to finish",
@@ -49,6 +61,20 @@ const UI_TRANSLATIONS = {
     questionnaireTitle: "Questionnaire",
     questionnaireSubtitle: "Rate how often each symptom appeared in the last two weeks.",
     questionnaireNotes: "Dashboard questionnaire scoring reflects symptom frequency over the last two weeks.",
+    adaptiveTitle: "Adaptive Test",
+    adaptiveSubtitle: "Ask one question at a time using the backend IRT selector and reuse the workspace uploads.",
+    adaptiveProfileTitle: "Candidate Profile",
+    adaptiveQuestionTitle: "Adaptive Question",
+    adaptiveQuestionHint: "Start the session to fetch the first backend-selected question.",
+    adaptiveNarrativeTitle: "Workspace Narrative",
+    adaptiveStartBtn: "Start Session",
+    adaptiveNextBtn: "Submit Answer",
+    adaptiveResetBtn: "Reset Session",
+    adaptiveStatusIdle: "Start an adaptive session to fetch the first backend-selected question.",
+    adaptiveStatusLoading: "Fetching the next adaptive question...",
+    adaptiveStatusReady: "Adaptive question ready.",
+    adaptiveStatusComplete: "Adaptive session complete. The record has been saved.",
+    adaptiveStatusError: "Adaptive API unavailable. Please try again.",
     candidateProfileTitle: "Candidate Profile",
     freeTextTitle: "Free Text and Upload Metadata",
     fullNameLabel: "Full name",
@@ -70,8 +96,8 @@ const UI_TRANSLATIONS = {
     saveAssessmentBtn: "Save Assessment",
     resetAssessmentBtn: "Reset Form",
     workspaceStatusDefault: "Complete the assessment and save it to generate the result.",
-    workspacePredictionEmpty: "Start filling the assessment to generate a live prediction preview.",
-    workspaceNlpEmpty: "NLP signals will appear here while the narrative is being entered.",
+    workspacePredictionEmpty: "Start a new assessment to generate a fresh live prediction preview.",
+    workspaceNlpEmpty: "Start a new assessment to see fresh NLP insights from the narrative text.",
     workspaceReadinessEmpty: "Fill in candidate details, consent, questionnaire, and narrative to see readiness feedback.",
     analyticsBannerDefault: "Complete and save an assessment to open detailed analysis here.",
     recordsBannerDefault: "Fetch a saved assessment by ID when you want to review or download an older report.",
@@ -87,7 +113,7 @@ const UI_TRANSLATIONS = {
     assessorShortLabel: "Assessor",
     createdAtLabel: "Created At",
     analyticsIntroCurrent: "One assessment in focus",
-    analyticsIntroCurrentText: "Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.",
+    analyticsIntroCurrentText: "Analytics Hub now explains the currently saved assessment and does not preload backend records automatically.",
     analyticsIntroModel: "Model Insights",
     analyticsIntroModelText: "Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.",
     analyticsIntroScope: "Prediction Scope",
@@ -156,6 +182,13 @@ const UI_TRANSLATIONS = {
     fetchPrompt: "Enter an assessment ID before fetching a record.",
     fetchSuccess: "Fetched assessment {id} from the backend API.",
     fetchMissing: "No record matched that assessment ID in the backend API.",
+    deleteRecord: "Delete Record",
+    deleteRecordConfirm: "Delete this assessment permanently?",
+    deleteRecordSuccess: "Deleted assessment {id}.",
+    deleteRecordFailed: "Could not delete assessment {id}.",
+    deleteRecordRequiresOnline: "Deletion requires an online connection for synced records.",
+    deleteRecordNotFound: "The selected assessment could not be found.",
+    hiddenDemoRecord: "Demo/backend records are hidden from the user list.",
   },
   Hindi: {
     workspaceTab: "आकलन कार्यक्षेत्र",
@@ -281,6 +314,13 @@ const UI_TRANSLATIONS = {
     fetchPrompt: "रिकॉर्ड लाने से पहले आकलन आईडी दर्ज करें।",
     fetchSuccess: "आकलन {id} बैकएंड API से प्राप्त हुआ।",
     fetchMissing: "उस आकलन आईडी से कोई रिकॉर्ड नहीं मिला।",
+    deleteRecord: "रिकॉर्ड हटाएँ",
+    deleteRecordConfirm: "क्या इस आकलन को स्थायी रूप से हटाना है?",
+    deleteRecordSuccess: "आकलन {id} हटा दिया गया।",
+    deleteRecordFailed: "{id} आकलन हटाया नहीं जा सका।",
+    deleteRecordRequiresOnline: "सिंक किए गए रिकॉर्ड को हटाने के लिए ऑनलाइन कनेक्शन चाहिए।",
+    deleteRecordNotFound: "चुना गया आकलन नहीं मिला।",
+    hiddenDemoRecord: "डेमो/बैकएंड रिकॉर्ड उपयोगकर्ता सूची से छिपाए गए हैं।",
   },
   Bengali: {
     workspaceTab: "মূল্যায়ন কর্মক্ষেত্র",
@@ -406,6 +446,13 @@ const UI_TRANSLATIONS = {
     fetchPrompt: "রেকর্ড আনার আগে মূল্যায়ন আইডি লিখুন।",
     fetchSuccess: "মূল্যায়ন {id} ব্যাকএন্ড API থেকে আনা হয়েছে।",
     fetchMissing: "ওই মূল্যায়ন আইডির কোনো রেকর্ড পাওয়া যায়নি।",
+    deleteRecord: "রেকর্ড মুছুন",
+    deleteRecordConfirm: "এই মূল্যায়ন স্থায়ীভাবে মুছবেন?",
+    deleteRecordSuccess: "মূল্যায়ন {id} মুছে ফেলা হয়েছে।",
+    deleteRecordFailed: "{id} মূল্যায়ন মুছতে ব্যর্থ হয়েছে।",
+    deleteRecordRequiresOnline: "সিঙ্ক করা রেকর্ড মুছতে অনলাইন সংযোগ প্রয়োজন।",
+    deleteRecordNotFound: "নির্বাচিত মূল্যায়নটি পাওয়া যায়নি।",
+    hiddenDemoRecord: "ডেমো/ব্যাকএন্ড রেকর্ড ব্যবহারকারী তালিকা থেকে লুকানো হয়েছে।",
   },
 };
 
@@ -453,6 +500,33 @@ const QUESTION_BANK = [
   { id: "substance_tolerance", section: "Substance Abuse", domain: "substance_abuse", prompt: "Needing more of the substance than before to get the same effect." },
   { id: "substance_withdrawal", section: "Substance Abuse", domain: "substance_abuse", prompt: "Feeling unwell, irritable, or restless when trying not to use the substance." },
 ];
+
+const ADAPTIVE_SECTION_BASE_DIFFICULTY = {
+  Depression: -0.2,
+  Anxiety: -0.1,
+  Stress: 0.0,
+  "Sleep Disorder": 0.15,
+  Burnout: 0.1,
+  Loneliness: -0.05,
+  "Substance Abuse": 0.25,
+};
+
+const ADAPTIVE_ITEM_OVERRIDES = {
+  dep_interest: { a: 1.35, b: -0.25 },
+  anx_worry: { a: 1.5, b: -0.1 },
+  str_overload: { a: 1.2, b: 0.05 },
+  sleep_quality: { a: 1.1, b: 0.2 },
+};
+
+const ADAPTIVE_MIN_ITEMS = 4;
+const ADAPTIVE_MAX_ITEMS = 10;
+const ADAPTIVE_INFO_THRESHOLD = 0.18;
+const ADAPTIVE_DOMAIN_BALANCE_WEIGHT = 0.18;
+const ADAPTIVE_THETA_PRIOR_SD = 1.5;
+const ADAPTIVE_THETA_GRID_MIN = -3.0;
+const ADAPTIVE_THETA_GRID_MAX = 3.0;
+const ADAPTIVE_THETA_GRID_STEP = 0.05;
+const ADAPTIVE_RESPONSE_THRESHOLDS = [-1.0, 0.0, 1.0];
 
 const QUESTION_TRANSLATIONS = {
   dep_interest: { Hindi: "दैनिक गतिविधियों में रुचि या आनंद कम लगना।", Bengali: "দৈনন্দিন কাজে আগ্রহ বা আনন্দ কমে যাওয়া।" },
@@ -539,6 +613,14 @@ const state = {
   selectedRecord: null,
   currentPage: 1,
   latestCreatedRecord: null,
+  adaptiveResponses: {},
+  adaptiveCurrentQuestion: null,
+  adaptiveProgress: null,
+  adaptiveCompleted: false,
+  adaptiveLastRecord: null,
+  adaptiveLoading: false,
+  adaptiveRequestId: 0,
+  adaptiveSessionStarted: false,
   draftRecord: null,
   draftPreviewLoading: false,
   draftPreviewTimer: null,
@@ -551,17 +633,37 @@ const state = {
   mediaRecorder: null,
   mediaChunks: [],
   webcamStream: null,
+  networkOnline: navigator.onLine,
+  pendingSyncCount: 0,
+  serviceWorkerReady: false,
 };
 
 const elements = {
   tabButtons: [...document.querySelectorAll(".tab-btn")],
   viewSections: [...document.querySelectorAll(".view-section")],
   dashboardLanguage: document.getElementById("dashboardLanguage"),
+  offlineStatus: document.getElementById("offlineStatus"),
   applyLanguageBtn: document.getElementById("applyLanguageBtn"),
   questionnaireContainer: document.getElementById("questionnaireContainer"),
   assessmentForm: document.getElementById("assessmentForm"),
+  adaptiveForm: document.getElementById("adaptiveForm"),
   saveAssessmentBtn: document.getElementById("saveAssessmentBtn"),
   resetAssessmentBtn: document.getElementById("resetAssessmentBtn"),
+  adaptiveStartBtn: document.getElementById("adaptiveStartBtn"),
+  adaptiveNextBtn: document.getElementById("adaptiveNextBtn"),
+  adaptiveResetBtn: document.getElementById("adaptiveResetBtn"),
+  adaptiveStatus: document.getElementById("adaptiveStatus"),
+  adaptiveQuestionPrompt: document.getElementById("adaptiveQuestionPrompt"),
+  adaptiveQuestionMeta: document.getElementById("adaptiveQuestionMeta"),
+  adaptiveAnswer: document.getElementById("adaptiveAnswer"),
+  adaptiveFullName: document.getElementById("adaptiveFullName"),
+  adaptiveAge: document.getElementById("adaptiveAge"),
+  adaptiveGender: document.getElementById("adaptiveGender"),
+  adaptiveVillage: document.getElementById("adaptiveVillage"),
+  adaptiveAssessor: document.getElementById("adaptiveAssessor"),
+  adaptiveLanguage: document.getElementById("adaptiveLanguage"),
+  adaptiveConsent: document.getElementById("adaptiveConsent"),
+  adaptiveTextNarrative: document.getElementById("adaptiveTextNarrative"),
   workspaceStatus: document.getElementById("workspaceStatus"),
   workspacePrediction: document.getElementById("workspacePrediction"),
   workspaceNlp: document.getElementById("workspaceNlp"),
@@ -596,11 +698,14 @@ const elements = {
   analysisStrongestDomain: document.getElementById("analysisStrongestDomain"),
   analysisCoverage: document.getElementById("analysisCoverage"),
   analysisSubmissionTime: document.getElementById("analysisSubmissionTime"),
+  analysisTrajectory: document.getElementById("analysisTrajectory"),
   analysisOverallRisk: document.getElementById("analysisOverallRisk"),
   riskDistribution: document.getElementById("riskDistribution"),
   submissionTrend: document.getElementById("submissionTrend"),
   riskHotspots: document.getElementById("riskHotspots"),
   nlpTrends: document.getElementById("nlpTrends"),
+  trajectoryModel: document.getElementById("trajectoryModel"),
+  trajectorySummary: document.getElementById("trajectorySummary"),
   villageSummary: document.getElementById("villageSummary"),
   assessorSummary: document.getElementById("assessorSummary"),
   recordLookup: document.getElementById("recordLookup"),
@@ -614,7 +719,96 @@ const elements = {
   scoreComparison: document.getElementById("scoreComparison"),
   modalityBreakdown: document.getElementById("modalityBreakdown"),
   featureSnapshot: document.getElementById("featureSnapshot"),
+  patientHistory: document.getElementById("patientHistory"),
+  domainTrajectory: document.getElementById("domainTrajectory"),
 };
+
+function openOfflineDb() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(OFFLINE_RECORDS_STORE)) {
+        db.createObjectStore(OFFLINE_RECORDS_STORE, { keyPath: "assessment_id" });
+      }
+      if (!db.objectStoreNames.contains(OFFLINE_PENDING_STORE)) {
+        db.createObjectStore(OFFLINE_PENDING_STORE, { keyPath: "client_queue_id" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function offlineStorePut(storeName, value) {
+  const db = await openOfflineDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).put(value);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function offlineStoreDelete(storeName, key) {
+  const db = await openOfflineDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readwrite");
+    tx.objectStore(storeName).delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function offlineStoreGetAll(storeName) {
+  const db = await openOfflineDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, "readonly");
+    const request = tx.objectStore(storeName).getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function makeOfflineAssessmentId() {
+  return `MHS-LOCAL-${Math.random().toString(16).slice(2, 8).toUpperCase()}`;
+}
+
+function uniqueRecords(records) {
+  const seen = new Map();
+  safeRecords(records).forEach((record) => {
+    const normalized = normalizeRecord(record);
+    seen.set(normalized.assessment_id, normalized);
+  });
+  return [...seen.values()].sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
+}
+
+function updateOfflineStatus() {
+  if (!elements.offlineStatus) return;
+  const online = state.networkOnline;
+  const pending = Number(state.pendingSyncCount || 0);
+  let label = online ? "Online sync ready" : "Offline mode active";
+  let className = online ? "offline-pill online" : "offline-pill offline";
+  if (online && pending > 0) {
+    label = `Sync pending: ${pending} assessment${pending === 1 ? "" : "s"}`;
+    className = "offline-pill syncing";
+  } else if (!online && pending > 0) {
+    label = `Offline mode active | ${pending} queued`;
+    className = "offline-pill offline";
+  }
+  elements.offlineStatus.className = className;
+  elements.offlineStatus.textContent = label;
+}
+
+async function refreshPendingSyncCount() {
+  try {
+    state.pendingSyncCount = (await offlineStoreGetAll(OFFLINE_PENDING_STORE)).length;
+  } catch (error) {
+    console.error("Could not refresh pending sync count", error);
+    state.pendingSyncCount = 0;
+  }
+  updateOfflineStatus();
+}
 
 function safeRecords(payload) {
   return Array.isArray(payload) ? payload : [];
@@ -628,11 +822,25 @@ function emptyRisks() {
   return Object.fromEntries(DOMAINS.map((domain) => [domain, "unknown"]));
 }
 
+function isDemoRecord(record) {
+  const assessmentId = String(record?.assessment_id || "").toUpperCase();
+  return assessmentId.startsWith("MHS-DEMO") || record?.record_origin === "demo";
+}
+
+function visibleUserRecords(records) {
+  return safeRecords(records).filter((record) => {
+    if (isDemoRecord(record)) return false;
+    return String(record?.record_origin || "").toLowerCase() === "test";
+  });
+}
+
 function normalizeRecord(record) {
   const safeRecord = record || {};
   const questionnaire = safeRecord.questionnaire || {};
   const overall = safeRecord.multimodal?.overall || {};
   const scores = overall.scores || {};
+  const explicitOrigin = String(safeRecord.record_origin || safeRecord.profile?.record_origin || "").toLowerCase();
+  const inferredOrigin = explicitOrigin || (String(safeRecord.assessment_id || "").toUpperCase().startsWith("MHS-DEMO") ? "demo" : "");
   const normalizedQuestionnaire = {
     available: questionnaire.available ?? true,
     overall_score: Number(questionnaire.overall_score || 0),
@@ -671,6 +879,9 @@ function normalizeRecord(record) {
   return {
     assessment_id: safeRecord.assessment_id || `MHS-${Math.random().toString(16).slice(2, 10).toUpperCase()}`,
     created_at: safeRecord.created_at || new Date().toISOString(),
+    sync_status: safeRecord.sync_status || "synced",
+    patient_key: safeRecord.patient_key || "",
+    record_origin: inferredOrigin || (String(safeRecord.sync_status || "").toLowerCase() === "pending" ? "test" : "backend"),
     profile: {
       full_name: safeRecord.profile?.full_name || "",
       age: Number(safeRecord.profile?.age || 0),
@@ -678,7 +889,8 @@ function normalizeRecord(record) {
       village: safeRecord.profile?.village || "",
       phone: safeRecord.profile?.phone || "",
       assessor: safeRecord.profile?.assessor || "",
-      language: safeRecord.profile?.language || "English",
+      language: normalizeLanguage(safeRecord.profile?.language || "English"),
+      record_origin: safeRecord.profile?.record_origin || inferredOrigin || (String(safeRecord.sync_status || "").toLowerCase() === "pending" ? "test" : "backend"),
     },
     questionnaire: normalizedQuestionnaire,
     multimodal: {
@@ -690,6 +902,7 @@ function normalizeRecord(record) {
       recommendation: safeRecord.multimodal?.recommendation || "No recommendation available.",
       disclaimer: safeRecord.multimodal?.disclaimer || "No disclaimer available.",
     },
+    trajectory: safeRecord.trajectory || null,
   };
 }
 
@@ -697,8 +910,19 @@ function normalizeText(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function normalizeLanguage(value) {
+  const language = normalizeText(value);
+  if (language === "hindi" || language === "hi" || language === "हिंदी") {
+    return "Hindi";
+  }
+  if (language === "bengali" || language === "bangla" || language === "bn" || language === "বাংলা" || language === "বাঙলা") {
+    return "Bengali";
+  }
+  return "English";
+}
+
 function currentLanguage() {
-  return elements.dashboardLanguage?.value || elements.language?.value || "English";
+  return normalizeLanguage(elements.dashboardLanguage?.value || elements.language?.value || "English");
 }
 
 function t(key) {
@@ -715,11 +939,32 @@ function tf(key, replacements = {}) {
 }
 
 function questionPrompt(question) {
-  return QUESTION_TRANSLATIONS[question.id]?.[currentLanguage()] || question.prompt;
+  return question.prompt_localized
+    || QUESTION_TRANSLATIONS[question.id]?.[currentLanguage()]
+    || question.prompt;
 }
 
 function questionSectionLabel(section) {
   return SECTION_TRANSLATIONS[section]?.[currentLanguage()] || section;
+}
+
+function currentAdaptiveLanguage() {
+  return normalizeLanguage(elements.adaptiveLanguage?.value || elements.language?.value || currentLanguage());
+}
+
+function adaptiveLanguageCopy(english, hindi, bengali) {
+  const language = currentAdaptiveLanguage();
+  if (language === "Hindi") return hindi;
+  if (language === "Bengali") return bengali;
+  return english;
+}
+
+function adaptiveChooseOneLabel() {
+  return ADAPTIVE_CHOOSE_ONE_TRANSLATIONS[currentAdaptiveLanguage()] || ADAPTIVE_CHOOSE_ONE_TRANSLATIONS.English;
+}
+
+function adaptiveSectionLabel(section) {
+  return SECTION_TRANSLATIONS[section]?.[currentAdaptiveLanguage()] || section;
 }
 
 function setNodeText(selector, text) {
@@ -748,10 +993,18 @@ function setCheckboxLabel(inputElement, text) {
 }
 
 function applyLanguage() {
+  document.documentElement.lang = currentLanguage() === "Hindi" ? "hi" : currentLanguage() === "Bengali" ? "bn" : "en";
   if (elements.language && elements.language.value !== currentLanguage()) {
     elements.language.value = currentLanguage();
   }
+  if (elements.dashboardLanguage && elements.dashboardLanguage.value !== currentLanguage()) {
+    elements.dashboardLanguage.value = currentLanguage();
+  }
+  if (elements.adaptiveLanguage && elements.adaptiveLanguage.value !== currentLanguage()) {
+    elements.adaptiveLanguage.value = currentLanguage();
+  }
   setNodeText('.tab-btn[data-view="workspaceView"]', t("workspaceTab"));
+  setNodeText('.tab-btn[data-view="adaptiveView"]', t("adaptiveTab"));
   setNodeText('.tab-btn[data-view="analyticsView"]', t("analyticsTab"));
   setNodeText('.tab-btn[data-view="recordsView"]', t("recordsTab"));
   setNodeText(".language-switcher label", currentLanguage() === "Hindi" ? "डैशबोर्ड भाषा" : currentLanguage() === "Bengali" ? "ড্যাশবোর্ড ভাষা" : "Dashboard language");
@@ -768,6 +1021,14 @@ function applyLanguage() {
   setNodeText(".intake-strip .intake-card:nth-child(5) p:last-child", t("step4Text"));
   setNodeText(".form-card h3", t("candidateProfileTitle"));
   setNodeText(".form-grid .form-card:nth-child(2) h3", t("freeTextTitle"));
+  setNodeText("#adaptiveView .section-heading h2", t("adaptiveTitle"));
+  setNodeText("#adaptiveView .section-heading p", t("adaptiveSubtitle"));
+  setNodeText("#adaptiveView .form-grid .form-card:nth-child(1) h3", t("adaptiveProfileTitle"));
+  setNodeText("#adaptiveView .form-grid .form-card:nth-child(2) h3", t("adaptiveQuestionTitle"));
+  setNodeText("#adaptiveView .form-card.questionnaire-card .section-heading h3", t("adaptiveNarrativeTitle"));
+  setNodeText("#adaptiveStartBtn", t("adaptiveStartBtn"));
+  setNodeText("#adaptiveNextBtn", t("adaptiveNextBtn"));
+  setNodeText("#adaptiveResetBtn", t("adaptiveResetBtn"));
   setLabelText(elements.fullName, t("fullNameLabel"));
   setLabelText(elements.age, t("ageLabel"));
   setLabelText(elements.gender, t("genderLabel"));
@@ -831,6 +1092,14 @@ function applyDashboardLanguageSelection() {
   buildQuestionnaire();
   wireQuestionnaireEvents();
   applyLanguage();
+  renderAdaptiveQuestion();
+  if (state.adaptiveLoading) {
+    renderAdaptiveStatus(t("adaptiveStatusLoading"), "neutral");
+  } else if (state.adaptiveCompleted) {
+    renderAdaptiveStatus(t("adaptiveStatusComplete"), "success");
+  } else {
+    renderAdaptiveStatus(t("adaptiveStatusIdle"), "neutral");
+  }
   renderWorkspacePanels();
   renderDashboard();
 }
@@ -867,7 +1136,7 @@ function average(values) {
 }
 
 function setActiveResults(records, { focusLatest = false, bannerMessage = "", bannerTone = "success" } = {}) {
-  state.allResults = safeRecords(records)
+  state.allResults = visibleUserRecords(records)
     .map(normalizeRecord)
     .sort((left, right) => new Date(right.created_at) - new Date(left.created_at));
   state.filteredResults = [...state.allResults];
@@ -961,6 +1230,16 @@ async function apiJson(url, options = {}, { timeoutMs = 30000 } = {}) {
       clearTimeout(timeoutId);
     }
   }
+}
+
+async function fetchAdaptiveQuestionState(responses, language) {
+  return apiJson("/api/adaptive/next", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ responses, language }),
+  }, { timeoutMs: 15000 });
 }
 
 function modalityReadinessMessage(kind, payload, file) {
@@ -1352,6 +1631,71 @@ function buildMetadataModality(type, file) {
   return result;
 }
 
+function buildOfflineMultimodal(payload) {
+  const textFeatures = extractTextNlp(payload.text_input || "");
+  const textResult = scoreDashboardText(textFeatures);
+  const audioResult = buildMetadataModality("audio", payload.audio_file || null);
+  const imageResult = buildMetadataModality("image", payload.image_file || null);
+  const modalities = [textResult, audioResult, imageResult];
+  const availableModalities = modalities.filter((item) => item.available);
+  const overallScores = {};
+
+  DOMAINS.forEach((domain) => {
+    const questionnaireScore = Number(payload.questionnaire?.[`${domain}_score`] || 0);
+    const modalityScores = availableModalities
+      .map((item) => Number(item[`${domain}_score`] || 0))
+      .filter((value) => value > 0);
+    const combined = modalityScores.length
+      ? average([questionnaireScore, average(modalityScores)])
+      : questionnaireScore;
+    overallScores[domain] = clamp01(combined);
+  });
+
+  const overall = {
+    confidence: clamp01(
+      (availableModalities.reduce((sum, item) => sum + Number(item.confidence || 0), 0) / Math.max(1, availableModalities.length)) * 0.6
+      + 0.4
+    ),
+    scores: overallScores,
+  };
+  DOMAINS.forEach((domain) => {
+    overall[domain] = riskLevel(overallScores[domain]);
+  });
+
+  const highestDomain = DOMAINS
+    .map((domain) => ({ domain, score: overallScores[domain] }))
+    .sort((left, right) => right.score - left.score)[0];
+  const recommendation = highestDomain && highestDomain.score >= 0.66
+    ? `Offline screening suggests elevated ${DOMAIN_LABELS[highestDomain.domain]} risk. Sync this assessment when a connection is available for backend review.`
+    : "Offline screening completed. Sync this assessment when a connection is available for backend confirmation.";
+
+  return {
+    text: textResult,
+    audio: audioResult,
+    image: imageResult,
+    overall,
+    model_stats: {
+      offline_pwa: {
+        source: "browser_offline_heuristic",
+        service_worker: state.serviceWorkerReady,
+      },
+    },
+    recommendation,
+    disclaimer: "Offline-first preview used browser-side heuristics and local storage. Sync with the backend for a full server-side record.",
+  };
+}
+
+function buildOfflineAssessmentRecord(payload) {
+  return normalizeRecord({
+    assessment_id: makeOfflineAssessmentId(),
+    created_at: new Date().toISOString(),
+    sync_status: "pending",
+    profile: payload.profile,
+    questionnaire: payload.questionnaire,
+    multimodal: buildOfflineMultimodal(payload),
+  });
+}
+
 function buildUploadMetadata(file) {
   if (!file) {
     return null;
@@ -1371,8 +1715,9 @@ function buildProfilePayload() {
     village: elements.village.value.trim(),
     phone: elements.phone.value.trim(),
     assessor: elements.assessor.value.trim(),
-    language: elements.language.value,
+    language: normalizeLanguage(elements.language.value),
     consent_received: elements.consent.checked,
+    record_origin: "test",
   };
 }
 
@@ -1383,6 +1728,8 @@ function buildAssessmentPayload() {
     profile: buildProfilePayload(),
     questionnaire,
     text_input: elements.textNarrative.value,
+    audio_file: getCurrentAudioFile(),
+    image_file: getCurrentImageFile(),
     audio_metadata: buildUploadMetadata(getCurrentAudioFile()),
     image_metadata: buildUploadMetadata(getCurrentImageFile()),
   };
@@ -1393,11 +1740,11 @@ function buildAssessmentFormData(payload) {
   formData.append("profile", JSON.stringify(payload.profile));
   formData.append("questionnaire", JSON.stringify(payload.questionnaire));
   formData.append("text_input", payload.text_input || "");
-  if (getCurrentAudioFile()) {
-    formData.append("audio_file", getCurrentAudioFile());
+  if (payload.audio_file) {
+    formData.append("audio_file", payload.audio_file);
   }
-  if (getCurrentImageFile()) {
-    formData.append("image_file", getCurrentImageFile());
+  if (payload.image_file) {
+    formData.append("image_file", payload.image_file);
   }
   return formData;
 }
@@ -1419,10 +1766,10 @@ function createPdfBytes(record) {
   const lines = [
     "Rural Mental Health Screening Dashboard Report",
     `Assessment ID: ${record.assessment_id}`,
-    `Created At: ${record.created_at}`,
-    `Candidate: ${record.profile.full_name || "Unnamed user"}`,
-    `Village: ${record.profile.village || "Unknown"}`,
-    `Assessor: ${record.profile.assessor || "Unknown"}`,
+    `${t("createdAtLabel")}: ${record.created_at}`,
+    `${t("candidateLabel")}: ${record.profile.full_name || "Unnamed user"}`,
+    `${t("villageShortLabel")}: ${record.profile.village || "Unknown"}`,
+    `${t("assessorShortLabel")}: ${record.profile.assessor || "Unknown"}`,
     "",
   ];
   DOMAINS.forEach((domain) => {
@@ -1479,9 +1826,83 @@ function downloadPdfForRecord(record) {
 function loadResults(records, sourceLabel, focusLatest = false) {
   setActiveResults(records, {
     focusLatest,
-    bannerMessage: `Loaded ${safeRecords(records).length} assessment records from ${sourceLabel}.`,
+    bannerMessage: `Loaded ${visibleUserRecords(records).length} assessment records from ${sourceLabel}.`,
     bannerTone: "success",
   });
+}
+
+async function persistLocalRecord(record) {
+  await offlineStorePut(OFFLINE_RECORDS_STORE, normalizeRecord(record));
+}
+
+async function removeLocalRecord(assessmentId) {
+  await offlineStoreDelete(OFFLINE_RECORDS_STORE, assessmentId);
+}
+
+async function queueAssessmentForSync(payload, localRecord) {
+  await offlineStorePut(OFFLINE_PENDING_STORE, {
+    client_queue_id: localRecord.assessment_id,
+    created_at: new Date().toISOString(),
+    payload,
+  });
+  await persistLocalRecord(localRecord);
+  await refreshPendingSyncCount();
+}
+
+async function loadOfflineRecords() {
+  try {
+    return uniqueRecords(await offlineStoreGetAll(OFFLINE_RECORDS_STORE));
+  } catch (error) {
+    console.error("Could not load offline records", error);
+    return [];
+  }
+}
+
+async function syncPendingAssessments() {
+  if (!state.networkOnline) {
+    await refreshPendingSyncCount();
+    return;
+  }
+
+  let pendingEntries = [];
+  try {
+    pendingEntries = await offlineStoreGetAll(OFFLINE_PENDING_STORE);
+  } catch (error) {
+    console.error("Could not load pending assessments", error);
+    return;
+  }
+  if (!pendingEntries.length) {
+    await refreshPendingSyncCount();
+    return;
+  }
+
+  for (const entry of pendingEntries) {
+    try {
+      const response = await fetch("/api/assessments", {
+        method: "POST",
+        body: buildAssessmentFormData(entry.payload),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const savedRecord = normalizeRecord(await response.json());
+      await persistLocalRecord(savedRecord);
+      await removeLocalRecord(entry.client_queue_id);
+      await offlineStoreDelete(OFFLINE_PENDING_STORE, entry.client_queue_id);
+    } catch (error) {
+      console.error("Pending assessment sync failed", error);
+    }
+  }
+
+  const offlineRecords = await loadOfflineRecords();
+  if (offlineRecords.length) {
+    setActiveResults(offlineRecords, {
+      focusLatest: true,
+      bannerMessage: "Offline queue synced where possible and local records were refreshed.",
+      bannerTone: "success",
+    });
+  }
+  await refreshPendingSyncCount();
 }
 
 function populateFilterOptions() {
@@ -1533,7 +1954,7 @@ function applyFilters() {
 }
 
 function getAnalysisRecord() {
-  return state.selectedRecord || state.latestCreatedRecord || state.filteredResults[0] || null;
+  return state.selectedRecord || state.latestCreatedRecord || null;
 }
 
 function strongestDomain(record) {
@@ -1551,6 +1972,154 @@ function overallRiskLabel(record) {
   return "Low";
 }
 
+function normalizeIdentityValue(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function normalizePhone(value) {
+  return String(value || "").replace(/\D+/g, "");
+}
+
+function patientKeyFromProfile(profile = {}) {
+  const explicit = normalizeIdentityValue(profile.patient_id);
+  if (explicit) return `patient_id:${explicit}`;
+  const phone = normalizePhone(profile.phone);
+  if (phone.length >= 6) return `phone:${phone}`;
+  const parts = [
+    normalizeIdentityValue(profile.full_name),
+    normalizeIdentityValue(profile.village),
+    String(profile.age || "").trim(),
+    normalizeIdentityValue(profile.gender),
+  ].filter(Boolean);
+  return parts.length ? `profile:${parts.join("|")}` : "unknown";
+}
+
+function averageOverallScore(record) {
+  return average(DOMAINS.map((domain) => Number(record?.multimodal?.overall?.scores?.[domain] || 0)));
+}
+
+function linearSlope(points) {
+  if (!Array.isArray(points) || points.length < 2) return 0;
+  const meanX = average(points.map((point) => Number(point.x || 0)));
+  const meanY = average(points.map((point) => Number(point.y || 0)));
+  const denominator = points.reduce((sum, point) => sum + ((Number(point.x || 0) - meanX) ** 2), 0);
+  if (!denominator) return 0;
+  const numerator = points.reduce(
+    (sum, point) => sum + ((Number(point.x || 0) - meanX) * (Number(point.y || 0) - meanY)),
+    0,
+  );
+  return numerator / denominator;
+}
+
+function trajectoryStatusLabel(status) {
+  const labels = {
+    insufficient_history: "Need more screenings",
+    escalating: "Escalating risk",
+    worsening: "Worsening trend",
+    improving: "Improving trend",
+    volatile: "Volatile trajectory",
+    stable: "Stable trajectory",
+  };
+  return labels[status] || "Trajectory available";
+}
+
+function buildLocalTrajectory(record) {
+  if (!record) return null;
+  const patientKey = record.patient_key || patientKeyFromProfile(record.profile);
+  const history = state.allResults
+    .filter((item) => (item.patient_key || patientKeyFromProfile(item.profile)) === patientKey)
+    .sort((left, right) => new Date(left.created_at) - new Date(right.created_at));
+  if (!history.length) return null;
+
+  const points = history.map((item, index) => {
+    const overallScore = averageOverallScore(item);
+    const scores = Object.fromEntries(DOMAINS.map((domain) => [domain, Number(item.multimodal?.overall?.scores?.[domain] || 0)]));
+    const strongest = DOMAINS
+      .map((domain) => ({ domain, score: scores[domain] }))
+      .sort((left, right) => right.score - left.score)[0]?.domain || DOMAINS[0];
+    return {
+      assessment_id: item.assessment_id,
+      created_at: item.created_at,
+      sequence: index + 1,
+      overall_score: overallScore,
+      overall_risk: item.multimodal?.overall?.[strongest] || "low",
+      confidence: Number(item.multimodal?.overall?.confidence || 0),
+      scores,
+      strongest_domain: strongest,
+      elapsed_days: index,
+    };
+  });
+
+  const baseline = points[0];
+  const latest = points[points.length - 1];
+  const previous = points[points.length - 2] || points[0];
+  const overallSlope = linearSlope(points.map((point, index) => ({ x: index, y: point.overall_score })));
+  const changeFromBaseline = latest.overall_score - baseline.overall_score;
+  const changeFromPrevious = latest.overall_score - previous.overall_score;
+  const stepChanges = points.slice(1).map((point, index) => Math.abs(point.overall_score - points[index].overall_score));
+  const volatility = stepChanges.length ? average(stepChanges) : 0;
+
+  const domains = Object.fromEntries(DOMAINS.map((domain) => {
+    const slope = linearSlope(points.map((point, index) => ({ x: index, y: point.scores[domain] })));
+    const direction = slope >= 0.035 ? "worsening" : slope <= -0.035 ? "improving" : "stable";
+    return [domain, {
+      latest_score: latest.scores[domain],
+      baseline_score: baseline.scores[domain],
+      change_from_baseline: latest.scores[domain] - baseline.scores[domain],
+      slope_per_day: slope,
+      direction,
+    }];
+  }));
+
+  let status = "stable";
+  if (points.length < 2) {
+    status = "insufficient_history";
+  } else if (volatility >= 0.16 && Math.abs(overallSlope) < 0.03) {
+    status = "volatile";
+  } else if (overallSlope >= 0.035 || changeFromPrevious >= 0.12) {
+    status = latest.overall_risk === "high" || changeFromBaseline >= 0.2 ? "escalating" : "worsening";
+  } else if (overallSlope <= -0.035 || changeFromPrevious <= -0.12) {
+    status = "improving";
+  }
+
+  const summary = status === "insufficient_history"
+    ? "Only one screening is available. Capture a follow-up visit to start trend modeling."
+    : status === "volatile"
+      ? "Risk is fluctuating across visits, so closer monitoring may be needed."
+      : status === "improving"
+        ? "Recent visits suggest improving risk scores. Continue follow-up to confirm the recovery holds."
+        : status === "stable"
+          ? "Risk has stayed relatively stable across the available screenings."
+          : "Risk is rising over time. Compare this visit with the last one and plan follow-up quickly.";
+
+  return {
+    patient_key: patientKey,
+    history_count: points.length,
+    status,
+    status_label: trajectoryStatusLabel(status),
+    summary,
+    latest_assessment_id: latest.assessment_id,
+    baseline_assessment_id: baseline.assessment_id,
+    latest_overall_score: latest.overall_score,
+    baseline_overall_score: baseline.overall_score,
+    change_from_baseline: changeFromBaseline,
+    change_from_previous: changeFromPrevious,
+    slope_per_day: overallSlope,
+    volatility,
+    strongest_domain: latest.strongest_domain,
+    domains,
+    points,
+  };
+}
+
+function getTrajectory(record) {
+  if (!record) return null;
+  if (record.trajectory && typeof record.trajectory === "object") {
+    return record.trajectory;
+  }
+  return buildLocalTrajectory(record);
+}
+
 function renderOverview() {
   const record = getAnalysisRecord();
   if (!record) {
@@ -1559,6 +2128,7 @@ function renderOverview() {
     elements.analysisStrongestDomain.textContent = "No data";
     elements.analysisCoverage.textContent = "0/3";
     elements.analysisSubmissionTime.textContent = "No data";
+    if (elements.analysisTrajectory) elements.analysisTrajectory.textContent = "No data";
     elements.analysisOverallRisk.textContent = "No data";
     setBanner(elements.analysisStatusBanner, t("analyticsBannerDefault"), "neutral");
     return;
@@ -1566,13 +2136,22 @@ function renderOverview() {
 
   const modalitiesUsed = ["text", "audio", "image"].filter((key) => record.multimodal?.[key]?.available).length;
   const dominant = strongestDomain(record);
+  const trajectory = getTrajectory(record);
   elements.analysisAssessmentId.textContent = record.assessment_id;
   elements.analysisConfidence.textContent = formatPercent(record.multimodal?.overall?.confidence || 0);
   elements.analysisStrongestDomain.textContent = dominant ? DOMAIN_LABELS[dominant] : "No data";
   elements.analysisCoverage.textContent = `${modalitiesUsed}/3`;
   elements.analysisSubmissionTime.textContent = formatDate(record.created_at);
+  if (elements.analysisTrajectory) {
+    elements.analysisTrajectory.textContent = trajectory?.status_label || "Need more data";
+  }
   elements.analysisOverallRisk.textContent = overallRiskLabel(record);
-  setBanner(elements.analysisStatusBanner, `${record.profile?.full_name || "Current user"}: ${t("analyticsReady")}`, "success");
+  const comorbidity = record.multimodal?.comorbidity || {};
+  const topPair = comorbidity.top_pairs?.[0] || null;
+  const comorbidityText = topPair?.domains?.length === 2
+    ? ` Top comorbidity: ${DOMAIN_LABELS[topPair.domains[0]] || topPair.domains[0]} + ${DOMAIN_LABELS[topPair.domains[1]] || topPair.domains[1]} (${Number(topPair.probability || 0).toFixed(2)})`
+    : "";
+  setBanner(elements.analysisStatusBanner, `${record.profile?.full_name || "Current user"}: ${t("analyticsReady")}${comorbidityText}`, "success");
 }
 
 function formatShortDateLabel(value) {
@@ -1882,6 +2461,64 @@ function renderNlpTrends() {
   );
 }
 
+function renderTrajectoryModel() {
+  const record = getAnalysisRecord();
+  const trajectory = getTrajectory(record);
+  if (!record || !trajectory) {
+    elements.trajectoryModel.className = "chart-stack empty-state";
+    elements.trajectoryModel.textContent = "No longitudinal trajectory available yet.";
+    elements.trajectorySummary.className = "chart-stack empty-state";
+    elements.trajectorySummary.textContent = "No trend summary available yet.";
+    return;
+  }
+
+  const chartPoints = trajectory.points.map((point) => ({
+    label: point.created_at,
+    count: Math.round(Number(point.overall_score || 0) * 100),
+  }));
+  elements.trajectoryModel.className = "chart-stack";
+  elements.trajectoryModel.innerHTML = buildChartCard(
+    "Overall Risk Trajectory",
+    `${trajectory.status_label} across ${trajectory.history_count} screening${trajectory.history_count === 1 ? "" : "s"}`,
+    buildLineTrendSvg(chartPoints),
+    trajectory.summary,
+  );
+
+  const domainCards = DOMAINS.map((domain) => {
+    const info = trajectory.domains?.[domain] || {};
+    const change = Number(info.change_from_baseline || 0);
+    return `
+      <div class="detail-card">
+        <div class="detail-inline"><h3>${DOMAIN_LABELS[domain]}</h3><strong>${info.direction || "stable"}</strong></div>
+        ${scoreLine("Current", Number(info.latest_score || 0))}
+        <p class="detail-muted">Baseline change: ${change >= 0 ? "+" : ""}${change.toFixed(2)}</p>
+      </div>
+    `;
+  }).join("");
+  elements.trajectorySummary.className = "chart-stack";
+  elements.trajectorySummary.innerHTML = buildChartCard(
+    "Trend Summary",
+    `Baseline ${Number(trajectory.baseline_overall_score || 0).toFixed(2)} to current ${Number(trajectory.latest_overall_score || 0).toFixed(2)}`,
+    `
+      <div class="detail-grid compact-grid">
+        <div class="detail-card">
+          <h3>Status</h3>
+          <p>${trajectory.status_label}</p>
+          <p class="detail-muted">${trajectory.summary}</p>
+        </div>
+        <div class="detail-card">
+          <h3>Trajectory Metrics</h3>
+          <p>Change since baseline: ${Number(trajectory.change_from_baseline || 0).toFixed(2)}</p>
+          <p>Recent change: ${Number(trajectory.change_from_previous || 0).toFixed(2)}</p>
+          <p>Volatility: ${Number(trajectory.volatility || 0).toFixed(2)}</p>
+        </div>
+      </div>
+      <div class="detail-grid compact-grid">${domainCards}</div>
+    `,
+    "Trend modeling combines repeated visits, slope, and volatility so health workers can see whether risk is rising, falling, or fluctuating.",
+  );
+}
+
 function renderModelStatistics() {
   const record = getAnalysisRecord();
   if (!record) {
@@ -2014,8 +2651,7 @@ function renderTable() {
   elements.resultsTableBody.querySelectorAll("[data-id]").forEach((row) => {
     row.addEventListener("click", () => {
       state.selectedRecord = state.filteredResults.find((record) => record.assessment_id === row.dataset.id) || null;
-      renderDetailPanels();
-      renderTable();
+      renderDashboard();
     });
   });
   elements.pageStatus.textContent = tf("pageStatus", { page: String(state.currentPage), total: String(totalPages) });
@@ -2046,8 +2682,11 @@ function renderSelectedAssessment() {
     <div class="detail-card">
       <div class="detail-inline"><h3>${record.profile.full_name || "Unnamed user"}</h3><strong>${record.assessment_id}</strong></div>
       <p class="detail-muted">${record.profile.village || "Unknown location"} | Age ${record.profile.age || "N/A"} | ${record.profile.gender || "Not stated"}</p>
-      <p class="detail-muted">Assessor: ${record.profile.assessor || "N/A"} | Language: ${record.profile.language || "N/A"} | Contact: ${record.profile.phone || "N/A"}</p>
-      <p class="detail-muted">Submitted: ${formatDate(record.created_at)}</p>
+      <p class="detail-muted">${t("assessorLabel")}: ${record.profile.assessor || "N/A"} | ${t("languageLabel")}: ${record.profile.language || "N/A"} | ${t("phoneLabel")}: ${record.profile.phone || "N/A"}</p>
+      <p class="detail-muted">${t("createdAtLabel")}: ${formatDate(record.created_at)}</p>
+      <div class="action-row">
+        <button id="deleteSelectedRecordBtn" class="ghost-btn small-btn" type="button">${t("deleteRecord")}</button>
+      </div>
     </div>
     <div class="detail-card">
       <h3>${t("questionnaireRiskTitle")}</h3>
@@ -2066,6 +2705,10 @@ function renderSelectedAssessment() {
       <p class="detail-muted">${record.multimodal.disclaimer}</p>
     </div>
   `;
+  const deleteButton = elements.selectedAssessment.querySelector("#deleteSelectedRecordBtn");
+  if (deleteButton) {
+    deleteButton.addEventListener("click", () => deleteSelectedAssessmentRecord(record.assessment_id));
+  }
 }
 
 function comparisonRow(label, questionnaireValue, multimodalValue) {
@@ -2142,7 +2785,7 @@ function renderFeatureSnapshot() {
   const featureCards = ["text", "audio", "image"]
     .filter((key) => record.multimodal[key]?.features)
     .map((key) => {
-      const items = Object.entries(record.multimodal[key].features).map(([name, value]) => `<li>${name}: ${Array.isArray(value) ? value.join(", ") : value}</li>`).join("");
+      const items = Object.entries(record.multimodal[key].features).map(([name, value]) => `<li>${name}: ${formatFeatureValue(value)}</li>`).join("");
       return `<div class="feature-card"><h3>${key.charAt(0).toUpperCase() + key.slice(1)} Features</h3><ul class="feature-list">${items}</ul></div>`;
     });
   if (!featureCards.length) {
@@ -2154,24 +2797,104 @@ function renderFeatureSnapshot() {
   elements.featureSnapshot.innerHTML = featureCards.join("");
 }
 
+function renderPatientHistory() {
+  const record = state.selectedRecord;
+  const trajectory = getTrajectory(record);
+  if (!record || !trajectory) {
+    elements.patientHistory.className = "empty-state";
+    elements.patientHistory.textContent = t("noRecordSelected");
+    elements.domainTrajectory.className = "empty-state";
+    elements.domainTrajectory.textContent = t("noRecordSelected");
+    return;
+  }
+
+  if (trajectory.history_count < 2) {
+    elements.patientHistory.className = "detail-stack";
+    elements.patientHistory.innerHTML = `
+      <div class="detail-card">
+        <h3>${trajectory.status_label}</h3>
+        <p>${trajectory.summary}</p>
+      </div>
+    `;
+  } else {
+    const timelinePoints = trajectory.points.map((point) => ({
+      label: point.created_at,
+      count: Math.round(Number(point.overall_score || 0) * 100),
+    }));
+    const visitCards = trajectory.points.map((point) => `
+      <div class="summary-tile">
+        <div class="tile-top"><span>${formatShortDateLabel(point.created_at)}</span><strong>${Math.round(Number(point.overall_score || 0) * 100)}%</strong></div>
+        <p class="detail-muted">${point.assessment_id} | ${DOMAIN_LABELS[point.strongest_domain] || point.strongest_domain}</p>
+      </div>
+    `).join("");
+    elements.patientHistory.className = "chart-stack";
+    elements.patientHistory.innerHTML = `
+      ${buildLineTrendSvg(timelinePoints)}
+      <div class="tile-grid">${visitCards}</div>
+    `;
+  }
+
+  const domainRows = DOMAINS.map((domain) => {
+    const info = trajectory.domains?.[domain] || {};
+    const delta = Number(info.change_from_baseline || 0);
+    return {
+      label: DOMAIN_LABELS[domain],
+      value: Math.abs(delta),
+      display: `${info.direction || "stable"} | ${delta >= 0 ? "+" : ""}${delta.toFixed(2)}`,
+    };
+  });
+  elements.domainTrajectory.className = "chart-stack";
+  elements.domainTrajectory.innerHTML = `
+    <div class="detail-card">
+      <h3>${trajectory.status_label}</h3>
+      <p>${trajectory.summary}</p>
+    </div>
+    ${buildHorizontalMetricSvg(domainRows, "#ad4a21")}
+  `;
+}
+
 function renderDetailPanels() {
   renderSelectedAssessment();
   renderScoreComparison();
   renderModalityBreakdown();
   renderFeatureSnapshot();
+  renderPatientHistory();
+}
+
+function formatFeatureValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => formatFeatureValue(item)).join(", ");
+  }
+  if (value && typeof value === "object") {
+    return `<pre>${JSON.stringify(value, null, 2)}</pre>`;
+  }
+  return String(value);
+}
+
+function renderExplanationSummary(features) {
+  const explanations = features?.domain_explanations || {};
+  const candidates = Object.entries(explanations)
+    .filter(([, item]) => item?.available && Array.isArray(item?.top_contributors) && item.top_contributors.length)
+    .sort((left, right) => {
+      const leftScore = Math.abs(Number(left[1].predicted_value || 0) - Number(left[1].base_value || 0));
+      const rightScore = Math.abs(Number(right[1].predicted_value || 0) - Number(right[1].base_value || 0));
+      return rightScore - leftScore;
+    });
+  if (!candidates.length) return "";
+  const [domain, explanation] = candidates[0];
+  const items = explanation.top_contributors
+    .slice(0, 3)
+    .map((item) => `<li>${item.feature}: ${item.direction} risk (${Number(item.shap_value || 0).toFixed(3)})</li>`)
+    .join("");
+  return `
+      <h3>Why ${DOMAIN_LABELS[domain] || domain} was flagged</h3>
+      <p>Top model contributors for this domain:</p>
+      <ul>${items}</ul>
+  `;
 }
 
 function renderWorkspacePanels() {
-  const record = state.draftRecord || state.latestCreatedRecord;
-  if (state.draftPreviewLoading && !state.draftRecord) {
-    elements.workspacePrediction.className = "empty-state";
-    elements.workspacePrediction.textContent = t("previewRefreshing");
-    elements.workspaceNlp.className = "empty-state";
-    elements.workspaceNlp.textContent = t("previewRefreshing");
-    elements.workspaceReadiness.className = "empty-state";
-    elements.workspaceReadiness.textContent = t("previewRefreshing");
-    return;
-  }
+  const record = state.draftRecord;
   if (!record) {
     elements.workspacePrediction.className = "empty-state";
     elements.workspacePrediction.textContent = t("workspacePredictionEmpty");
@@ -2206,6 +2929,7 @@ function renderWorkspacePanels() {
       <p>${features.self_harm_keyword_detected ? `Self-harm keywords detected: ${(features.self_harm_keyword_matches || []).join(", ")}` : "No self-harm keywords detected"}</p>
       <h3>${t("transformerLabel")}</h3>
       <p>${features.transformer_model || "unavailable"}</p>
+      ${renderExplanationSummary(features)}
       <h3>${t("audioModalityLabel")}</h3>
       <p>${audioStatus.text}</p>
       <h3>${t("imageModalityLabel")}</h3>
@@ -2252,6 +2976,7 @@ function renderDashboard() {
   renderNlpSignalSummary();
   renderRiskHotspots();
   renderNlpTrends();
+  renderTrajectoryModel();
   renderTable();
   renderDetailPanels();
   renderWorkspacePanels();
@@ -2262,7 +2987,13 @@ function switchView(viewId) {
     button.classList.toggle("active", button.dataset.view === viewId);
   });
   elements.viewSections.forEach((section) => {
-    section.classList.toggle("is-hidden", section.id !== viewId);
+    const isActive = section.id === viewId;
+    section.classList.toggle("is-hidden", !isActive);
+    section.classList.toggle("section-live", false);
+    if (isActive) {
+      void section.offsetWidth;
+      section.classList.add("section-live");
+    }
   });
 }
 
@@ -2290,6 +3021,8 @@ function jumpToDashboardArea(viewId, panelId = "") {
 }
 
 function resetAssessmentForm() {
+  cancelDraftPreview();
+  state.draftPreviewRequestId += 1;
   elements.assessmentForm.reset();
   QUESTION_BANK.forEach((question) => {
     const radio = document.querySelector(`input[name="${question.id}"][value="0"]`);
@@ -2299,7 +3032,490 @@ function resetAssessmentForm() {
   clearCapturedPhoto();
   stopWebcam();
   clearUploadedMediaInputs();
+  state.draftRecord = null;
+  state.latestCreatedRecord = null;
+  state.selectedRecord = null;
+  state.draftPreviewLoading = false;
   updateCaptureUi();
+  renderWorkspacePanels();
+  setBanner(elements.workspaceStatus, t("workspacePredictionEmpty"), "neutral");
+}
+
+function adaptiveResponseOptions() {
+  const labels = RESPONSE_OPTION_TRANSLATIONS[currentLanguage()] || RESPONSE_OPTION_TRANSLATIONS.English;
+  return RESPONSE_OPTIONS.map((option, index) => ({
+    label: labels[index] || option.label,
+    value: option.value,
+  }));
+}
+
+function renderAdaptiveAnswerOptions() {
+  if (!elements.adaptiveAnswer) return;
+  const currentValue = elements.adaptiveAnswer.value;
+  const options = [
+    { label: adaptiveChooseOneLabel(), value: "" },
+    ...adaptiveResponseOptions(),
+  ];
+  elements.adaptiveAnswer.innerHTML = options
+    .map((option) => `<option value="${option.value}">${option.label}</option>`)
+    .join("");
+  if (currentValue && options.some((option) => String(option.value) === String(currentValue))) {
+    elements.adaptiveAnswer.value = currentValue;
+  }
+}
+
+function renderAdaptiveStatus(message, tone = "neutral") {
+  setBanner(elements.adaptiveStatus, message, tone);
+}
+
+function adaptiveLogistic(value) {
+  const exponent = Math.max(Math.min(-Number(value), 60), -60);
+  return 1 / (1 + Math.exp(exponent));
+}
+
+function adaptiveQuestionParameters(question, index) {
+  let discrimination = 1.0 + (0.15 * (index % 4));
+  if (["depression", "anxiety", "stress"].includes(question.domain)) {
+    discrimination += 0.1;
+  }
+  let difficulty = ADAPTIVE_SECTION_BASE_DIFFICULTY[question.section] || 0.0;
+  difficulty += 0.12 * (index % 3);
+  const override = ADAPTIVE_ITEM_OVERRIDES[question.id] || {};
+  if (override.a !== undefined && override.a !== null) {
+    discrimination = Number(override.a);
+  }
+  if (override.b !== undefined && override.b !== null) {
+    difficulty = Number(override.b);
+  }
+  return {
+    a: Number(discrimination.toFixed(3)),
+    b: Number(difficulty.toFixed(3)),
+  };
+}
+
+function adaptiveResponseCategoryProbabilities(theta, discrimination, difficulty) {
+  const thresholds = ADAPTIVE_RESPONSE_THRESHOLDS.map((offset) => Number(difficulty) + Number(offset));
+  const cumulative = [1.0];
+  thresholds.forEach((threshold) => {
+    cumulative.push(adaptiveLogistic(Number(discrimination) * (Number(theta) - threshold)));
+  });
+  cumulative.push(0.0);
+  const probabilities = [];
+  for (let index = 0; index < cumulative.length - 1; index += 1) {
+    probabilities.push(Math.max(cumulative[index] - cumulative[index + 1], 1e-9));
+  }
+  const total = probabilities.reduce((sum, value) => sum + value, 0);
+  if (total <= 0) {
+    return [0.25, 0.25, 0.25, 0.25];
+  }
+  return probabilities.map((value) => value / total);
+}
+
+function adaptiveThetaLogPosterior(theta, responses) {
+  let logLikelihood = 0;
+  QUESTION_BANK.forEach((question, index) => {
+    const value = responses[question.id];
+    if (value === undefined || value === null) {
+      return;
+    }
+    const params = adaptiveQuestionParameters(question, index);
+    const category = Math.max(0, Math.min(3, Number.parseInt(value, 10)));
+    const probabilities = adaptiveResponseCategoryProbabilities(theta, params.a, params.b);
+    logLikelihood += Math.log(probabilities[category] || 1e-9);
+  });
+  const priorScale = ADAPTIVE_THETA_PRIOR_SD;
+  const logPrior = -0.5 * ((Number(theta) / priorScale) ** 2);
+  return logLikelihood + logPrior;
+}
+
+function adaptiveEstimateTheta(responses) {
+  let bestTheta = 0;
+  let bestScore = Number.NEGATIVE_INFINITY;
+  for (let theta = ADAPTIVE_THETA_GRID_MIN; theta <= ADAPTIVE_THETA_GRID_MAX + 1e-9; theta += ADAPTIVE_THETA_GRID_STEP) {
+    const score = adaptiveThetaLogPosterior(theta, responses);
+    if (score > bestScore) {
+      bestScore = score;
+      bestTheta = theta;
+    }
+  }
+
+  const refinementStart = Math.max(ADAPTIVE_THETA_GRID_MIN, bestTheta - ADAPTIVE_THETA_GRID_STEP);
+  const refinementEnd = Math.min(ADAPTIVE_THETA_GRID_MAX, bestTheta + ADAPTIVE_THETA_GRID_STEP);
+  for (let theta = refinementStart; theta <= refinementEnd + 1e-9; theta += ADAPTIVE_THETA_GRID_STEP / 10) {
+    const score = adaptiveThetaLogPosterior(theta, responses);
+    if (score > bestScore) {
+      bestScore = score;
+      bestTheta = theta;
+    }
+  }
+
+  return Math.max(Math.min(bestTheta, ADAPTIVE_THETA_GRID_MAX), ADAPTIVE_THETA_GRID_MIN);
+}
+
+function adaptiveDomainCoverageBonus(domain, answeredCounts, balanceWeight = ADAPTIVE_DOMAIN_BALANCE_WEIGHT) {
+  const targetCount = Math.max(1, QUESTION_BANK.length / Math.max(DOMAINS.length, 1));
+  const answeredCount = Number(answeredCounts[domain] || 0);
+  const coverageGap = Math.max(0, targetCount - answeredCount) / targetCount;
+  return 1 + (Number(balanceWeight) * coverageGap);
+}
+
+function buildLocalAdaptiveQuestionBank(responses, language = currentLanguage()) {
+  const answered = { ...responses };
+  const answeredIds = new Set(Object.keys(answered).filter((questionId) => answered[questionId] !== undefined && answered[questionId] !== null));
+  const theta = adaptiveEstimateTheta(answered);
+  const tuning = {
+    info_threshold: ADAPTIVE_INFO_THRESHOLD,
+    coverage_weight: ADAPTIVE_DOMAIN_BALANCE_WEIGHT,
+    defaults: {
+      info_threshold: ADAPTIVE_INFO_THRESHOLD,
+      coverage_weight: ADAPTIVE_DOMAIN_BALANCE_WEIGHT,
+    },
+    source: "browser-fallback",
+  };
+  const answeredCounts = Object.fromEntries(DOMAINS.map((domain) => [domain, 0]));
+  QUESTION_BANK.forEach((question) => {
+    if (answeredIds.has(question.id)) {
+      answeredCounts[question.domain] += 1;
+    }
+  });
+
+  const scoredQuestions = [];
+  QUESTION_BANK.forEach((question, index) => {
+    if (answeredIds.has(question.id)) {
+      return;
+    }
+    const params = adaptiveQuestionParameters(question, index);
+    const probability = 1 / (1 + Math.exp(Math.max(Math.min(-params.a * (theta - params.b), 60), -60)));
+    const information = (params.a ** 2) * probability * (1 - probability);
+    const coverageBonus = adaptiveDomainCoverageBonus(question.domain, answeredCounts, tuning.coverage_weight);
+    const selectionScore = information * coverageBonus;
+    scoredQuestions.push({
+      ...question,
+      prompt_localized: language === "English"
+        ? question.prompt
+        : QUESTION_TRANSLATIONS[question.id]?.[language] || question.prompt,
+      section_label: language === "English"
+        ? question.section
+        : SECTION_TRANSLATIONS[question.section]?.[language] || question.section,
+      language,
+      irt: {
+        discrimination: params.a,
+        difficulty: params.b,
+        information: Number(information.toFixed(6)),
+      },
+      adaptive: {
+        selection_score: Number(selectionScore.toFixed(6)),
+        coverage_bonus: Number(coverageBonus.toFixed(6)),
+        answered_in_domain: answeredCounts[question.domain],
+      },
+    });
+  });
+
+  scoredQuestions.sort((left, right) => {
+    if ((right.adaptive?.selection_score || 0) !== (left.adaptive?.selection_score || 0)) {
+      return (right.adaptive?.selection_score || 0) - (left.adaptive?.selection_score || 0);
+    }
+    return (right.irt?.information || 0) - (left.irt?.information || 0);
+  });
+
+  const nextQuestion = scoredQuestions[0] || null;
+  const maxInformation = scoredQuestions.length
+    ? Math.max(...scoredQuestions.map((item) => item.irt?.information || 0))
+    : 0;
+  const selectedInformation = nextQuestion?.irt?.information || 0;
+  const shouldStop = (
+    answeredIds.size >= ADAPTIVE_MAX_ITEMS
+    || (answeredIds.size >= ADAPTIVE_MIN_ITEMS && maxInformation < tuning.info_threshold)
+    || !nextQuestion
+  );
+
+  return {
+    theta: Number(theta.toFixed(6)),
+    answered_count: answeredIds.size,
+    remaining_count: scoredQuestions.length,
+    next_question: nextQuestion,
+    should_stop: shouldStop,
+    max_information: Number(maxInformation.toFixed(6)),
+    selected_information: Number(selectedInformation.toFixed(6)),
+    tuning,
+    language,
+  };
+}
+
+function renderAdaptiveQuestion() {
+  renderAdaptiveAnswerOptions();
+
+  if (state.adaptiveCompleted && state.adaptiveLastRecord) {
+    elements.adaptiveQuestionPrompt.textContent = adaptiveLanguageCopy(
+      `${state.adaptiveLastRecord.assessment_id} has been saved. Start a new session to run another adaptive screening.`,
+      `${state.adaptiveLastRecord.assessment_id} सहेजा गया है। नया अनुकूली स्क्रीनिंग शुरू करने के लिए नया सत्र शुरू करें।`,
+      `${state.adaptiveLastRecord.assessment_id} সংরক্ষণ করা হয়েছে। আরেকটি অ্যাডাপটিভ screening শুরু করতে নতুন session শুরু করুন.`,
+    );
+    elements.adaptiveQuestionMeta.textContent = adaptiveLanguageCopy(
+      "Adaptive interview complete.",
+      "अनुकूली साक्षात्कार पूरा हुआ।",
+      "অ্যাডাপটিভ সাক্ষাৎকার সম্পূর্ণ হয়েছে।",
+    );
+    elements.adaptiveNextBtn.disabled = true;
+    elements.adaptiveStartBtn.disabled = false;
+    elements.adaptiveResetBtn.disabled = false;
+    return;
+  }
+
+  if (state.adaptiveLoading) {
+    elements.adaptiveQuestionPrompt.textContent = t("adaptiveStatusLoading");
+    elements.adaptiveQuestionMeta.textContent = t("adaptiveQuestionHint");
+    elements.adaptiveNextBtn.disabled = true;
+    elements.adaptiveStartBtn.disabled = true;
+    elements.adaptiveResetBtn.disabled = false;
+    return;
+  }
+
+  if (!state.adaptiveSessionStarted || !state.adaptiveCurrentQuestion) {
+    elements.adaptiveQuestionPrompt.textContent = t("adaptiveQuestionHint");
+    elements.adaptiveQuestionMeta.textContent = t("adaptiveStatusIdle");
+    elements.adaptiveNextBtn.disabled = true;
+    elements.adaptiveStartBtn.disabled = false;
+    elements.adaptiveResetBtn.disabled = false;
+    return;
+  }
+
+  const question = state.adaptiveCurrentQuestion;
+  const adaptiveMeta = question.adaptive || {};
+  const progressMeta = state.adaptiveProgress || {};
+  const tuning = progressMeta.tuning || {};
+  elements.adaptiveQuestionPrompt.textContent = questionPrompt(question);
+  const sectionLabel = question.section_label || adaptiveSectionLabel(question.section);
+  const remainingLabel = adaptiveLanguageCopy("Remaining", "शेष", "বাকি");
+  const irtInfoLabel = adaptiveLanguageCopy("IRT info", "IRT जानकारी", "IRT তথ্য");
+  const difficultyLabel = adaptiveLanguageCopy("Difficulty", "कठिनाई", "কঠিনতা");
+  const selectionScoreLabel = adaptiveLanguageCopy("Selection score", "चयन स्कोर", "নির্বাচন স্কোর");
+  const coverageBonusLabel = adaptiveLanguageCopy("Coverage bonus", "कवरेज बोनस", "কভারেজ বোনাস");
+  const stopThresholdLabel = adaptiveLanguageCopy("Stop threshold", "रोकने की सीमा", "থামার সীমা");
+  const balanceWeightLabel = adaptiveLanguageCopy("Balance weight", "संतुलन भार", "সামঞ্জস্য ওজন");
+  elements.adaptiveQuestionMeta.textContent = [
+    `${adaptiveLanguageCopy("Section", "अनुभाग", "অধ্যায়")}: ${sectionLabel}`,
+    `${irtInfoLabel}: ${(question.irt?.information || 0).toFixed(3)}`,
+    `${difficultyLabel}: ${(question.irt?.difficulty || 0).toFixed(2)}`,
+    `${selectionScoreLabel}: ${(adaptiveMeta.selection_score ?? question.irt?.information ?? 0).toFixed(3)}`,
+    `${coverageBonusLabel}: ${(adaptiveMeta.coverage_bonus ?? 1).toFixed(2)}`,
+    `${remainingLabel}: ${progressMeta.remaining_count ?? 0}`,
+    tuning.info_threshold !== undefined ? `${stopThresholdLabel}: ${Number(tuning.info_threshold).toFixed(3)}` : null,
+    tuning.coverage_weight !== undefined ? `${balanceWeightLabel}: ${Number(tuning.coverage_weight).toFixed(3)}` : null,
+  ].filter(Boolean).join(" | ");
+  elements.adaptiveNextBtn.disabled = false;
+  elements.adaptiveStartBtn.disabled = true;
+  elements.adaptiveResetBtn.disabled = false;
+}
+
+function resetAdaptiveState() {
+  state.adaptiveResponses = {};
+  state.adaptiveCurrentQuestion = null;
+  state.adaptiveProgress = null;
+  state.adaptiveCompleted = false;
+  state.adaptiveLastRecord = null;
+  state.adaptiveLoading = false;
+  state.adaptiveRequestId += 1;
+  state.adaptiveSessionStarted = false;
+  if (elements.adaptiveForm) {
+    elements.adaptiveForm.reset();
+  }
+  if (elements.adaptiveAnswer) {
+    renderAdaptiveAnswerOptions();
+    elements.adaptiveAnswer.value = "";
+  }
+  renderAdaptiveStatus(t("adaptiveStatusIdle"));
+  renderAdaptiveQuestion();
+}
+
+function buildAdaptivePayload() {
+  const questionnaireResponses = { ...state.adaptiveResponses };
+  const questionnaire = scoreQuestionnaire(questionnaireResponses);
+  return {
+    profile: {
+      full_name: elements.adaptiveFullName.value.trim(),
+      age: Number(elements.adaptiveAge.value || 0),
+      gender: elements.adaptiveGender.value,
+      village: elements.adaptiveVillage.value.trim(),
+      phone: "",
+      assessor: elements.adaptiveAssessor.value.trim(),
+      language: normalizeLanguage(elements.adaptiveLanguage.value || elements.language.value || currentLanguage()),
+      consent_received: elements.adaptiveConsent.checked,
+      record_origin: "test",
+    },
+    questionnaire,
+    text_input: elements.adaptiveTextNarrative.value,
+    audio_file: getCurrentAudioFile(),
+    image_file: getCurrentImageFile(),
+    audio_metadata: buildUploadMetadata(getCurrentAudioFile()),
+    image_metadata: buildUploadMetadata(getCurrentImageFile()),
+  };
+}
+
+async function saveAdaptiveAssessmentToApi(payload) {
+  if (!payload.profile.full_name || !payload.profile.village || !payload.profile.assessor) {
+    renderAdaptiveStatus(adaptiveLanguageCopy(
+      "Please complete the candidate profile before saving the adaptive assessment.",
+      "अनुकूली मूल्यांकन सहेजने से पहले उम्मीदवार प्रोफ़ाइल पूरी करें।",
+      "অ্যাডাপটিভ মূল্যায়ন সংরক্ষণের আগে প্রার্থী প্রোফাইল পূরণ করুন।",
+    ), "error");
+    return null;
+  }
+  if (!payload.profile.consent_received) {
+    renderAdaptiveStatus(adaptiveLanguageCopy(
+      "Please confirm consent before saving the adaptive assessment.",
+      "अनुकूली मूल्यांकन सहेजने से पहले कृपया सहमति की पुष्टि करें।",
+      "অ্যাডাপটিভ মূল্যায়ন সংরক্ষণের আগে সম্মতি নিশ্চিত করুন।",
+    ), "error");
+    return null;
+  }
+
+  const adaptiveRecordBanner = (record, offline = false) => {
+    state.adaptiveLastRecord = record;
+    state.adaptiveCompleted = true;
+    state.adaptiveLoading = false;
+    state.adaptiveSessionStarted = false;
+    state.adaptiveCurrentQuestion = null;
+    state.adaptiveProgress = null;
+    renderAdaptiveQuestion();
+    renderAdaptiveStatus(
+      adaptiveLanguageCopy(
+        offline
+          ? `Adaptive assessment saved offline as ${record.assessment_id}.`
+          : `Adaptive assessment saved as ${record.assessment_id}.`,
+        offline
+          ? `अनुकूली मूल्यांकन ऑफ़लाइन ${record.assessment_id} के रूप में सहेजा गया।`
+          : `अनुकूली मूल्यांकन ${record.assessment_id} के रूप में सहेजा गया।`,
+        offline
+          ? `অ্যাডাপটিভ মূল্যায়ন offline-এ ${record.assessment_id} হিসাবে সংরক্ষণ করা হয়েছে।`
+          : `অ্যাডাপটিভ মূল্যায়ন ${record.assessment_id} হিসাবে সংরক্ষণ করা হয়েছে।`,
+      ),
+      "success",
+    );
+    setActiveResults([record], {
+      focusLatest: true,
+      bannerMessage: `${t("analyticsShowing")} ${record.assessment_id}.`,
+      bannerTone: "success",
+    });
+    switchView("analyticsView");
+    return record;
+  };
+
+  try {
+    renderAdaptiveStatus(t("saveInProgress"), "neutral");
+    const response = await fetch("/api/assessments", {
+      method: "POST",
+      body: buildAssessmentFormData(payload),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const savedRecord = normalizeRecord(await response.json());
+    await persistLocalRecord(savedRecord);
+    return adaptiveRecordBanner(savedRecord, false);
+  } catch (error) {
+    console.error("Adaptive assessment save failed", error);
+    const localRecord = buildOfflineAssessmentRecord(payload);
+    await queueAssessmentForSync(payload, localRecord);
+    await persistLocalRecord(localRecord);
+    return adaptiveRecordBanner(localRecord, true);
+  }
+}
+
+async function fetchAdaptiveSession(responses) {
+  const requestId = state.adaptiveRequestId + 1;
+  state.adaptiveRequestId = requestId;
+  state.adaptiveLoading = true;
+  renderAdaptiveStatus(t("adaptiveStatusLoading"), "neutral");
+  renderAdaptiveQuestion();
+  try {
+    const progress = await fetchAdaptiveQuestionState(responses, currentAdaptiveLanguage());
+    if (requestId !== state.adaptiveRequestId) {
+      return null;
+    }
+    state.adaptiveProgress = progress;
+    state.adaptiveCurrentQuestion = progress.next_question || null;
+    state.adaptiveLoading = false;
+    state.adaptiveSessionStarted = true;
+    renderAdaptiveQuestion();
+    if (progress.should_stop || !progress.next_question) {
+      renderAdaptiveStatus(t("adaptiveStatusComplete"), "success");
+      const payload = buildAdaptivePayload();
+      const record = await saveAdaptiveAssessmentToApi(payload);
+      return record;
+    }
+    renderAdaptiveStatus(t("adaptiveStatusReady"), "success");
+    return progress;
+  } catch (error) {
+    if (requestId !== state.adaptiveRequestId) {
+      return null;
+    }
+    console.warn("Adaptive session fetch failed; using browser fallback.", error);
+    try {
+      const progress = buildLocalAdaptiveQuestionBank(responses, currentAdaptiveLanguage());
+      if (requestId !== state.adaptiveRequestId) {
+        return null;
+      }
+      state.adaptiveProgress = progress;
+      state.adaptiveCurrentQuestion = progress.next_question || null;
+      state.adaptiveLoading = false;
+      state.adaptiveSessionStarted = true;
+      renderAdaptiveQuestion();
+      if (progress.should_stop || !progress.next_question) {
+        renderAdaptiveStatus(t("adaptiveStatusComplete"), "success");
+        const payload = buildAdaptivePayload();
+        const record = await saveAdaptiveAssessmentToApi(payload);
+        return record;
+      }
+      renderAdaptiveStatus(adaptiveLanguageCopy(
+        "Adaptive API unavailable. Using browser fallback selector.",
+        "Adaptive API अभी उपलब्ध नहीं है। ब्राउज़र fallback selector इस्तेमाल किया जा रहा है।",
+        "Adaptive API এখন উপলব্ধ নয়। Browser fallback selector ব্যবহার করা হচ্ছে।",
+      ), "neutral");
+      return progress;
+    } catch (fallbackError) {
+      if (requestId !== state.adaptiveRequestId) {
+        return null;
+      }
+      console.error("Adaptive browser fallback failed", fallbackError);
+      state.adaptiveLoading = false;
+      state.adaptiveProgress = null;
+      state.adaptiveCurrentQuestion = null;
+      state.adaptiveSessionStarted = false;
+      renderAdaptiveQuestion();
+      renderAdaptiveStatus(t("adaptiveStatusError"), "error");
+      return null;
+    }
+  }
+}
+
+async function startAdaptiveSession() {
+  state.adaptiveResponses = {};
+  state.adaptiveCompleted = false;
+  state.adaptiveLastRecord = null;
+  elements.adaptiveAnswer.value = "";
+  await fetchAdaptiveSession({});
+}
+
+async function submitAdaptiveAnswer() {
+  if (!state.adaptiveSessionStarted || !state.adaptiveCurrentQuestion) {
+    renderAdaptiveStatus(t("adaptiveQuestionHint"), "neutral");
+    return;
+  }
+  const answer = elements.adaptiveAnswer.value;
+  if (answer === "") {
+    renderAdaptiveStatus(adaptiveLanguageCopy(
+      "Please choose an answer before continuing.",
+      "कृपया आगे बढ़ने से पहले एक उत्तर चुनें।",
+      "এগোনোর আগে একটি উত্তর নির্বাচন করুন।",
+    ), "error");
+    return;
+  }
+
+  const updatedResponses = { ...state.adaptiveResponses, [state.adaptiveCurrentQuestion.id]: Number(answer) };
+  state.adaptiveResponses = updatedResponses;
+  elements.adaptiveAnswer.value = "";
+  await fetchAdaptiveSession(updatedResponses);
 }
 
 async function submitAssessment(event) {
@@ -2313,6 +3529,21 @@ async function submitAssessment(event) {
 }
 
 async function saveAssessmentToApi(payload) {
+  if (!state.networkOnline) {
+    const localRecord = buildOfflineAssessmentRecord(payload);
+    await queueAssessmentForSync(payload, localRecord);
+    state.latestCreatedRecord = localRecord;
+    state.draftRecord = null;
+    renderWorkspacePanels();
+    setActiveResults([localRecord], {
+      focusLatest: true,
+      bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} saved offline and queued for sync.`,
+      bannerTone: "success",
+    });
+    setBanner(elements.workspaceStatus, "Assessment saved offline. It will sync automatically when the connection returns.", "success");
+    switchView("analyticsView");
+    return;
+  }
   try {
     setBanner(elements.workspaceStatus, t("saveInProgress"), "neutral");
     const response = await fetch("/api/assessments", {
@@ -2323,8 +3554,10 @@ async function saveAssessmentToApi(payload) {
       throw new Error(`HTTP ${response.status}`);
     }
     const savedRecord = normalizeRecord(await response.json());
+    await persistLocalRecord(savedRecord);
     state.latestCreatedRecord = savedRecord;
     state.draftRecord = null;
+    renderWorkspacePanels();
     setActiveResults([savedRecord], {
       focusLatest: true,
       bannerMessage: `${t("analyticsShowing")} ${savedRecord.assessment_id}.`,
@@ -2334,11 +3567,31 @@ async function saveAssessmentToApi(payload) {
     switchView("analyticsView");
   } catch (error) {
     console.error("Assessment save failed", error);
-    setBanner(elements.workspaceStatus, currentLanguage() === "Bengali" ? "ব্যাকএন্ড API-তে মূল্যায়ন সংরক্ষণ করা যায়নি।" : currentLanguage() === "Hindi" ? "आकलन बैकएंड API में सहेजा नहीं जा सका।" : "Could not save the assessment to the backend API.", "error");
+    const localRecord = buildOfflineAssessmentRecord(payload);
+    await queueAssessmentForSync(payload, localRecord);
+    state.latestCreatedRecord = localRecord;
+    state.draftRecord = null;
+    renderWorkspacePanels();
+    setActiveResults([localRecord], {
+      focusLatest: true,
+      bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} saved offline after the API became unavailable.`,
+      bannerTone: "success",
+    });
+    setBanner(elements.workspaceStatus, "Backend unavailable. The assessment was saved offline and queued for sync.", "success");
+    switchView("analyticsView");
   }
 }
 
 async function fetchDraftPreview(payload, requestId) {
+  if (!state.networkOnline) {
+    if (requestId !== state.draftPreviewRequestId) {
+      return;
+    }
+    state.draftRecord = buildAssessmentRecordFromAnalysis(payload, buildOfflineMultimodal(payload), "Offline Preview");
+    state.draftPreviewLoading = false;
+    renderWorkspacePanels();
+    return;
+  }
   try {
     const response = await fetch("/api/preview", {
       method: "POST",
@@ -2359,8 +3612,9 @@ async function fetchDraftPreview(payload, requestId) {
       return;
     }
     console.error("Draft preview failed", error);
+    state.draftRecord = buildAssessmentRecordFromAnalysis(payload, buildOfflineMultimodal(payload), "Offline Preview");
     state.draftPreviewLoading = false;
-    setBanner(elements.workspaceStatus, currentLanguage() === "Bengali" ? "ব্যাকএন্ড থেকে লাইভ NLP বিশ্লেষণ আপডেট করা যায়নি।" : currentLanguage() === "Hindi" ? "बैकएंड से लाइव NLP संकेत ताज़ा नहीं किए जा सके।" : "Could not refresh live NLP insights from the backend.", "error");
+    setBanner(elements.workspaceStatus, "Backend preview unavailable. Showing offline heuristic preview instead.", "neutral");
     renderWorkspacePanels();
   }
 }
@@ -2388,6 +3642,7 @@ function updateDraftPreview() {
   const payload = buildAssessmentPayload();
   const requestId = state.draftPreviewRequestId + 1;
   state.draftPreviewRequestId = requestId;
+  state.draftRecord = null;
   state.draftPreviewLoading = true;
   renderWorkspacePanels();
   state.draftPreviewTimer = setTimeout(() => {
@@ -2396,6 +3651,14 @@ function updateDraftPreview() {
 }
 
 async function loadDefaultResults() {
+  const offlineRecords = await loadOfflineRecords();
+  if (offlineRecords.length) {
+    setActiveResults(visibleUserRecords(offlineRecords), {
+      focusLatest: true,
+      bannerMessage: `Loaded ${visibleUserRecords(offlineRecords).length} locally stored assessment records.`,
+      bannerTone: "success",
+    });
+  }
   try {
     await loadApiResults("backend API");
   } catch {
@@ -2407,7 +3670,7 @@ async function loadSampleResults() {
   try {
     const response = await fetch("/api/sample", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    loadResults(await response.json(), "the bundled sample dataset");
+    loadResults(visibleUserRecords(await response.json()), "the bundled sample dataset");
   } catch {
     setBanner(elements.statusBanner, currentLanguage() === "Bengali" ? "স্যাম্পল ডেটাসেট লোড করা যায়নি।" : currentLanguage() === "Hindi" ? "सैंपल डाटासेट लोड नहीं हो सका।" : "Could not load the sample dataset.", "error");
   }
@@ -2423,9 +3686,20 @@ async function loadApiResults(sourceLabel, focusLatest = false) {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    loadResults(await response.json(), sourceLabel, focusLatest);
+    const apiRecords = uniqueRecords(visibleUserRecords(await response.json()));
+    for (const record of apiRecords) {
+      await persistLocalRecord(record);
+    }
+    const merged = uniqueRecords([...visibleUserRecords(await loadOfflineRecords()), ...apiRecords]);
+    loadResults(merged, sourceLabel, focusLatest);
   } catch (error) {
     console.error("API load failed", error);
+    const localRecords = visibleUserRecords(await loadOfflineRecords());
+    if (localRecords.length) {
+      loadResults(localRecords, "local offline storage", focusLatest);
+      setBanner(elements.statusBanner, "Backend unavailable. Loaded records from offline storage.", "neutral");
+      return;
+    }
     setBanner(elements.statusBanner, currentLanguage() === "Bengali" ? "ব্যাকএন্ড API থেকে রেকর্ড লোড করা যায়নি।" : currentLanguage() === "Hindi" ? "बैकएंड API से रिकॉर्ड लोड नहीं हो सके।" : "Could not load records from the backend API.", "error");
   }
 }
@@ -2461,6 +3735,9 @@ async function fetchRecordByIdFromApi(assessmentId) {
       throw new Error(`HTTP ${response.status}`);
     }
     const record = normalizeRecord(await response.json());
+    if (!visibleUserRecords([record]).length) {
+      throw new Error("Record hidden from user view.");
+    }
     const existingIndex = state.allResults.findIndex((item) => item.assessment_id === record.assessment_id);
     if (existingIndex >= 0) {
       state.allResults[existingIndex] = record;
@@ -2471,12 +3748,79 @@ async function fetchRecordByIdFromApi(assessmentId) {
     populateFilterOptions();
     applyFilters();
     switchView("recordsView");
-    renderDetailPanels();
-    renderTable();
+    renderDashboard();
     setBanner(elements.statusBanner, tf("fetchSuccess", { id: record.assessment_id }), "success");
   } catch (error) {
     console.error("Record fetch failed", error);
+    const localRecord = state.allResults.find((item) => item.assessment_id === assessmentId);
+    if (localRecord && visibleUserRecords([localRecord]).length) {
+      state.selectedRecord = localRecord;
+      switchView("recordsView");
+      renderDashboard();
+      setBanner(elements.statusBanner, `Loaded ${assessmentId} from offline storage.`, "neutral");
+      return;
+    }
     setBanner(elements.statusBanner, t("fetchMissing"), "error");
+  }
+}
+
+async function deleteSelectedAssessmentRecord(assessmentId) {
+  const record = state.allResults.find((item) => item.assessment_id === assessmentId) || state.selectedRecord;
+  if (!record || record.assessment_id !== assessmentId) {
+    setBanner(elements.statusBanner, t("deleteRecordNotFound"), "error");
+    return;
+  }
+  if (!window.confirm(t("deleteRecordConfirm"))) {
+    return;
+  }
+
+  const removeFromState = async () => {
+    await removeLocalRecord(assessmentId);
+    try {
+      await offlineStoreDelete(OFFLINE_PENDING_STORE, assessmentId);
+    } catch (error) {
+      console.warn("Could not remove pending queue entry", error);
+    }
+    await refreshPendingSyncCount();
+    state.allResults = state.allResults.filter((item) => item.assessment_id !== assessmentId);
+    state.filteredResults = state.filteredResults.filter((item) => item.assessment_id !== assessmentId);
+    if (state.selectedRecord?.assessment_id === assessmentId) {
+      state.selectedRecord = state.filteredResults[0] || null;
+    }
+    if (state.latestCreatedRecord?.assessment_id === assessmentId) {
+      state.latestCreatedRecord = null;
+    }
+    populateFilterOptions();
+    applyFilters();
+  };
+
+  if (!state.networkOnline) {
+    if (record.sync_status !== "pending") {
+      setBanner(elements.statusBanner, t("deleteRecordRequiresOnline"), "error");
+      return;
+    }
+    try {
+      await removeFromState();
+      setBanner(elements.statusBanner, tf("deleteRecordSuccess", { id: assessmentId }), "success");
+    } catch (error) {
+      console.error("Local record deletion failed", error);
+      setBanner(elements.statusBanner, tf("deleteRecordFailed", { id: assessmentId }), "error");
+    }
+    return;
+  }
+
+  try {
+    if (record.sync_status !== "pending") {
+      const response = await fetch(`/api/assessments/${encodeURIComponent(assessmentId)}`, { method: "DELETE" });
+      if (!response.ok && response.status !== 404) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+    }
+    await removeFromState();
+    setBanner(elements.statusBanner, tf("deleteRecordSuccess", { id: assessmentId }), "success");
+  } catch (error) {
+    console.error("Assessment deletion failed", error);
+    setBanner(elements.statusBanner, tf("deleteRecordFailed", { id: assessmentId }), "error");
   }
 }
 
@@ -2491,6 +3835,28 @@ function loadInitialBrowserRecords() {
   setBanner(elements.statusBanner, t("recordsBannerDefault"), "neutral");
 }
 
+async function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) {
+    return;
+  }
+  try {
+    await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    state.serviceWorkerReady = true;
+  } catch (error) {
+    console.error("Service worker registration failed", error);
+    state.serviceWorkerReady = false;
+  }
+  updateOfflineStatus();
+}
+
+async function initializeOfflineFirst() {
+  await refreshPendingSyncCount();
+  await registerServiceWorker();
+  if (state.networkOnline) {
+    await syncPendingAssessments();
+  }
+}
+
 elements.tabButtons.forEach((button) => {
   button.addEventListener("click", () => switchView(button.dataset.view));
 });
@@ -2500,6 +3866,9 @@ elements.resetAssessmentBtn.addEventListener("click", () => {
   resetAssessmentForm();
   updateDraftPreview();
 });
+elements.adaptiveStartBtn.addEventListener("click", startAdaptiveSession);
+elements.adaptiveNextBtn.addEventListener("click", submitAdaptiveAnswer);
+elements.adaptiveResetBtn.addEventListener("click", resetAdaptiveState);
 elements.startRecordingBtn.addEventListener("click", () => {
   startSpeechRecording();
 });
@@ -2560,6 +3929,17 @@ elements.language.addEventListener("change", () => {
   }
   applyDashboardLanguageSelection();
 });
+if (elements.adaptiveLanguage) {
+  elements.adaptiveLanguage.addEventListener("change", () => {
+    if (elements.language) {
+      elements.language.value = elements.adaptiveLanguage.value;
+    }
+    if (elements.dashboardLanguage) {
+      elements.dashboardLanguage.value = elements.adaptiveLanguage.value;
+    }
+    applyDashboardLanguageSelection();
+  });
+}
 elements.prevPageBtn.addEventListener("click", () => {
   if (state.currentPage > 1) {
     state.currentPage -= 1;
@@ -2575,10 +3955,25 @@ elements.nextPageBtn.addEventListener("click", () => {
   }
 });
 
+window.addEventListener("online", async () => {
+  state.networkOnline = true;
+  updateOfflineStatus();
+  await syncPendingAssessments();
+});
+
+window.addEventListener("offline", () => {
+  state.networkOnline = false;
+  updateOfflineStatus();
+  setBanner(elements.statusBanner, "Offline mode active. New assessments will be saved locally and synced later.", "neutral");
+});
+
 buildQuestionnaire();
 wireQuestionnaireEvents();
 applyLanguage();
+resetAdaptiveState();
 updateCaptureUi();
 resetAssessmentForm();
 loadInitialBrowserRecords();
+updateOfflineStatus();
 updateDraftPreview();
+initializeOfflineFirst();

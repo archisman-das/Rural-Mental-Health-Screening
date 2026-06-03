@@ -1,0 +1,17 @@
+{
+  "name": "Rural Mental Health Screening Dashboard",
+  "short_name": "MH Dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4ecdf",
+  "theme_color": "#9e4d29",
+  "description": "Offline-first mental health screening dashboard for rural field work.",
+  "icons": [
+    {
+      "src": "/web/assets/mental-health-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

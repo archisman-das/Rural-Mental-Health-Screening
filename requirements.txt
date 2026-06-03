@@ -1,5 +1,8 @@
 streamlit
 flask
+psycopg[binary]
+cryptography
+shap
 numpy
 pandas
 scipy

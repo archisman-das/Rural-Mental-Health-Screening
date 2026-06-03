@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "dep_interest",
+      "a": 1.35,
+      "b": -0.25
+    },
+    {
+      "id": "anx_worry",
+      "a": 1.5,
+      "b": -0.1
+    },
+    {
+      "id": "str_overload",
+      "a": 1.2,
+      "b": 0.05
+    },
+    {
+      "id": "sleep_quality",
+      "a": 1.1,
+      "b": 0.2
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "voice_manifest": "examples\\voice_manifest.example.csv",
+  "voice_model_family": "whisper",
+  "voice_base_model_name": "openai/whisper-small",
+  "voice_output_dir": "examples\\voice_models_whisper",
+  "voice_min_samples_per_dialect": 2,
+  "voice_per_dialect": true,
+  "voice_epochs": 1,
+  "voice_batch_size": 2,
+  "voice_learning_rate": 3e-5,
+  "voice_random_state": 42,
+  "skip_daic_woz": true,
+  "skip_meld": true,
+  "skip_ravdess": true,
+  "skip_manifest_build": true
+}

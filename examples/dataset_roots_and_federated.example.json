@@ -1,0 +1,15 @@
+{
+  "federated_manifest": "examples\\federated_manifest.example.csv",
+  "federated_centre_column": "centre_id",
+  "federated_output_dir": "examples\\federated_centres",
+  "federated_manifest_prefix": "field",
+  "federated_modality": "all",
+  "federated_domains": "depression,anxiety,stress",
+  "federated_min_center_samples": 4,
+  "federated_rounds": 6,
+  "federated_local_epochs": 2,
+  "skip_daic_woz": true,
+  "skip_meld": true,
+  "skip_ravdess": true,
+  "skip_manifest_build": true
+}

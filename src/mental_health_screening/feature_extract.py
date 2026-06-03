@@ -2,6 +2,8 @@ import os
 import tempfile
 from functools import lru_cache
 import numpy as np
+
+from .utils import normalize_score
 try:
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 except ImportError:
@@ -96,10 +98,20 @@ LANGUAGE_TEXT_RULES = {
     },
 }
 
-TRANSFORMER_ENCODER_CANDIDATES = (
-    "distilbert-base-uncased",
-    "bert-base-uncased",
-)
+TRANSFORMER_ENCODER_CANDIDATES = {
+    "english": (
+        "distilbert-base-uncased",
+        "bert-base-uncased",
+    ),
+    "hindi": (
+        "google/muril-base-cased",
+        "ai4bharat/IndicBERTv2-MLM-only",
+    ),
+    "bengali": (
+        "google/muril-base-cased",
+        "ai4bharat/IndicBERTv2-MLM-only",
+    ),
+}
 
 SENTIMENT_MODEL_CANDIDATES = (
     "distilbert-base-uncased-finetuned-sst-2-english",
@@ -112,6 +124,278 @@ EMOTION_MODEL_CANDIDATES = (
 )
 
 AUDIO_MIN_DURATION_SECONDS = 2.5
+RPPG_MIN_SAMPLE_COUNT = 24
+RPPG_MIN_BPM = 45.0
+RPPG_MAX_BPM = 180.0
+
+
+def _safe_float(value) -> float | None:
+    try:
+        if value is None or str(value).strip() == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _face_crop_from_frame(frame) -> tuple[np.ndarray | None, str]:
+    if cv2 is None or frame is None:
+        return None, "vision_unavailable"
+
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    cascade_path = getattr(cv2.data, "haarcascades", "") + "haarcascade_frontalface_default.xml"
+    if cascade_path and os.path.exists(cascade_path):
+        detector = cv2.CascadeClassifier(cascade_path)
+        faces = detector.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80))
+        if faces is not None and len(faces) > 0:
+            x, y, w, h = max(faces, key=lambda box: box[2] * box[3])
+            crop = frame[y : y + h, x : x + w]
+            if crop.size:
+                return crop, "haar_face"
+
+    height, width = frame.shape[:2]
+    if height <= 0 or width <= 0:
+        return None, "invalid_frame"
+    top = int(height * 0.18)
+    bottom = int(height * 0.82)
+    left = int(width * 0.2)
+    right = int(width * 0.8)
+    crop = frame[top:bottom, left:right]
+    if crop.size:
+        return crop, "center_crop"
+    return None, "no_face_detected"
+
+
+def _estimate_heart_rate_from_signal(signal_values: list[float], fps: float) -> tuple[float | None, dict]:
+    if len(signal_values) < RPPG_MIN_SAMPLE_COUNT or fps <= 0:
+        return None, {"quality": 0.0, "reason": "insufficient_samples"}
+
+    samples = np.asarray(signal_values, dtype=float)
+    samples = samples - np.mean(samples)
+    std = float(np.std(samples))
+    if std <= 1e-8:
+        return None, {"quality": 0.0, "reason": "flat_signal"}
+
+    window = np.hanning(len(samples))
+    spectrum = np.abs(np.fft.rfft(samples * window))
+    frequencies = np.fft.rfftfreq(len(samples), d=1.0 / fps)
+    valid = (frequencies >= (RPPG_MIN_BPM / 60.0)) & (frequencies <= (RPPG_MAX_BPM / 60.0))
+    if not np.any(valid):
+        return None, {"quality": 0.0, "reason": "no_valid_band"}
+
+    valid_frequencies = frequencies[valid]
+    valid_spectrum = spectrum[valid]
+    peak_index = int(np.argmax(valid_spectrum))
+    peak_frequency = float(valid_frequencies[peak_index])
+    peak_power = float(valid_spectrum[peak_index])
+    total_power = float(np.sum(valid_spectrum)) or 1.0
+    quality = normalize_score(peak_power / total_power)
+    bpm = peak_frequency * 60.0
+    return bpm, {
+        "quality": round(quality, 6),
+        "peak_frequency_hz": round(peak_frequency, 6),
+        "signal_std": round(std, 6),
+        "sample_count": int(len(samples)),
+        "reason": None,
+    }
+
+
+def _typing_trace_features(typing_events) -> dict:
+    if not typing_events:
+        return {
+            "available": False,
+            "reason": "typing_events_missing",
+        }
+
+    if isinstance(typing_events, dict):
+        if isinstance(typing_events.get("events"), list):
+            typing_events = typing_events["events"]
+        elif isinstance(typing_events.get("intervals_ms"), list):
+            typing_events = [{"interval_ms": value} for value in typing_events["intervals_ms"]]
+        else:
+            typing_events = [typing_events]
+
+    intervals_ms: list[float] = []
+    timestamps_ms: list[float] = []
+    total_events = 0
+    backspace_events = 0
+    printable_events = 0
+
+    for event in typing_events:
+        total_events += 1
+        if isinstance(event, (int, float)):
+            interval_value = _safe_float(event)
+            if interval_value is not None and interval_value >= 0:
+                intervals_ms.append(interval_value)
+            continue
+        if not isinstance(event, dict):
+            continue
+
+        interval_value = _safe_float(event.get("interval_ms"))
+        if interval_value is not None and interval_value >= 0:
+            intervals_ms.append(interval_value)
+
+        timestamp_value = _safe_float(event.get("timestamp_ms"))
+        if timestamp_value is None:
+            timestamp_value = _safe_float(event.get("timestamp"))
+        if timestamp_value is None:
+            timestamp_value = _safe_float(event.get("t"))
+        if timestamp_value is not None:
+            timestamps_ms.append(timestamp_value)
+
+        key_value = str(event.get("key") or event.get("code") or event.get("input") or "").strip().lower()
+        if key_value in {"backspace", "delete", "del"}:
+            backspace_events += 1
+        if len(key_value) == 1 or event.get("character") is not None:
+            printable_events += 1
+
+    timestamps_ms.sort()
+    if len(timestamps_ms) >= 2:
+        intervals_ms.extend(float(delta) for delta in np.diff(np.asarray(timestamps_ms, dtype=float)))
+
+    intervals_ms = [interval for interval in intervals_ms if interval >= 0]
+    if not intervals_ms:
+        return {
+            "available": False,
+            "reason": "typing_intervals_missing",
+            "event_count": int(total_events),
+        }
+
+    interval_array = np.asarray(intervals_ms, dtype=float)
+    mean_interval = float(np.mean(interval_array))
+    std_interval = float(np.std(interval_array))
+    pause_ratio = float(np.mean(interval_array >= 750.0))
+    burstiness = float(std_interval / max(mean_interval, 1.0))
+    speed_cpm = float(60000.0 / max(mean_interval, 1.0))
+    variability = normalize_score(burstiness / 2.0)
+    backspace_ratio = float(backspace_events / max(total_events, 1))
+    printable_ratio = float(printable_events / max(total_events, 1))
+    rhythm_score = normalize_score(
+        0.45 * variability
+        + 0.30 * normalize_score(pause_ratio)
+        + 0.25 * normalize_score(backspace_ratio)
+    )
+
+    return {
+        "available": True,
+        "reason": None,
+        "event_count": int(total_events),
+        "interval_count": int(len(intervals_ms)),
+        "mean_interval_ms": round(mean_interval, 3),
+        "std_interval_ms": round(std_interval, 3),
+        "burstiness": round(burstiness, 6),
+        "pause_ratio": round(pause_ratio, 6),
+        "backspace_ratio": round(backspace_ratio, 6),
+        "printable_ratio": round(printable_ratio, 6),
+        "speed_cpm": round(speed_cpm, 3),
+        "rhythm_score": round(rhythm_score, 6),
+    }
+
+
+def _rppg_features_from_video(video_path: str) -> dict:
+    if not video_path or not os.path.exists(video_path):
+        return {"available": False, "reason": "video_missing"}
+    if cv2 is None:
+        return {"available": False, "reason": "vision_dependencies_not_installed"}
+
+    capture = cv2.VideoCapture(video_path)
+    if not capture.isOpened():
+        return {"available": False, "reason": "video_unreadable"}
+
+    fps = float(capture.get(cv2.CAP_PROP_FPS) or 30.0)
+    frame_stride = max(1, int(round(fps / 8.0)))
+    green_trace: list[float] = []
+    frame_count = 0
+    sampled_count = 0
+    crop_backend = "unknown"
+
+    try:
+        while True:
+            success, frame = capture.read()
+            if not success or frame is None:
+                break
+            frame_count += 1
+            if frame_count % frame_stride != 0:
+                continue
+
+            crop, backend = _face_crop_from_frame(frame)
+            crop_backend = backend if crop is not None else crop_backend
+            if crop is None or crop.size == 0:
+                continue
+            sampled_count += 1
+            green_trace.append(float(np.mean(crop[:, :, 1])))
+            if sampled_count >= 240:
+                break
+    finally:
+        capture.release()
+
+    heart_rate_bpm, signal_meta = _estimate_heart_rate_from_signal(green_trace, fps=fps / frame_stride if frame_stride else fps)
+    if heart_rate_bpm is None:
+        return {
+            "available": False,
+            "reason": signal_meta.get("reason", "rppg_unavailable"),
+            "frame_count": int(frame_count),
+            "sample_count": int(sampled_count),
+            "fps": round(fps, 3),
+            "crop_backend": crop_backend,
+            "signal_quality": round(float(signal_meta.get("quality", 0.0)), 6),
+        }
+
+    quality = float(signal_meta.get("quality", 0.0))
+    heart_rate_score = normalize_score((heart_rate_bpm - 58.0) / 42.0)
+    return {
+        "available": True,
+        "reason": None,
+        "frame_count": int(frame_count),
+        "sample_count": int(sampled_count),
+        "fps": round(fps, 3),
+        "crop_backend": crop_backend,
+        "heart_rate_bpm": round(float(heart_rate_bpm), 3),
+        "heart_rate_score": round(heart_rate_score, 6),
+        "signal_quality": round(quality, 6),
+        "peak_frequency_hz": signal_meta.get("peak_frequency_hz", 0.0),
+        "signal_std": signal_meta.get("signal_std", 0.0),
+    }
+
+
+def extract_passive_biomarkers(
+    video_path: str | None = None,
+    typing_events: list[dict] | dict | list[float] | None = None,
+) -> dict:
+    rppg_features = _rppg_features_from_video(video_path) if video_path else {"available": False, "reason": "video_missing"}
+    typing_features = _typing_trace_features(typing_events)
+
+    if not rppg_features.get("available") and not typing_features.get("available"):
+        return {
+            "available": False,
+            "reason": "passive_signals_missing",
+            "rppg": rppg_features,
+            "typing": typing_features,
+        }
+
+    rppg_score = float(rppg_features.get("heart_rate_score", 0.0)) if rppg_features.get("available") else 0.0
+    typing_score = float(typing_features.get("rhythm_score", 0.0)) if typing_features.get("available") else 0.0
+    rppg_quality = float(rppg_features.get("signal_quality", 0.0)) if rppg_features.get("available") else 0.0
+    typing_quality = float(typing_features.get("rhythm_score", 0.0)) if typing_features.get("available") else 0.0
+    passive_anxiety_score = normalize_score(0.6 * rppg_score + 0.4 * typing_score)
+    passive_stress_score = normalize_score(0.5 * rppg_score + 0.5 * typing_score)
+    passive_burnout_score = normalize_score(0.25 * rppg_score + 0.75 * typing_score)
+    confidence = normalize_score(0.5 * max(rppg_quality, 0.0) + 0.5 * max(typing_quality, 0.0))
+
+    return {
+        "available": True,
+        "reason": None,
+        "confidence": confidence,
+        "rppg": rppg_features,
+        "typing": typing_features,
+        "heart_rate_bpm": rppg_features.get("heart_rate_bpm"),
+        "typing_speed_cpm": typing_features.get("speed_cpm"),
+        "typing_pause_ratio": typing_features.get("pause_ratio"),
+        "typing_backspace_ratio": typing_features.get("backspace_ratio"),
+        "passive_anxiety_score": passive_anxiety_score,
+        "passive_stress_score": passive_stress_score,
+        "passive_burnout_score": passive_burnout_score,
+    }
 
 
 def _normalize_language(language: str | None) -> str:
@@ -132,17 +416,54 @@ def save_upload_file(uploaded_file, suffix):
     return path
 
 
-@lru_cache(maxsize=1)
-def _load_transformer_encoder():
+def _empty_transformer_features(reason: str | None = None) -> dict:
+    return {
+        "transformer_available": False,
+        "transformer_model": None,
+        "transformer_family": None,
+        "transformer_language": None,
+        "transformer_reason": reason,
+        "embedding_mean": 0.0,
+        "embedding_std": 0.0,
+        "token_count": 0,
+    }
+
+
+def _transformer_family(model_name: str) -> str:
+    lowered = str(model_name).lower()
+    if "muril" in lowered:
+        return "muril"
+    if "indicbert" in lowered:
+        return "indic-bert"
+    if "distilbert" in lowered:
+        return "distilbert"
+    if "bert" in lowered:
+        return "bert"
+    return "transformer"
+
+
+@lru_cache(maxsize=4)
+def _load_transformer_encoder(language: str = "english"):
     if AutoTokenizer is None or AutoModel is None or torch is None:
         return None
 
-    for model_name in TRANSFORMER_ENCODER_CANDIDATES:
+    normalized_language = _normalize_language(language)
+    candidates = TRANSFORMER_ENCODER_CANDIDATES.get(
+        normalized_language,
+        TRANSFORMER_ENCODER_CANDIDATES["english"],
+    )
+    for model_name in candidates:
         try:
             tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=True)
             model = AutoModel.from_pretrained(model_name, local_files_only=True)
             model.eval()
-            return {"model_name": model_name, "tokenizer": tokenizer, "model": model}
+            return {
+                "model_name": model_name,
+                "model_family": _transformer_family(model_name),
+                "language": normalized_language,
+                "tokenizer": tokenizer,
+                "model": model,
+            }
         except Exception:
             continue
     return None
@@ -192,23 +513,12 @@ def _load_emotion_pipeline():
 
 
 def _transformer_text_features(text: str, language: str = "english") -> dict:
-    if _normalize_language(language) != "english":
-        return {
-            "transformer_available": False,
-            "transformer_model": None,
-            "embedding_mean": 0.0,
-            "embedding_std": 0.0,
-            "token_count": 0,
-        }
-    bundle = _load_transformer_encoder()
+    normalized_language = _normalize_language(language)
+    bundle = _load_transformer_encoder(normalized_language)
     if bundle is None:
-        return {
-            "transformer_available": False,
-            "transformer_model": None,
-            "embedding_mean": 0.0,
-            "embedding_std": 0.0,
-            "token_count": 0,
-        }
+        if normalized_language in {"hindi", "bengali"}:
+            return _empty_transformer_features("multilingual_model_not_available_locally")
+        return _empty_transformer_features("english_model_not_available_locally")
 
     try:
         encoded = bundle["tokenizer"](
@@ -225,18 +535,15 @@ def _transformer_text_features(text: str, language: str = "english") -> dict:
         return {
             "transformer_available": True,
             "transformer_model": bundle["model_name"],
+            "transformer_family": bundle["model_family"],
+            "transformer_language": bundle["language"],
+            "transformer_reason": None,
             "embedding_mean": float(pooled.mean().item()),
             "embedding_std": float(pooled.std().item()),
             "token_count": int(encoded["attention_mask"].sum().item()),
         }
     except Exception:
-        return {
-            "transformer_available": False,
-            "transformer_model": None,
-            "embedding_mean": 0.0,
-            "embedding_std": 0.0,
-            "token_count": 0,
-        }
+        return _empty_transformer_features("transformer_inference_failed")
 
 
 def _sentiment_features(text: str, fallback_compound: float, language: str = "english", use_ml_pipeline: bool = True) -> dict:
@@ -336,11 +643,7 @@ def extract_text_features(
     exclamation_count = text.count("!")
     unique_ratio = len(set(lowered_words)) / max(1, len(lowered_words))
     transformer_features = _transformer_text_features(text, normalized_language) if use_transformer else {
-        "transformer_available": False,
-        "transformer_model": None,
-        "embedding_mean": 0.0,
-        "embedding_std": 0.0,
-        "token_count": 0,
+        **_empty_transformer_features("transformer_disabled"),
     }
     sentiment_features = _sentiment_features(
         text,
@@ -371,6 +674,9 @@ def extract_text_features(
         "lexical_diversity": unique_ratio,
         "transformer_available": transformer_features["transformer_available"],
         "transformer_model": transformer_features["transformer_model"],
+        "transformer_family": transformer_features["transformer_family"],
+        "transformer_language": transformer_features["transformer_language"],
+        "transformer_reason": transformer_features["transformer_reason"],
         "transformer_embedding_mean": transformer_features["embedding_mean"],
         "transformer_embedding_std": transformer_features["embedding_std"],
         "transformer_token_count": transformer_features["token_count"],

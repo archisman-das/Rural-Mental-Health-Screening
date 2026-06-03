@@ -1,0 +1,5 @@
+sample_id,audio_path,transcript,language,dialect,speaker_id
+bn_rural_001,examples/audio/bn_rural_001.wav,"আমি আজ একটু ক্লান্ত",bengali,west_bengal_rural,speaker_01
+bn_rural_002,examples/audio/bn_rural_002.wav,"আমার মনটা ভালো নেই",bengali,west_bengal_rural,speaker_02
+hi_rural_001,examples/audio/hi_rural_001.wav,"मैं आज बहुत थका हुआ हूँ",hindi,up_rural,speaker_03
+hi_rural_002,examples/audio/hi_rural_002.wav,"मुझे आज थोड़ा तनाव है",hindi,up_rural,speaker_04

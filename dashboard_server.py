@@ -11,15 +11,21 @@ SRC_PATH = str(ROOT / "src")
 if SRC_PATH not in sys.path:
     sys.path.append(SRC_PATH)
 
+from mental_health_screening import get_adaptive_question_bank, get_adaptive_tuning
 from mental_health_screening.constants import PREDICTION_DOMAINS, PREDICTION_LABELS
 from mental_health_screening.predict import screen
 from mental_health_screening.report import create_assessment_pdf_bytes
 from mental_health_screening.model_store import summarize_all_bundles
 from mental_health_screening.storage import (
+    build_assessment_trajectory,
+    delete_assessment_record,
     create_assessment_record,
+    create_database_backup,
     fetch_assessment_record,
     get_database_metadata,
     list_assessment_records,
+    list_audit_logs,
+    list_backup_runs,
 )
 from mental_health_screening.utils import average, normalize_score, risk_level
 
@@ -46,6 +52,15 @@ def _clean_text(value: str | None, max_length: int | None = None) -> str:
     return text
 
 
+def _normalize_language(value: str | None) -> str:
+    text = _clean_text(value, 30).lower()
+    if text in {"hindi", "hi", "हिंदी"}:
+        return "Hindi"
+    if text in {"bengali", "bangla", "bn", "বাংলা", "বাঙলা"}:
+        return "Bengali"
+    return "English"
+
+
 def _normalize_profile(profile: dict | None) -> dict:
     safe_profile = profile if isinstance(profile, dict) else {}
     age_value = safe_profile.get("age", 0)
@@ -54,7 +69,7 @@ def _normalize_profile(profile: dict | None) -> dict:
     except (TypeError, ValueError):
         age = 0
     age = max(0, min(age, 120))
-    normalized_language = _clean_text(safe_profile.get("language") or "English", 30) or "English"
+    normalized_language = _normalize_language(safe_profile.get("language") or "English")
     return {
         "full_name": _clean_text(safe_profile.get("full_name"), 120),
         "age": age,
@@ -64,6 +79,7 @@ def _normalize_profile(profile: dict | None) -> dict:
         "assessor": _clean_text(safe_profile.get("assessor"), 120),
         "language": normalized_language,
         "consent_received": bool(safe_profile.get("consent_received")),
+        "record_origin": _clean_text(safe_profile.get("record_origin") or "test", 30).lower(),
     }
 
 
@@ -116,6 +132,12 @@ def _modality_failure_note(modality: str, reason: str | None, result: dict | Non
         return "Image upload was received, but backend vision dependencies are not installed on this machine."
     if modality == "image" and reason == "image_unreadable":
         return "Image upload was received, but the backend could not read it as a usable image."
+    if modality == "passive_biomarkers" and reason == "passive_signals_missing":
+        return "Passive biomarkers were not provided, so zero-hardware analysis from camera or typing rhythm was skipped."
+    if modality == "passive_biomarkers" and reason == "video_missing":
+        return "The phone-camera video signal was not provided, so rPPG-style analysis was skipped."
+    if modality == "passive_biomarkers" and reason == "vision_dependencies_not_installed":
+        return "The phone-camera video was received, but backend vision dependencies are not installed on this machine."
     return (
         f"Dashboard captured {modality} upload metadata for {(result or {}).get('features', {}).get('file_name', 'the uploaded file')}. "
         f"The file reached the backend, but no usable {modality} inference result was produced from it."
@@ -229,6 +251,27 @@ def _build_dashboard_recommendation(overall: dict, language: str = "english") ->
     return "Current dashboard signals are low risk. Continue monitoring and re-screen if symptoms persist or worsen."
 
 
+def _comorbidity_note(comorbidity: dict | None, language: str = "english") -> str:
+    if not comorbidity:
+        return ""
+    top_pairs = comorbidity.get("top_pairs") or []
+    if not top_pairs:
+        return ""
+    top_pair = top_pairs[0]
+    if float(top_pair.get("probability", 0.0) or 0.0) < 0.55:
+        return ""
+    domains = top_pair.get("domains") or []
+    if len(domains) != 2:
+        return ""
+    joined = " + ".join(PREDICTION_LABELS.get(domain, domain.title()) for domain in domains)
+    language = str(language or "english").strip().lower()
+    if language == "hindi":
+        return f"संयुक्त comorbidity संकेत: {joined} साथ-साथ बढ़ रहे हैं; एकीकृत follow-up पर विचार करें।"
+    if language == "bengali":
+        return f"সমন্বিত comorbidity সংকেত: {joined} একসঙ্গে বাড়ছে; সমন্বিত follow-up বিবেচনা করুন।"
+    return f"Joint comorbidity signal: {joined} are trending together; consider an integrated follow-up."
+
+
 def _questionnaire_completeness(questionnaire: dict) -> float:
     scored_keys = [f"{domain}_score" for domain in PREDICTION_DOMAINS]
     present = sum(1 for key in scored_keys if key in questionnaire and questionnaire.get(key) is not None)
@@ -264,24 +307,51 @@ def _dashboard_confidence(questionnaire: dict, screening_overall: dict, modaliti
     )
 
 
+def _comorbidity_note(comorbidity: dict | None) -> str:
+    if not comorbidity:
+        return ""
+    top_pairs = comorbidity.get("top_pairs") or []
+    if not top_pairs:
+        return ""
+    top_pair = top_pairs[0]
+    if float(top_pair.get("probability", 0.0) or 0.0) < 0.55:
+        return ""
+    domains = top_pair.get("domains") or []
+    if len(domains) != 2:
+        return ""
+    joined = " + ".join(PREDICTION_LABELS.get(domain, domain.title()) for domain in domains)
+    return f"Joint comorbidity signal: {joined} are trending together; consider an integrated follow-up."
+
+
 def _build_dashboard_multimodal(
     text_input: str,
     questionnaire: dict,
     language: str = "english",
     audio_path: str | None = None,
     image_path: str | None = None,
+    passive_video_path: str | None = None,
+    typing_events: list[dict] | dict | list[float] | None = None,
     audio_metadata: dict | None = None,
     image_metadata: dict | None = None,
+    passive_metadata: dict | None = None,
 ) -> dict:
     screening = screen(
         text_input=text_input or "",
         audio_path=audio_path,
         image_path=image_path,
+        passive_video_path=passive_video_path,
+        typing_events=typing_events,
         language=language,
     )
     text_result = screening.get("text") or {"available": False}
     audio_result = _decorate_modality_result(screening.get("audio") or {"available": False}, audio_metadata, "audio")
     image_result = _decorate_modality_result(screening.get("image") or {"available": False}, image_metadata, "image")
+    passive_result = _decorate_modality_result(
+        screening.get("passive") or {"available": False},
+        passive_metadata,
+        "passive_biomarkers",
+    )
+    comorbidity = screening.get("comorbidity") or {}
     screening_overall = screening.get("overall") or {"confidence": 0.0, "scores": {}}
     overall_scores = {}
     overall_levels = {}
@@ -308,14 +378,23 @@ def _build_dashboard_multimodal(
         "scores": overall_scores,
     }
     model_stats = summarize_all_bundles()
+    recommendation = screening.get(
+        "recommendation",
+        _build_dashboard_recommendation(overall, language=language),
+    )
+    comorbidity_note = _comorbidity_note(comorbidity, language=language)
+    if comorbidity_note:
+        recommendation = f"{recommendation} {comorbidity_note}".strip()
 
     return {
         "text": text_result,
         "audio": audio_result,
         "image": image_result,
+        "passive": passive_result,
         "overall": overall,
+        "comorbidity": comorbidity,
         "model_stats": model_stats,
-        "recommendation": _build_dashboard_recommendation(overall, language=language),
+        "recommendation": recommendation,
         "disclaimer": screening.get(
             "disclaimer",
             "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment.",
@@ -333,8 +412,11 @@ def _extract_request_payload():
             "text_input": _clean_text(payload.get("text_input"), MAX_TEXT_INPUT_LENGTH),
             "audio_metadata": payload.get("audio_metadata"),
             "image_metadata": payload.get("image_metadata"),
+            "passive_metadata": payload.get("passive_metadata"),
+            "typing_events": payload.get("typing_events"),
             "audio_path": None,
             "image_path": None,
+            "passive_video_path": None,
         }
 
     profile = _normalize_profile(_parse_json_field(request.form.get("profile"), {}))
@@ -343,6 +425,7 @@ def _extract_request_payload():
     text_input = _clean_text(request.form.get("text_input", ""), MAX_TEXT_INPUT_LENGTH)
     audio_path, audio_metadata = _save_uploaded_file(request.files.get("audio_file"), "_audio")
     image_path, image_metadata = _save_uploaded_file(request.files.get("image_file"), "_image")
+    passive_video_path, passive_metadata = _save_uploaded_file(request.files.get("passive_video_file"), "_passive")
     return {
         "profile": profile,
         "questionnaire": questionnaire,
@@ -350,14 +433,56 @@ def _extract_request_payload():
         "text_input": text_input,
         "audio_metadata": audio_metadata,
         "image_metadata": image_metadata,
+        "passive_metadata": passive_metadata,
+        "typing_events": _parse_json_field(request.form.get("typing_events"), None),
         "audio_path": audio_path,
         "image_path": image_path,
+        "passive_video_path": passive_video_path,
     }
+
+
+def _extract_adaptive_request_payload():
+    if request.is_json:
+        payload = request.get_json(silent=True) or {}
+        responses = payload.get("responses")
+        language = payload.get("language")
+    else:
+        responses = _parse_json_field(request.form.get("responses"), {})
+        language = request.form.get("language")
+
+    if not isinstance(responses, dict):
+        return None
+
+    normalized_responses = {}
+    for question_id, value in responses.items():
+        if value is None:
+            continue
+        try:
+            normalized_responses[str(question_id)] = int(value)
+        except (TypeError, ValueError):
+            continue
+    return {"responses": normalized_responses, "language": _normalize_language(language)}
 
 
 @app.get("/")
 def root():
     return send_from_directory(app.static_folder, "index.html")
+
+
+@app.get("/sw.js")
+def service_worker():
+    response = send_from_directory(app.static_folder, "sw.js")
+    response.headers["Cache-Control"] = "no-cache"
+    response.mimetype = "application/javascript"
+    return response
+
+
+@app.get("/manifest.webmanifest")
+def manifest():
+    response = send_from_directory(app.static_folder, "manifest.webmanifest")
+    response.headers["Cache-Control"] = "no-cache"
+    response.mimetype = "application/manifest+json"
+    return response
 
 
 @app.get("/health")
@@ -379,7 +504,7 @@ def health():
 def api_list_assessments():
     limit = request.args.get("limit", default=LIST_LIMIT_DEFAULT, type=int)
     limit = max(1, min(limit, LIST_LIMIT_MAX))
-    return jsonify(list_assessment_records(limit=limit))
+    return jsonify(list_assessment_records(limit=limit, audit_actor="dashboard_api", source_ip=request.remote_addr))
 
 
 @app.post("/api/assessments")
@@ -390,11 +515,11 @@ def api_create_assessment():
     multimodal = payload["multimodal"]
 
     if not isinstance(profile, dict) or not isinstance(questionnaire, dict):
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error("Invalid payload. Expected profile and questionnaire objects.", 400)
     validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=True)
     if validation_error:
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error(validation_error["message"], 400, validation_error)
     try:
         if not isinstance(multimodal, dict):
@@ -404,18 +529,28 @@ def api_create_assessment():
                 language=profile.get("language", "English"),
                 audio_path=payload["audio_path"],
                 image_path=payload["image_path"],
+                passive_video_path=payload.get("passive_video_path"),
+                typing_events=payload.get("typing_events"),
                 audio_metadata=payload["audio_metadata"],
                 image_metadata=payload["image_metadata"],
+                passive_metadata=payload["passive_metadata"],
             )
 
         record = create_assessment_record(
             profile=profile,
             questionnaire=questionnaire,
             multimodal=multimodal,
+            actor="dashboard_api",
+            source_ip=request.remote_addr,
+        )
+        record["trajectory"] = build_assessment_trajectory(
+            record["assessment_id"],
+            actor="dashboard_api",
+            source_ip=request.remote_addr,
         )
         return jsonify(record), 201
     finally:
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
 
 
 @app.post("/api/preview")
@@ -425,11 +560,11 @@ def api_preview_assessment():
     profile = payload["profile"] or {}
 
     if not isinstance(questionnaire, dict):
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error("Invalid payload. Expected questionnaire object.", 400)
     validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=False)
     if validation_error and validation_error.get("field") == "questionnaire":
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error(validation_error["message"], 400, validation_error)
     try:
         return jsonify(
@@ -439,25 +574,66 @@ def api_preview_assessment():
                 language=profile.get("language", "English"),
                 audio_path=payload["audio_path"],
                 image_path=payload["image_path"],
+                passive_video_path=payload.get("passive_video_path"),
+                typing_events=payload.get("typing_events"),
                 audio_metadata=payload["audio_metadata"],
                 image_metadata=payload["image_metadata"],
+                passive_metadata=payload["passive_metadata"],
             )
         )
     finally:
-        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
+
+
+@app.get("/api/adaptive/config")
+def api_adaptive_config():
+    return jsonify(get_adaptive_tuning())
+
+
+@app.post("/api/adaptive/next")
+def api_adaptive_next_question():
+    payload = _extract_adaptive_request_payload()
+    if payload is None:
+        return _json_error("Invalid payload. Expected responses object.", 400)
+    return jsonify(get_adaptive_question_bank(payload["responses"], payload.get("language")))
 
 
 @app.get("/api/assessments/<assessment_id>")
 def api_fetch_assessment(assessment_id: str):
-    record = fetch_assessment_record(assessment_id)
+    record = fetch_assessment_record(assessment_id, actor="dashboard_api", source_ip=request.remote_addr)
     if record is None:
         return _json_error("Assessment not found.", 404)
+    record["trajectory"] = build_assessment_trajectory(
+        record["assessment_id"],
+        actor="dashboard_api",
+        source_ip=request.remote_addr,
+    )
     return jsonify(record)
+
+
+@app.delete("/api/assessments/<assessment_id>")
+def api_delete_assessment(assessment_id: str):
+    deleted = delete_assessment_record(assessment_id, actor="dashboard_api", source_ip=request.remote_addr)
+    if not deleted:
+        return _json_error("Assessment not found.", 404)
+    return jsonify({"assessment_id": assessment_id.upper(), "deleted": True})
+
+
+@app.get("/api/assessments/<assessment_id>/trajectory")
+def api_assessment_trajectory(assessment_id: str):
+    trajectory = build_assessment_trajectory(
+        assessment_id,
+        actor="dashboard_api",
+        source_ip=request.remote_addr,
+    )
+    if trajectory is None:
+        return _json_error("Assessment not found.", 404)
+    return jsonify(trajectory)
 
 
 @app.get("/api/assessments/<assessment_id>/report.pdf")
 def api_assessment_pdf(assessment_id: str):
-    record = fetch_assessment_record(assessment_id)
+    record = fetch_assessment_record(assessment_id, actor="dashboard_pdf", source_ip=request.remote_addr)
     if record is None:
         return _json_error("Assessment not found.", 404)
 
@@ -474,6 +650,31 @@ def api_assessment_pdf(assessment_id: str):
 @app.get("/api/database")
 def api_database_metadata():
     return jsonify(get_database_metadata())
+
+
+@app.get("/api/database/audit-logs")
+def api_database_audit_logs():
+    limit = request.args.get("limit", default=100, type=int)
+    return jsonify(list_audit_logs(limit=limit))
+
+
+@app.get("/api/database/backups")
+def api_database_backups():
+    limit = request.args.get("limit", default=20, type=int)
+    return jsonify(list_backup_runs(limit=limit))
+
+
+@app.post("/api/database/backup")
+def api_database_backup():
+    payload = request.get_json(silent=True) or {}
+    output_path = payload.get("output_path")
+    backup = create_database_backup(
+        output_path=output_path,
+        actor="dashboard_api",
+        source_ip=request.remote_addr,
+        include_audit_logs=bool(payload.get("include_audit_logs", True)),
+    )
+    return jsonify(backup), 201
 
 
 @app.get("/api/model-stats")

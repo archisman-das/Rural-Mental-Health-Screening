@@ -1,32 +1,252 @@
 import numpy as np
 
 from .constants import PREDICTION_DOMAINS, PREDICTION_LABELS
-from .feature_extract import extract_text_features, extract_audio_features, extract_image_features
-from .model_features import audio_feature_vector, image_feature_vector, text_feature_vector
+from .feature_extract import extract_text_features, extract_audio_features, extract_image_features, extract_passive_biomarkers
+from .model_features import audio_feature_vector, text_feature_vector
 from .model_store import load_model_bundle
 from .utils import average, normalize_score, risk_level
+
+try:
+    import shap
+except ImportError:
+    shap = None
 
 
 MODALITY_WEIGHTS = {
     "text": 0.4,
     "audio": 0.35,
     "image": 0.25,
+    "passive_biomarkers": 0.2,
 }
+
+COMORBIDITY_MODALITIES = ("text", "audio", "image")
+COMORBIDITY_MODEL_NAME = "comorbidity"
+COMORBIDITY_POSITIVE_THRESHOLD = 0.5
+COMORBIDITY_PAIR_PRIORS = {
+    ("depression", "anxiety"): 1.35,
+    ("depression", "loneliness"): 1.2,
+    ("anxiety", "stress"): 1.45,
+    ("anxiety", "sleep_disorder"): 1.25,
+    ("stress", "burnout"): 1.5,
+    ("loneliness", "burnout"): 1.18,
+    ("substance_abuse", "stress"): 1.12,
+}
+
+_SHAP_EXPLAINERS: dict[tuple[str, str, int], object] = {}
 
 
 def _confidence_from_feature_count(feature_count: int, max_count: int) -> float:
     return normalize_score(feature_count / max_count)
 
 
-def _domain_score_agreement(score_sets: list[dict]) -> float:
-    if len(score_sets) < 2:
-        return 0.85
+def _confidence_signal_from_std(prediction_std: float, scale: float | None) -> float:
+    resolved_scale = float(scale or 1.0)
+    if resolved_scale <= 0.0:
+        resolved_scale = 1.0
+    return normalize_score(1.0 - min(float(prediction_std) / resolved_scale, 1.0))
 
+
+def _apply_confidence_calibrator(calibrator: dict | None, base_signal: float) -> tuple[float, str]:
+    if not calibrator:
+        return normalize_score(base_signal), "uncalibrated"
+
+    method = str(calibrator.get("method", "uncalibrated"))
+    model = calibrator.get("model")
+    if method == "isotonic" and model is not None:
+        return normalize_score(float(model.predict([base_signal])[0])), method
+    if method == "platt" and model is not None:
+        return normalize_score(float(model.predict_proba([[base_signal]])[0][1])), method
+    if method == "constant":
+        return normalize_score(float(calibrator.get("metrics", {}).get("positive_rate", 0.0))), method
+    return normalize_score(base_signal), method
+
+
+def _predict_calibrated_domain(model, vector: list[float], calibrator: dict | None) -> tuple[float, float, dict]:
+    if getattr(model, "estimators_", None):
+        tree_predictions = np.asarray(
+            [float(estimator.predict([vector])[0]) for estimator in model.estimators_],
+            dtype=float,
+        )
+        raw_prediction = float(np.clip(tree_predictions.mean(), 0.0, 1.0))
+        prediction_std = float(np.clip(tree_predictions.std(), 0.0, 1.0))
+        base_signal = _confidence_signal_from_std(
+            prediction_std=prediction_std,
+            scale=(calibrator or {}).get("uncertainty_scale"),
+        )
+    else:
+        raw_prediction = float(np.clip(model.predict([vector])[0], 0.0, 1.0))
+        prediction_std = float((calibrator or {}).get("metrics", {}).get("residual_scale", 0.0) or 0.0)
+        if calibrator and str(calibrator.get("method")) == "constant":
+            base_signal = normalize_score(float(calibrator.get("metrics", {}).get("positive_rate", 0.0)))
+        else:
+            base_signal = _confidence_signal_from_std(
+                prediction_std=prediction_std,
+                scale=(calibrator or {}).get("uncertainty_scale"),
+            )
+    calibrated_confidence, method = _apply_confidence_calibrator(calibrator, base_signal)
+    return raw_prediction, calibrated_confidence, {
+        "raw_uncertainty_std": round(prediction_std, 6),
+        "base_confidence_signal": round(base_signal, 6),
+        "confidence_calibration_method": method,
+    }
+
+
+def _get_shap_explainer(modality: str, domain: str, model):
+    if shap is None:
+        return None
+    cache_key = (modality, domain, id(model))
+    if cache_key in _SHAP_EXPLAINERS:
+        return _SHAP_EXPLAINERS[cache_key]
+    try:
+        explainer = shap.TreeExplainer(model)
+    except Exception:
+        explainer = None
+    _SHAP_EXPLAINERS[cache_key] = explainer
+    return explainer
+
+
+def _shape_expected_value(expected_value) -> float:
+    if isinstance(expected_value, (list, tuple)):
+        return float(np.asarray(expected_value).reshape(-1)[0])
+    if isinstance(expected_value, np.ndarray):
+        return float(expected_value.reshape(-1)[0])
+    return float(expected_value)
+
+
+def _shap_domain_explanation(
+    modality: str,
+    domain: str,
+    model,
+    feature_names: list[str],
+    vector: list[float],
+    prediction: float,
+) -> dict:
+    if shap is None:
+        return {
+            "available": False,
+            "method": "shap_unavailable",
+            "message": "Install the `shap` package to enable per-domain feature attribution.",
+        }
+
+    explainer = _get_shap_explainer(modality, domain, model)
+    if explainer is None:
+        return {
+            "available": False,
+            "method": "tree_explainer_failed",
+            "message": "The current model could not be explained with SHAP TreeExplainer.",
+        }
+
+    try:
+        shap_values = explainer.shap_values(np.asarray([vector], dtype=float))
+        shap_row = np.asarray(shap_values, dtype=float)
+        if shap_row.ndim == 2:
+            shap_row = shap_row[0]
+        else:
+            shap_row = shap_row.reshape(-1)
+        expected_value = _shape_expected_value(getattr(explainer, "expected_value", 0.0))
+    except Exception:
+        return {
+            "available": False,
+            "method": "shap_inference_failed",
+            "message": "SHAP explanation failed for this prediction.",
+        }
+
+    contributions = []
+    for index, name in enumerate(feature_names):
+        contribution = float(shap_row[index]) if index < len(shap_row) else 0.0
+        feature_value = float(vector[index]) if index < len(vector) else 0.0
+        contributions.append(
+            {
+                "feature": name,
+                "feature_value": round(feature_value, 6),
+                "shap_value": round(contribution, 6),
+                "direction": "increase" if contribution >= 0 else "decrease",
+                "abs_shap": abs(contribution),
+            }
+        )
+
+    ranked = sorted(contributions, key=lambda item: item["abs_shap"], reverse=True)
+    top_contributors = [
+        {key: value for key, value in item.items() if key != "abs_shap"}
+        for item in ranked[:5]
+    ]
+    positive = [
+        {key: value for key, value in item.items() if key != "abs_shap"}
+        for item in ranked if item["shap_value"] > 0
+    ][:3]
+    negative = [
+        {key: value for key, value in item.items() if key != "abs_shap"}
+        for item in ranked if item["shap_value"] < 0
+    ][:3]
+
+    return {
+        "available": True,
+        "method": "tree_shap",
+        "base_value": round(expected_value, 6),
+        "predicted_value": round(float(prediction), 6),
+        "top_contributors": top_contributors,
+        "top_positive": positive,
+        "top_negative": negative,
+    }
+
+
+def _linear_domain_explanation(
+    feature_names: list[str],
+    vector: list[float],
+    model,
+    prediction: float,
+) -> dict:
+    coefficients = np.asarray(getattr(model, "coef_", []), dtype=float).reshape(-1)
+    intercept = float(np.asarray(getattr(model, "intercept_", [0.0]), dtype=float).reshape(-1)[0]) if getattr(model, "intercept_", None) is not None else 0.0
+    if coefficients.size == 0:
+        return {
+            "available": False,
+            "method": "linear_coefficients_missing",
+            "message": "The linear federated model did not expose coefficients for explanation.",
+        }
+    contributions = []
+    for index, name in enumerate(feature_names):
+        coefficient = float(coefficients[index]) if index < len(coefficients) else 0.0
+        feature_value = float(vector[index]) if index < len(vector) else 0.0
+        contribution = coefficient * feature_value
+        contributions.append(
+            {
+                "feature": name,
+                "feature_value": round(feature_value, 6),
+                "coefficient": round(coefficient, 6),
+                "shap_value": round(contribution, 6),
+                "direction": "increase" if contribution >= 0 else "decrease",
+                "abs_shap": abs(contribution),
+            }
+        )
+    ranked = sorted(contributions, key=lambda item: item["abs_shap"], reverse=True)
+    top_contributors = [{key: value for key, value in item.items() if key != "abs_shap"} for item in ranked[:5]]
+    positive = [{key: value for key, value in item.items() if key != "abs_shap"} for item in ranked if item["shap_value"] > 0][:3]
+    negative = [{key: value for key, value in item.items() if key != "abs_shap"} for item in ranked if item["shap_value"] < 0][:3]
+    return {
+        "available": True,
+        "method": "linear_contributions",
+        "base_value": round(intercept, 6),
+        "predicted_value": round(float(prediction), 6),
+        "top_contributors": top_contributors,
+        "top_positive": positive,
+        "top_negative": negative,
+    }
+
+
+def _domain_score_agreement(score_sets: list[dict]) -> float:
     agreements = []
     for domain in PREDICTION_DOMAINS:
-        values = [normalize_score(scores.get(domain, 0.0)) for scores in score_sets]
+        values = [normalize_score(scores[domain]) for scores in score_sets if domain in scores]
+        if not values:
+            continue
+        if len(values) == 1:
+            agreements.append(0.7)
+            continue
         spread = max(values) - min(values)
         agreements.append(1.0 - spread)
+    if not agreements:
+        return 0.0
     return normalize_score(average(agreements))
 
 
@@ -36,51 +256,120 @@ def _modality_result(
     notes: str,
     confidence: float,
     feature_snapshot: dict,
+    predicted_domains: list[str] | None = None,
+    available: bool = True,
 ) -> dict:
+    predicted_domains = list(predicted_domains or [domain for domain in PREDICTION_DOMAINS if domain in domain_scores])
     result = {
-        "available": True,
+        "available": bool(available and predicted_domains),
         "modality": modality,
         "confidence": normalize_score(confidence),
         "notes": notes,
         "features": feature_snapshot,
+        "predicted_domains": predicted_domains,
+        "missing_domains": [domain for domain in PREDICTION_DOMAINS if domain not in predicted_domains],
     }
     for domain in PREDICTION_DOMAINS:
-        result[f"{domain}_score"] = normalize_score(domain_scores.get(domain, 0.0))
+        raw_value = domain_scores.get(domain)
+        result[f"{domain}_score"] = normalize_score(raw_value) if raw_value is not None else 0.0
     return result
+
+
+def _unavailable_modality_result(modality: str, notes: str, feature_snapshot: dict) -> dict:
+    return _modality_result(
+        modality=modality,
+        domain_scores={},
+        notes=notes,
+        confidence=0.0,
+        feature_snapshot=feature_snapshot,
+        predicted_domains=[],
+        available=False,
+    )
 
 
 def _trained_modality_result(
     modality: str,
     features: dict,
     feature_vector_fn,
-    fallback_confidence: float,
+    base_confidence: float,
     notes: str,
     feature_snapshot: dict,
-    fallback_domain_scores: dict,
-) -> dict | None:
+    require_label_source: str | None = None,
+) -> dict:
     if not features.get("available"):
-        return None
+        return _unavailable_modality_result(
+            modality=modality,
+            notes=f"{modality.title()} features were unavailable, so no trained classifier could run.",
+            feature_snapshot=feature_snapshot,
+        )
 
     bundle = load_model_bundle(modality)
     if bundle is None:
-        return None
+        return _unavailable_modality_result(
+            modality=modality,
+            notes=f"No trained {modality} model bundle is available yet for backend screening.",
+            feature_snapshot={**feature_snapshot, "model_source": "missing_bundle"},
+        )
+
+    bundle_label_sources = list(bundle.get("label_sources", []))
+    if require_label_source and require_label_source not in bundle_label_sources:
+        return _unavailable_modality_result(
+            modality=modality,
+            notes=(
+                f"The available {modality} bundle was not trained on the required DAIC-WOZ PHQ-derived "
+                "domain targets, so it was excluded from scoring."
+            ),
+            feature_snapshot={
+                **feature_snapshot,
+                "model_source": "bundle_label_source_mismatch",
+                "label_sources": bundle_label_sources,
+            },
+        )
 
     _, vector = feature_vector_fn(features)
-    domain_scores = {domain: normalize_score(fallback_domain_scores.get(domain, 0.0)) for domain in PREDICTION_DOMAINS}
+    domain_scores: dict[str, float] = {}
+    domain_confidences: dict[str, float] = {}
+    domain_uncertainty: dict[str, dict] = {}
+    domain_explanations: dict[str, dict] = {}
     trained_domains = []
-    fallback_domains = []
+    confidence_calibrators = bundle.get("confidence_calibrators", {}) or {}
+    feature_names = list(bundle.get("feature_names", []))
 
     if bundle.get("models"):
         for domain in PREDICTION_DOMAINS:
             model = bundle["models"].get(domain)
             if model is None:
-                fallback_domains.append(domain)
                 continue
-            prediction = float(np.clip(model.predict([vector])[0], 0.0, 1.0))
+            prediction, calibrated_domain_confidence, uncertainty_snapshot = _predict_calibrated_domain(
+                model=model,
+                vector=vector,
+                calibrator=confidence_calibrators.get(domain),
+            )
             domain_scores[domain] = normalize_score(prediction)
+            domain_confidences[domain] = normalize_score(calibrated_domain_confidence)
+            domain_uncertainty[domain] = uncertainty_snapshot
+            domain_explanations[domain] = _shap_domain_explanation(
+                modality=modality,
+                domain=domain,
+                model=model,
+                feature_names=feature_names,
+                vector=vector,
+                prediction=prediction,
+            )
+            if not domain_explanations[domain].get("available") and getattr(model, "coef_", None) is not None:
+                domain_explanations[domain] = _linear_domain_explanation(
+                    feature_names=feature_names,
+                    vector=vector,
+                    model=model,
+                    prediction=prediction,
+                )
             trained_domains.append(domain)
         if not trained_domains:
-            return None
+            return _unavailable_modality_result(
+                modality=modality,
+                notes=f"The trained {modality} bundle did not contain any usable per-domain models.",
+                feature_snapshot={**feature_snapshot, "model_source": "empty_trained_bundle"},
+            )
     elif bundle.get("model") is not None:
         prediction = bundle["model"].predict([vector])[0]
         domain_scores = {
@@ -88,24 +377,54 @@ def _trained_modality_result(
             for index, domain in enumerate(bundle["domains"])
         }
         trained_domains = list(bundle["domains"])
-        fallback_domains = [domain for domain in PREDICTION_DOMAINS if domain not in trained_domains]
+        domain_confidences = {
+            domain: normalize_score(float(bundle.get("confidence_hint", base_confidence)))
+            for domain in trained_domains
+        }
+        domain_explanations = {
+            domain: {
+                "available": False,
+                "method": "legacy_bundle_no_shap",
+                "message": "This legacy bundle does not expose a per-domain SHAP explanation path.",
+            }
+            for domain in trained_domains
+        }
     else:
-        return None
+        return _unavailable_modality_result(
+            modality=modality,
+            notes=f"The stored {modality} bundle did not expose any supported model format.",
+            feature_snapshot={**feature_snapshot, "model_source": "unsupported_bundle_format"},
+        )
 
-    confidence = average([fallback_confidence, float(bundle.get("confidence_hint", 0.65))])
+    domain_coverage = normalize_score(len(trained_domains) / max(1, len(PREDICTION_DOMAINS)))
+    calibrated_reliability = average(list(domain_confidences.values())) if domain_confidences else 0.0
+    confidence = normalize_score(
+        0.65 * calibrated_reliability
+        + 0.25 * base_confidence
+        + 0.10 * domain_coverage
+    )
     return _modality_result(
         modality=modality,
         domain_scores=domain_scores,
         confidence=confidence,
         notes=notes,
+        predicted_domains=trained_domains,
         feature_snapshot={
             **feature_snapshot,
             "model_source": "trained_bundle",
             "trained_samples": bundle.get("sample_count", 0),
             "trained_domains": trained_domains,
-            "fallback_domains": fallback_domains,
+            "missing_domains": [domain for domain in PREDICTION_DOMAINS if domain not in trained_domains],
             "domain_sample_counts": bundle.get("sample_counts", {}),
             "model_macro_r2": round(float(bundle.get("metrics", {}).get("macro_r2", 0.0)), 3),
+            "calibration_quality": round(float(bundle.get("metrics", {}).get("calibration_quality", 0.0)), 3),
+            "domain_confidences": {domain: round(value, 3) for domain, value in domain_confidences.items()},
+            "domain_uncertainty": domain_uncertainty,
+            "domain_explanations": domain_explanations,
+            "label_sources": bundle_label_sources,
+            "source_datasets": list(bundle.get("source_datasets", [])),
+            "training_strategy": bundle.get("training_strategy", "centralized"),
+            "federated": bundle.get("federated"),
         },
     )
 
@@ -113,75 +432,6 @@ def _trained_modality_result(
 def score_text_features(features: dict) -> dict:
     if not features.get("available"):
         return {"available": False}
-
-    negative_density = features["negative_word_count"] / max(1, features["word_count"])
-    positive_density = features["positive_word_count"] / max(1, features["word_count"])
-    short_response_penalty = 0.15 if features["word_count"] < 8 else 0.0
-    sadness_score = features["emotion_scores"].get("sadness", 0.0)
-    fear_score = features["emotion_scores"].get("fear", 0.0)
-    anger_score = features["emotion_scores"].get("anger", 0.0)
-    joy_score = features["emotion_scores"].get("joy", 0.0)
-    loneliness_score_signal = features["emotion_scores"].get("loneliness", 0.0)
-    exhaustion_score = features["emotion_scores"].get("exhaustion", 0.0)
-    self_harm_score = features["self_harm_risk_score"]
-    transformer_signal = normalize_score(abs(features["transformer_embedding_std"]) * 10.0)
-
-    domain_scores = {
-        "depression": (
-        0.55
-        - 0.45 * features["sentiment_compound"]
-        + 1.8 * negative_density
-        - 0.9 * positive_density
-        + short_response_penalty
-        + 0.7 * sadness_score
-        + 0.9 * self_harm_score
-        ),
-        "anxiety": (
-        0.15
-        + 2.0 * negative_density
-        + 1.8 * features["question_ratio"]
-        + 1.2 * features["exclamation_ratio"]
-        + 0.6 * fear_score
-        + 0.25 * transformer_signal
-        ),
-        "stress": (
-        0.2
-        + 0.8 * features["emotion_intensity"]
-        + 0.8 * negative_density
-        + 0.2 * (1.0 - features["lexical_diversity"])
-        + 0.35 * anger_score
-        + 0.25 * transformer_signal
-        ),
-        "sleep_disorder": (
-        0.18
-        + 1.4 * negative_density
-        + 0.35 * short_response_penalty
-        + 0.45 * features["emotion_intensity"]
-        + 0.35 * exhaustion_score
-        ),
-        "burnout": (
-        0.2
-        + 1.6 * negative_density
-        + 0.55 * features["emotion_intensity"]
-        + 0.25 * (1.0 - features["lexical_diversity"])
-        + 0.45 * exhaustion_score
-        + 0.15 * anger_score
-        ),
-        "loneliness": (
-        0.16
-        + 1.25 * negative_density
-        + 0.3 * (1.0 - positive_density)
-        + 0.25 * short_response_penalty
-        + 0.8 * loneliness_score_signal
-        ),
-        "substance_abuse": (
-        0.08
-        + 0.85 * negative_density
-        + 0.35 * features["emotion_intensity"]
-        + 0.25 * anger_score
-        + 0.2 * self_harm_score
-        ),
-    }
 
     confidence = _confidence_from_feature_count(min(features["word_count"], 40), 40)
     if features["transformer_available"]:
@@ -195,10 +445,11 @@ def score_text_features(features: dict) -> dict:
         modality="text",
         features=features,
         feature_vector_fn=text_feature_vector,
-        fallback_confidence=confidence,
+        base_confidence=confidence,
         notes=(
-            "Text screening used a trained text model built from labeled examples, alongside sentiment, "
-            "emotion, and safety-language features extracted by the backend."
+            "Text screening used trained per-domain classifiers supervised with DAIC-WOZ PHQ-derived targets "
+            "and backend language features such as sentiment, emotion, safety-language cues, and multilingual "
+            "transformer context from English BERT-family models or MuRIL/Indic-BERT for Hindi and Bengali."
         ),
         feature_snapshot={
             "word_count": features["word_count"],
@@ -214,73 +465,34 @@ def score_text_features(features: dict) -> dict:
             "self_harm_keyword_matches": features["self_harm_keyword_matches"],
             "self_harm_risk_score": round(features["self_harm_risk_score"], 3),
             "transformer_model": features["transformer_model"] or "unavailable",
+            "transformer_family": features.get("transformer_family") or "unavailable",
+            "transformer_language": features.get("transformer_language") or features.get("language", "english"),
+            "transformer_reason": features.get("transformer_reason"),
         },
-        fallback_domain_scores=domain_scores,
+        require_label_source="daic_woz_phq_domain_mapping",
     )
-    if trained_result is not None:
-        return trained_result
-
-    return _modality_result(
-        modality="text",
-        domain_scores=domain_scores,
-        confidence=confidence,
-        notes=(
-            "Text screening now combines sentiment analysis, emotion detection, self-harm keyword checks, "
-            "and optional DistilBERT or BERT representations. Longer and more detailed responses usually "
-            "give more reliable screening clues."
-        ),
-        feature_snapshot={
-            "word_count": features["word_count"],
-            "negative_word_count": features["negative_word_count"],
-            "positive_word_count": features["positive_word_count"],
-            "sentiment_compound": round(features["sentiment_compound"], 3),
-            "sentiment_label": features["sentiment_label"],
-            "sentiment_model": features["sentiment_model"],
-            "dominant_emotion": features["dominant_emotion"],
-            "emotion_model": features["emotion_model"],
-            "language": features.get("language", "english"),
-            "self_harm_keyword_detected": features["self_harm_keyword_detected"],
-            "self_harm_keyword_matches": features["self_harm_keyword_matches"],
-            "self_harm_risk_score": round(features["self_harm_risk_score"], 3),
-            "transformer_model": features["transformer_model"] or "unavailable",
-        },
-    )
+    return trained_result
 
 
 def score_audio_features(features: dict) -> dict:
     if not features.get("available"):
         return {**features, "available": False}
 
-    slow_tempo = max(0.0, (110.0 - features["tempo"]) / 110.0)
-    high_energy = normalize_score(features["rms"] * 8.0)
-    unstable_pitch = normalize_score(features["pitch_std"] / 80.0)
-    low_voicing = normalize_score(1.0 - features["voiced_ratio"])
-
-    domain_scores = {
-        "depression": 0.2 + 0.7 * slow_tempo + 0.4 * low_voicing,
-        "anxiety": 0.15 + 0.65 * high_energy + 0.45 * unstable_pitch,
-        "stress": 0.2 + 0.55 * normalize_score(features["zero_crossing_rate"] * 10.0) + 0.45 * high_energy,
-        "sleep_disorder": 0.18 + 0.55 * low_voicing + 0.35 * slow_tempo + 0.2 * unstable_pitch,
-        "burnout": 0.18 + 0.45 * slow_tempo + 0.35 * low_voicing + 0.25 * high_energy,
-        "loneliness": 0.1 + 0.4 * low_voicing + 0.35 * slow_tempo,
-        "substance_abuse": 0.1 + 0.3 * unstable_pitch + 0.35 * high_energy + 0.2 * normalize_score(features["zero_crossing_rate"] * 10.0),
-    }
-
     duration_confidence = normalize_score(features["duration"] / 12.0)
     voiced_confidence = normalize_score(features["voiced_ratio"])
     acoustic_confidence = average([
         duration_confidence,
         voiced_confidence,
-        1.0 - min(low_voicing, 0.8),
+        1.0 - min(normalize_score(1.0 - features["voiced_ratio"]), 0.8),
     ])
     trained_result = _trained_modality_result(
         modality="audio",
         features=features,
         feature_vector_fn=audio_feature_vector,
-        fallback_confidence=acoustic_confidence,
+        base_confidence=acoustic_confidence,
         notes=(
-            "Audio screening used a trained audio model built from labeled clips and backend acoustic "
-            "features such as tempo, energy, pitch, and voicing."
+            "Audio screening used trained per-domain classifiers supervised with DAIC-WOZ PHQ-derived targets "
+            "and backend acoustic features such as tempo, energy, pitch, and voicing."
         ),
         feature_snapshot={
             "duration": round(features["duration"], 2),
@@ -288,77 +500,88 @@ def score_audio_features(features: dict) -> dict:
             "rms": round(features["rms"], 4),
             "voiced_ratio": round(features["voiced_ratio"], 3),
         },
-        fallback_domain_scores=domain_scores,
+        require_label_source="daic_woz_phq_domain_mapping",
     )
-    if trained_result is not None:
-        return trained_result
-
-    return _modality_result(
-        modality="audio",
-        domain_scores=domain_scores,
-        confidence=acoustic_confidence,
-        notes=(
-            "Audio screening looks at tempo, energy, voice continuity, and pitch variability. "
-            "Background noise or very short clips can reduce reliability."
-        ),
-        feature_snapshot={
-            "duration": round(features["duration"], 2),
-            "tempo": round(features["tempo"], 2),
-            "rms": round(features["rms"], 4),
-            "voiced_ratio": round(features["voiced_ratio"], 3),
-        },
-    )
+    return trained_result
 
 
 def score_image_features(features: dict) -> dict:
-    if not features.get("available"):
-        return {**features, "available": False}
-
-    compact_smile = normalize_score((2.2 - features["smile_ratio"]) / 2.2)
-    low_eye_openness = normalize_score((0.035 - features["eye_openness"]) / 0.035)
-
-    domain_scores = {
-        "depression": 0.2 + 0.75 * compact_smile + 0.2 * low_eye_openness,
-        "anxiety": 0.15 + 0.4 * compact_smile + 0.5 * low_eye_openness,
-        "stress": 0.2 + 0.45 * compact_smile + 0.55 * low_eye_openness,
-        "sleep_disorder": 0.16 + 0.35 * low_eye_openness + 0.25 * compact_smile,
-        "burnout": 0.15 + 0.4 * low_eye_openness + 0.35 * compact_smile,
-        "loneliness": 0.15 + 0.45 * compact_smile + 0.2 * low_eye_openness,
-        "substance_abuse": 0.08 + 0.25 * low_eye_openness + 0.2 * compact_smile,
+    feature_snapshot = {
+        "smile_ratio": round(features.get("smile_ratio", 0.0), 3),
+        "eye_openness": round(features.get("eye_openness", 0.0), 4),
+        "vision_backend": features.get("vision_backend", "unknown"),
     }
+    if not features.get("available"):
+        return _unavailable_modality_result(
+            modality="image",
+            notes="Image features were unavailable, so no trained classifier could run.",
+            feature_snapshot=feature_snapshot,
+        )
 
-    trained_result = _trained_modality_result(
+    return _unavailable_modality_result(
         modality="image",
-        features=features,
-        feature_vector_fn=image_feature_vector,
-        fallback_confidence=0.68,
         notes=(
-            "Facial-cue screening used a trained image model built from labeled face examples and backend "
-            "visual features such as eye openness and smile ratio."
+            "Image scoring was excluded because this release only accepts trained per-domain classifiers "
+            "supervised by DAIC-WOZ PHQ-derived targets, and no clinically labeled image bundle exists."
         ),
-        feature_snapshot={
-            "smile_ratio": round(features["smile_ratio"], 3),
-            "eye_openness": round(features["eye_openness"], 4),
-            "vision_backend": features.get("vision_backend", "unknown"),
-        },
-        fallback_domain_scores=domain_scores,
+        feature_snapshot=feature_snapshot,
     )
-    if trained_result is not None:
-        return trained_result
+
+
+def score_passive_biomarkers(features: dict) -> dict:
+    feature_snapshot = {
+        "available": bool(features.get("available")),
+        "reason": features.get("reason"),
+        "confidence": round(float(features.get("confidence", 0.0)), 3),
+        "heart_rate_bpm": features.get("heart_rate_bpm"),
+        "typing_speed_cpm": features.get("typing_speed_cpm"),
+        "typing_pause_ratio": features.get("typing_pause_ratio"),
+        "typing_backspace_ratio": features.get("typing_backspace_ratio"),
+        "rppg": features.get("rppg", {}),
+        "typing": features.get("typing", {}),
+    }
+    if not features.get("available"):
+        return _unavailable_modality_result(
+            modality="passive_biomarkers",
+            notes=(
+                "Passive biomarkers were unavailable, so no zero-hardware inference could run from phone camera "
+                "or typing rhythm signals."
+            ),
+            feature_snapshot=feature_snapshot,
+        )
+
+    heart_rate_bpm = float(features.get("heart_rate_bpm") or 0.0)
+    typing_speed_cpm = float(features.get("typing_speed_cpm") or 0.0)
+    typing_pause_ratio = float(features.get("typing_pause_ratio") or 0.0)
+    typing_backspace_ratio = float(features.get("typing_backspace_ratio") or 0.0)
+
+    heart_rate_signal = normalize_score((heart_rate_bpm - 58.0) / 42.0) if heart_rate_bpm > 0 else 0.5
+    typing_signal = normalize_score(
+        0.45 * normalize_score(typing_pause_ratio)
+        + 0.35 * normalize_score(typing_backspace_ratio)
+        + 0.20 * normalize_score((typing_speed_cpm - 180.0) / 220.0)
+    )
+    confidence = normalize_score(float(features.get("confidence", 0.0)))
+    if not confidence:
+        confidence = average([
+            float(features.get("rppg", {}).get("signal_quality", 0.0)),
+            float(features.get("typing", {}).get("rhythm_score", 0.0)),
+        ])
 
     return _modality_result(
-        modality="image",
-        domain_scores=domain_scores,
-        confidence=0.68,
-        notes=(
-            "Facial cue screening uses simple face-mesh heuristics. It is the least reliable modality "
-            "and should only be treated as supporting context."
-        ),
-        feature_snapshot={
-            "smile_ratio": round(features["smile_ratio"], 3),
-            "eye_openness": round(features["eye_openness"], 4),
-            "vision_backend": features.get("vision_backend", "unknown"),
+        modality="passive_biomarkers",
+        domain_scores={
+            "anxiety": normalize_score(0.6 * heart_rate_signal + 0.4 * typing_signal),
+            "stress": normalize_score(0.5 * heart_rate_signal + 0.5 * typing_signal),
+            "burnout": normalize_score(0.3 * heart_rate_signal + 0.7 * typing_signal),
         },
+        confidence=confidence,
+        notes=(
+            "Passive biomarkers combined phone-camera rPPG-style heart-rate estimation with typing rhythm "
+            "signals to provide a zero-hardware adjunct anxiety and stress signal."
+        ),
+        feature_snapshot=feature_snapshot,
+        predicted_domains=["anxiety", "stress", "burnout"],
     )
 
 
@@ -379,8 +602,17 @@ def aggregate_scores(results: list) -> dict:
     total_weight = sum(weight for _, weight in weighted_results) or float(len(available))
     raw_scores = {}
     for domain in PREDICTION_DOMAINS:
+        domain_results = [
+            (result, weight)
+            for result, weight in weighted_results
+            if domain in result.get("predicted_domains", [])
+        ]
+        if not domain_results:
+            raw_scores[domain] = None
+            continue
+        domain_total_weight = sum(weight for _, weight in domain_results) or float(len(domain_results))
         score_key = f"{domain}_score"
-        raw_scores[domain] = sum(r[score_key] * weight for r, weight in weighted_results) / total_weight
+        raw_scores[domain] = sum(result[score_key] * weight for result, weight in domain_results) / domain_total_weight
 
     coverage_score = normalize_score(
         sum(MODALITY_WEIGHTS.get(result["modality"], 0.33) for result in available)
@@ -389,7 +621,10 @@ def aggregate_scores(results: list) -> dict:
     weighted_confidence = sum(result["confidence"] * weight for result, weight in weighted_results) / total_weight
     agreement_confidence = _domain_score_agreement(
         [
-            {domain: result.get(f"{domain}_score", 0.0) for domain in PREDICTION_DOMAINS}
+            {
+                domain: result.get(f"{domain}_score", 0.0)
+                for domain in result.get("predicted_domains", [])
+            }
             for result in available
         ]
     )
@@ -401,11 +636,249 @@ def aggregate_scores(results: list) -> dict:
 
     result = {
         "confidence": normalize_score(confidence),
-        "scores": {domain: normalize_score(score) for domain, score in raw_scores.items()},
+        "scores": {
+            domain: normalize_score(score) if score is not None else 0.0
+            for domain, score in raw_scores.items()
+        },
     }
     for domain, score in raw_scores.items():
-        result[domain] = risk_level(score)
+        result[domain] = "unknown" if score is None else risk_level(score)
     return result
+
+
+def _comorbidity_feature_names() -> list[str]:
+    feature_names: list[str] = []
+    for modality in COMORBIDITY_MODALITIES:
+        feature_names.extend(
+            [
+                f"{modality}_available",
+                f"{modality}_confidence",
+            ]
+        )
+        feature_names.extend([f"{modality}_{domain}_score" for domain in PREDICTION_DOMAINS])
+    feature_names.append("available_modalities_count")
+    return feature_names
+
+
+def _comorbidity_feature_vector(modality_results: dict[str, dict]) -> tuple[list[str], list[float]]:
+    vector: list[float] = []
+    available_modalities = 0.0
+    for modality in COMORBIDITY_MODALITIES:
+        result = modality_results.get(modality) or {}
+        available = 1.0 if result.get("available") else 0.0
+        confidence = normalize_score(result.get("confidence", 0.0))
+        vector.extend([available, confidence])
+        if available:
+            available_modalities += 1.0
+        for domain in PREDICTION_DOMAINS:
+            vector.append(normalize_score(result.get(f"{domain}_score", 0.0)))
+    vector.append(available_modalities)
+    return _comorbidity_feature_names(), vector
+
+
+def _pair_key(domain_a: str, domain_b: str) -> str:
+    left, right = sorted((domain_a, domain_b))
+    return f"{left}|{right}"
+
+
+def _comorbidity_pairwise_summary(probabilities: dict[str, float], pairwise_lift: dict | None = None) -> list[dict]:
+    pairwise_lift = pairwise_lift or {}
+    scored_pairs: list[dict] = []
+    for index, domain_a in enumerate(PREDICTION_DOMAINS):
+        for domain_b in PREDICTION_DOMAINS[index + 1 :]:
+            lift = float(pairwise_lift.get(_pair_key(domain_a, domain_b), 1.0) or 1.0)
+            base_joint = float(probabilities.get(domain_a, 0.0)) * float(probabilities.get(domain_b, 0.0))
+            joint_probability = normalize_score(base_joint * lift)
+            scored_pairs.append(
+                {
+                    "domains": [domain_a, domain_b],
+                    "probability": round(joint_probability, 6),
+                    "lift": round(lift, 6),
+                    "base_probability": round(base_joint, 6),
+                }
+            )
+    scored_pairs.sort(key=lambda item: (item["probability"], item["lift"]), reverse=True)
+    return scored_pairs[:5]
+
+
+def _heuristic_comorbidity_result(overall: dict) -> dict:
+    probabilities = {
+        domain: normalize_score(float(overall.get("scores", {}).get(domain, 0.0) or 0.0))
+        for domain in PREDICTION_DOMAINS
+    }
+    pairwise = _comorbidity_pairwise_summary(probabilities, COMORBIDITY_PAIR_PRIORS)
+    confidence = normalize_score(
+        0.45 * max(probabilities.values(), default=0.0)
+        + 0.25 * average(list(probabilities.values()) or [0.0])
+        + 0.20 * (pairwise[0]["probability"] if pairwise else 0.0)
+        + 0.10 * 0.65
+    )
+    binary_predictions = {
+        domain: probabilities[domain] >= COMORBIDITY_POSITIVE_THRESHOLD
+        for domain in PREDICTION_DOMAINS
+    }
+    positive_domains = [domain for domain, value in binary_predictions.items() if value]
+    dominant_pair = pairwise[0] if pairwise else None
+    return {
+        "available": bool(positive_domains),
+        "model_type": "heuristic_joint_risk",
+        "probabilities": probabilities,
+        "predicted_domains": positive_domains,
+        "binary_predictions": binary_predictions,
+        "confidence": confidence,
+        "top_pairs": pairwise,
+        "dominant_pair": dominant_pair,
+        "notes": "Joint comorbidity estimates were derived from the aggregated multimodal domain scores because no trained comorbidity bundle was available.",
+    }
+
+
+def _predict_chain_domain_probabilities(chain_spec: dict, vector: list[float]) -> dict[str, float]:
+    probabilities: dict[str, float] = {}
+    chained_inputs: list[float] = []
+    for model_spec in chain_spec.get("models", []):
+        domain = model_spec.get("domain")
+        if not domain:
+            continue
+        model = model_spec.get("model")
+        constant_probability = model_spec.get("constant_probability")
+        if constant_probability is not None:
+            probability = float(constant_probability)
+        else:
+            augmented = np.asarray([vector + chained_inputs], dtype=float)
+            if hasattr(model, "predict_proba"):
+                probability = float(model.predict_proba(augmented)[0][1])
+            else:
+                prediction = model.predict(augmented)[0]
+                probability = float(np.clip(prediction, 0.0, 1.0))
+        probability = float(np.clip(probability, 0.0, 1.0))
+        probabilities[str(domain)] = probability
+        chained_inputs.append(probability)
+    return probabilities
+
+
+def _apply_comorbidity_probability_calibrator(calibrator: dict | None, score: float) -> tuple[float, str]:
+    if not calibrator:
+        return float(np.clip(score, 0.0, 1.0)), "uncalibrated"
+
+    method = str(calibrator.get("method", "constant"))
+    model = calibrator.get("model")
+    if method == "isotonic" and model is not None:
+        calibrated = float(model.predict([score])[0])
+    elif method == "platt" and model is not None:
+        calibrated = float(model.predict_proba([[score]])[0][1])
+    else:
+        calibrated = float(calibrator.get("positive_rate", 0.0))
+    return float(np.clip(calibrated, 0.0, 1.0)), method
+
+
+def _score_comorbidity_from_bundle(modality_results: dict[str, dict]) -> dict | None:
+    bundle = load_model_bundle(COMORBIDITY_MODEL_NAME)
+    if bundle is None:
+        return None
+
+    feature_names, vector = _comorbidity_feature_vector(modality_results)
+    raw_chain_ensemble = list(bundle.get("chain_ensemble") or [])
+    if raw_chain_ensemble:
+        chain_ensemble = raw_chain_ensemble
+    else:
+        legacy_models = list(bundle.get("models", []))
+        if legacy_models and isinstance(legacy_models[0], dict) and "models" not in legacy_models[0]:
+            chain_ensemble = [
+                {
+                    "chain_order": list(bundle.get("chain_order", PREDICTION_DOMAINS)),
+                    "models": legacy_models,
+                }
+            ]
+        else:
+            chain_ensemble = legacy_models
+    if not chain_ensemble:
+        return None
+
+    thresholds = dict(bundle.get("label_thresholds", {}))
+    probability_calibrators = dict(bundle.get("probability_calibrators", {}) or {})
+    pairwise_lift = dict(bundle.get("pairwise_lift", {}))
+    ensemble_size = int(bundle.get("ensemble_size") or len(chain_ensemble) or 1)
+
+    per_chain_probabilities: list[dict[str, float]] = []
+    for chain_spec in chain_ensemble:
+        chain_probabilities = _predict_chain_domain_probabilities(chain_spec, vector)
+        if chain_probabilities:
+            per_chain_probabilities.append(chain_probabilities)
+
+    if not per_chain_probabilities:
+        return None
+
+    raw_probabilities: dict[str, float] = {}
+    probabilities: dict[str, float] = {}
+    calibration_methods: dict[str, str] = {}
+    ensemble_agreement_scores: list[float] = []
+    for domain in PREDICTION_DOMAINS:
+        domain_values = [chain_probabilities.get(domain, 0.0) for chain_probabilities in per_chain_probabilities]
+        if domain_values:
+            raw_probability = float(np.clip(np.mean(domain_values), 0.0, 1.0))
+            if len(domain_values) > 1:
+                ensemble_agreement_scores.append(float(np.clip(1.0 - (max(domain_values) - min(domain_values)), 0.0, 1.0)))
+        else:
+            raw_probability = 0.0
+        raw_probabilities[domain] = raw_probability
+        calibrated_probability, method = _apply_comorbidity_probability_calibrator(
+            probability_calibrators.get(domain),
+            raw_probability,
+        )
+        probabilities[domain] = calibrated_probability
+        calibration_methods[domain] = method
+
+    chain_order = list(chain_ensemble[0].get("chain_order", bundle.get("chain_order", PREDICTION_DOMAINS)))
+    binary_predictions: dict[str, bool] = {
+        domain: probabilities[domain] >= float(thresholds.get(domain, COMORBIDITY_POSITIVE_THRESHOLD))
+        for domain in PREDICTION_DOMAINS
+    }
+
+    top_pairs = _comorbidity_pairwise_summary(probabilities, pairwise_lift)
+    positive_domains = [domain for domain, value in binary_predictions.items() if value]
+    peak_probability = max(probabilities.values(), default=0.0)
+    mean_probability = average(list(probabilities.values()) or [0.0])
+    pair_probability = top_pairs[0]["probability"] if top_pairs else 0.0
+    ensemble_agreement = average(ensemble_agreement_scores) if ensemble_agreement_scores else 0.68
+    confidence = normalize_score(
+        0.42 * peak_probability
+        + 0.24 * mean_probability
+        + 0.20 * pair_probability
+        + 0.14 * ensemble_agreement
+    )
+    return {
+        "available": bool(positive_domains or top_pairs),
+        "model_type": str(bundle.get("model_type", "classifier_chain_ensemble")),
+        "feature_names": feature_names,
+        "chain_order": chain_order,
+        "ensemble_size": ensemble_size,
+        "chain_orders": [list(chain_spec.get("chain_order", [])) for chain_spec in chain_ensemble],
+        "raw_probabilities": raw_probabilities,
+        "probabilities": probabilities,
+        "predicted_domains": positive_domains,
+        "binary_predictions": binary_predictions,
+        "top_pairs": top_pairs,
+        "dominant_pair": top_pairs[0] if top_pairs else None,
+        "pairwise_lift": pairwise_lift,
+        "label_thresholds": thresholds,
+        "probability_calibration_methods": calibration_methods,
+        "confidence": confidence,
+        "confidence_breakdown": {
+            "peak_probability": round(float(peak_probability), 6),
+            "mean_probability": round(float(mean_probability), 6),
+            "pair_probability": round(float(pair_probability), 6),
+            "ensemble_agreement": round(float(ensemble_agreement), 6),
+        },
+        "metrics": dict(bundle.get("metrics", {}) or {}),
+        "notes": "Joint comorbidity classifier-chain ensemble probabilities derived from stacked multimodal domain scores.",
+    }
+
+
+def score_comorbidity(modality_results: dict[str, dict], overall: dict | None = None) -> dict:
+    result = _score_comorbidity_from_bundle(modality_results)
+    if result is not None:
+        return result
+    return _heuristic_comorbidity_result(overall or {"scores": {}})
 
 
 def build_recommendation(overall: dict, language: str = "english") -> str:
@@ -451,16 +924,38 @@ def build_recommendation(overall: dict, language: str = "english") -> str:
     )
 
 
-def screen(text_input: str = "", audio_path: str = None, image_path: str = None, language: str = "english") -> dict:
+def screen(
+    text_input: str = "",
+    audio_path: str = None,
+    image_path: str = None,
+    passive_video_path: str | None = None,
+    typing_events: list[dict] | dict | list[float] | None = None,
+    language: str = "english",
+) -> dict:
     text_features = extract_text_features(text_input, language=language)
     audio_features = extract_audio_features(audio_path)
     image_features = extract_image_features(image_path)
+    passive_features = extract_passive_biomarkers(passive_video_path, typing_events)
 
     text_result = score_text_features(text_features)
     audio_result = score_audio_features(audio_features)
     image_result = score_image_features(image_features)
+    passive_result = score_passive_biomarkers(passive_features)
 
-    overall = aggregate_scores([text_result, audio_result, image_result])
+    overall = aggregate_scores([text_result, audio_result, image_result, passive_result])
+    comorbidity = score_comorbidity(
+        {
+            "text": text_result,
+            "audio": audio_result,
+            "image": image_result,
+        },
+        overall=overall,
+    )
+    if comorbidity.get("available"):
+        overall["confidence"] = normalize_score(
+            0.84 * float(overall.get("confidence", 0.0) or 0.0)
+            + 0.16 * float(comorbidity.get("confidence", 0.0) or 0.0)
+        )
     recommendation = build_recommendation(overall, language=language)
     disclaimer = (
         "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions, "
@@ -475,7 +970,9 @@ def screen(text_input: str = "", audio_path: str = None, image_path: str = None,
         "text": text_result,
         "audio": audio_result,
         "image": image_result,
+        "passive": passive_result,
         "overall": overall,
+        "comorbidity": comorbidity,
         "recommendation": recommendation,
         "disclaimer": disclaimer,
     }

@@ -1,10 +1,10 @@
 # Rural Mental Health Screening AI
 
-A prototype for an AI-based rural mental health screening tool designed around a dashboard workflow with questionnaire intake, multimodal AI signals, analytics, saved result retrieval, and PDF reporting.
+An AI-based rural mental health screening prototype for questionnaire intake, multimodal signals, analytics, saved result retrieval, and PDF reporting.
 
-## Current Prediction Scope
+## Prediction Scope
 
-The current implementation predicts:
+The current model targets:
 
 - Depression
 - Anxiety
@@ -14,54 +14,102 @@ The current implementation predicts:
 - Loneliness
 - Substance abuse
 
-## What is included
+The `comorbidity` bundle now performs joint multi-label prediction so the model can estimate co-occurring patterns such as depression + anxiety rather than treating each label independently.
 
-- `dashboard_server.py`: Flask backend API that serves the dashboard, saves assessments, fetches records, and generates PDF reports.
-- `app.py`: earlier Streamlit prototype interface retained in the repo, but the active product flow is now dashboard-based.
-- `src/mental_health_screening/assessment.py`: structured questionnaire definition and questionnaire scoring logic.
-- `src/mental_health_screening/feature_extract.py`: feature extraction helpers for text, audio, and image inputs with graceful dependency fallbacks.
-- `src/mental_health_screening/predict.py`: rule-based screening heuristics, confidence estimation, and score aggregation.
-- `src/mental_health_screening/storage.py`: SQLite-backed assessment storage with JSON cache sync for dashboard compatibility.
+## Included
+
+- `dashboard_server.py`: Flask backend for dashboard serving, assessment saves, record fetches, and PDF reports.
+- `app.py`: earlier Streamlit prototype retained here.
+- `src/mental_health_screening/assessment.py`: questionnaire definition and scoring logic.
+- `src/mental_health_screening/feature_extract.py`: feature extraction helpers for text, audio, and image inputs.
+- `src/mental_health_screening/predict.py`: screening heuristics, confidence estimation, and score aggregation.
+- `src/mental_health_screening/storage.py`: SQLite-backed assessment storage with JSON cache sync.
 - `src/mental_health_screening/report.py`: PDF report generation for saved assessments.
-- `src/mental_health_screening/training.py`: training CLI and model-bundle builder for text, audio, and image modalities.
+- `src/mental_health_screening/training.py`: training CLI and model-bundle builder for text, audio, and image.
 - `src/mental_health_screening/utils.py`: shared utility helpers.
 
 ## NLP Layer
 
-The text pipeline now supports:
+The text pipeline supports:
 
 - DistilBERT / BERT text representations when transformer models are available locally
 - Emotion detection
 - Sentiment analysis
 - Self-harm keyword detection
 
-If transformer packages or model weights are unavailable, the app falls back to lighter heuristic NLP features instead of failing completely.
+If transformer packages or model weights are unavailable, the app falls back to lighter heuristic NLP features.
 
-## Dashboard-First Stack
+## Dashboard Stack
 
-- Frontend: HTML, CSS, JavaScript dashboard in `web/`
+- Frontend: HTML, CSS, and JavaScript in `web/`
 - Backend API: Flask
 - Database: SQLite
-- Assessment flow: dashboard intake form with questionnaire and live Python NLP preview
-- Data exchange: backend persistence plus JSON import/export
+- Assessment flow: dashboard intake with questionnaire and live Python NLP preview
+- Data exchange: backend persistence and JSON import/export
 - Reporting: backend PDF export
 
 ## Dashboard Usage
 
-Run the Flask dashboard server:
+Run the dashboard:
 
 ```powershell
 python dashboard_server.py
 ```
 
-Then open `http://127.0.0.1:8000/`.
+Open `http://127.0.0.1:8000/`.
 
-Inside the dashboard you can:
+Use it to:
 
 - Create and save assessments directly from the `Assessment Workspace`
 - Review detailed single-assessment analysis in the `Analytics Hub`
 - Fetch records and export PDF reports from `Records and Reports`
-- Persist records through the backend API into the SQLite database
+- Persist records through the API into the SQLite database
+- Try the `Adaptive Test` tab for an IRT-style question flow that asks the next most informative item first
+- The adaptive tab reuses the workspace's uploaded audio, image, and optional passive-video inputs instead of asking for a second upload set
+- If the backend adaptive endpoint is unavailable, both the web client and Streamlit app fall back to a local browser/Python selector so the interview can continue
+- Copy `examples\adaptive_question_bank.example.json` to `data\adaptive_question_bank.json` to override item difficulty and discrimination locally
+- Use `POST /api/adaptive/next` with `{"responses": {...}}` to fetch the next adaptive question from the backend API
+- Use `GET /api/adaptive/config` to inspect the pilot-calibrated stopping threshold and domain-balance weight
+
+Optional zero-hardware passive inputs:
+
+- `passive_video_file` for rPPG-style heart-rate estimation from a phone camera clip
+- `typing_events` for typing-rhythm signals that act as an anxiety and stress adjunct
+
+Passive payload:
+
+```json
+{
+  "passive_video_file": "sample_phone_clip.mp4",
+  "typing_events": {"intervals_ms": [180, 240, 210, 260]}
+}
+```
+
+### API Examples
+
+Use these payloads with the dashboard API.
+
+```json
+{
+  "profile": {"language": "English"},
+  "questionnaire": {},
+  "text_input": "",
+  "passive_video_file": "sample_phone_clip.mp4",
+  "typing_events": {"intervals_ms": [180, 240, 210, 260]}
+}
+```
+
+`/api/preview`:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/api/preview -H "Content-Type: application/json" -d "{\"profile\":{\"language\":\"English\"},\"questionnaire\":{},\"text_input\":\"\",\"passive_video_file\":\"sample_phone_clip.mp4\",\"typing_events\":{\"intervals_ms\":[180,240,210,260]}}"
+```
+
+`/api/assessments`:
+
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/api/assessments -H "Content-Type: application/json" -d "{\"profile\":{\"full_name\":\"Demo User\",\"village\":\"Demo Village\",\"assessor\":\"CHW Demo\",\"consent_received\":true,\"language\":\"English\"},\"questionnaire\":{\"depression_score\":2,\"anxiety_score\":1,\"stress_score\":1,\"sleep_disorder_score\":1,\"burnout_score\":1},\"text_input\":\"\",\"passive_video_file\":\"sample_phone_clip.mp4\",\"typing_events\":{\"intervals_ms\":[180,240,210,260]}}"
+```
 
 ## Setup
 
@@ -78,7 +126,7 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-3. Run the dashboard backend.
+3. Run the backend.
 
 ```powershell
 python dashboard_server.py
@@ -86,34 +134,49 @@ python dashboard_server.py
 
 4. Open `http://127.0.0.1:8000/` in your browser.
 
-## Usage
+## App Usage
 
 - Open the dashboard and complete the candidate profile, narrative, and symptom questionnaire in `Assessment Workspace`.
 - The live workspace calls the Python backend so preview sentiment, emotion, self-harm detection, and transformer-backed text scoring match the saved analysis path.
-- Audio and image uploads are sent to the backend during preview and save; if dependencies are installed and the media is usable, those modalities contribute real inference instead of metadata-only placeholders.
-- Save the assessment to generate a persistent `assessment_id` in the backend API and SQLite database.
-- Open `Analytics Hub` after save to review component-wise analysis, model statistics, modality quality, and recommendation details for the current assessment.
+- Audio and image uploads go to the backend during preview and save; if dependencies are installed and the media is usable, those modalities contribute real inference instead of metadata-only placeholders.
+- The `Adaptive Test` workflow uses the same workspace uploads and can continue with a local fallback selector if the adaptive API is temporarily offline.
+- Save the assessment to generate a persistent `assessment_id` in the API and SQLite database.
+- Open `Analytics Hub` after save to review component-wise analysis, model statistics, modality quality, and recommendation details.
 - Use `Records and Reports` to fetch a saved record by `assessment_id`, inspect the detailed result, and download a PDF report.
 
 ## Notes
 
-This prototype still includes heuristic fallbacks, but the repo also supports trained bundles from real manifests. At runtime, `predict.py` uses trained domain models when they exist and falls back to heuristics only for domains that are still unlabeled or untrained.
+This repo includes heuristic fallbacks and trained bundles from real manifests. At runtime, `predict.py` uses trained domain models when they exist and falls back to heuristics for unlabeled or untrained domains.
 
-## Training Real Models
+## Training
 
-The training path supports two honest stages:
+The training path has two honest stages:
 
 - proxy pretraining from open emotion datasets such as `MELD` and `RAVDESS`
 - clinical retraining from `DAIC-WOZ` once you have approved access
 
-### Fastest end-to-end path
+### Quick Start
 
-If you already have the datasets on disk, use the orchestration script to validate the dataset roots, generate manifests, and run the repo's training commands in one flow.
+If the datasets are already on disk, the orchestration script validates roots, generates manifests, and runs the training commands in one flow.
+
+It now also regenerates the balanced comorbidity manifest from the MELD and RAVDESS proxy outputs before training, then retrains the joint comorbidity head from that balanced file.
 
 1. Copy the example config and update the dataset paths:
 
 ```powershell
 Copy-Item examples\dataset_roots.example.json examples\dataset_roots.local.json
+```
+
+For a pure federated demo, start from:
+
+```powershell
+Copy-Item examples\dataset_roots_and_federated.example.json examples\dataset_roots_and_federated.local.json
+```
+
+Then run the full federated flow as a single command:
+
+```powershell
+python tools\run_real_training_pipeline.py --config examples\dataset_roots_and_federated.local.json
 ```
 
 2. Dry-run the full pipeline first:
@@ -128,7 +191,7 @@ python tools\run_real_training_pipeline.py --config examples\dataset_roots.local
 python tools\run_real_training_pipeline.py --config examples\dataset_roots.local.json
 ```
 
-The script writes:
+Outputs:
 
 - generated manifests to `data/manifests/`
 - extracted `RAVDESS` video frames to `data/ravdess_frames/`
@@ -152,58 +215,88 @@ Useful flags:
 - `--skip-daic-woz`: run only the public proxy datasets until clinical access is approved
 - `--min-samples-per-domain 10`: require more labeled rows before domain training starts
 
-### Collect the public datasets locally first
+To split a combined field manifest by centre and run federated training from the top-level pipeline, pass it directly:
 
-The repo also includes a helper that downloads the public parts of the training stack into `data/public_datasets/`.
+```powershell
+python tools\run_real_training_pipeline.py `
+  --federated-manifest data\manifests\combined_field_manifest.csv `
+  --federated-modality all `
+  --skip-manifest-build
+```
+
+### Federated Helper
+
+Use the federated helper for one-manifest-per-centre runs.
+
+| Case | Command |
+| --- | --- |
+| Default centre column | `python tools\run_federated_training.py data\manifests\combined_field_manifest.csv --modality all` |
+| Custom centre column | `python tools\run_federated_training.py data\manifests\combined_field_manifest.csv --centre-column clinic_name --modality text` |
+
+The helper writes the split manifests to `data/manifests/federated_centres/` by default and then calls the trainer with `--federated-manifests`.
+
+### Download Public Data
+
+Use the helper below to download the public training data into `data/public_datasets/`.
 
 ```powershell
 python tools\download_public_training_data.py --ravdess-video-actors 1,2,3,4
 ```
 
-That will:
+It downloads:
 
-- download `MELD` annotation CSVs for text training
-- download `RAVDESS` speech audio for all 24 actors
-- download `RAVDESS` speech-video archives for the chosen actor ids so image training has local video data to extract frames from
-- write a local `DAIC-WOZ` request note because that dataset cannot be auto-downloaded from the official site
+- `MELD` annotation CSVs for text training
+- `RAVDESS` speech audio for all 24 actors
+- `RAVDESS` speech-video archives for the chosen actor ids, so image training has local video data to extract frames from
+- a local `DAIC-WOZ` request note, because that dataset cannot be auto-downloaded from the official site
 
-After download, these dataset roots work with the pipeline script:
+After download, these dataset roots work with the pipeline:
 
 ```powershell
 python tools\run_real_training_pipeline.py `
-  --skip-daic-woz `
   --daic-woz-root data\public_datasets\DAIC-WOZ `
   --meld-root data\public_datasets\MELD `
-  --ravdess-root data\public_datasets\RAVDESS
+  --ravdess-root data\public_datasets\RAVDESS `
+  --skip-daic-woz
 ```
 
-Important:
+Notes:
 
-- `DAIC-WOZ` still requires official approval before real clinical training can happen
-- the current `MELD` prep path uses the public annotation CSVs for text proxy training
+- `DAIC-WOZ` requires official approval before real clinical training can happen
+- the `MELD` prep path uses the public annotation CSVs for text proxy training
 - for stronger image training from `RAVDESS`, download more speech-video actor archives over time, for example `--ravdess-video-actors 1,2,3,4,5,6,7,8`
 
-### 1. Build manifests from supported datasets
+### Build Manifests
 
-Generate a proxy text manifest from `MELD`:
+Build a proxy text manifest from `MELD`:
 
 ```powershell
 python -m src.mental_health_screening.dataset_prep meld C:\path\to\MELD data\manifests\meld_proxy.csv
 ```
 
-Generate a proxy audio/image manifest from `RAVDESS` and extract one frame per video clip:
+Build a proxy audio/image manifest from `RAVDESS` and extract one frame per clip:
 
 ```powershell
 python -m src.mental_health_screening.dataset_prep ravdess C:\path\to\RAVDESS data\manifests\ravdess_proxy.csv --extract-frames data\ravdess_frames
 ```
 
-Generate a clinically labeled manifest from `DAIC-WOZ`:
+Build a clinically labeled manifest from `DAIC-WOZ`:
 
 ```powershell
 python -m src.mental_health_screening.dataset_prep daic-woz C:\path\to\DAIC-WOZ data\manifests\daic_clinical.csv
 ```
 
-### 2. Train modality models from the generated manifests
+Build the balanced comorbidity training manifest from the proxy datasets:
+
+```powershell
+python -m src.mental_health_screening.dataset_prep comorbidity-balance `
+  data\manifests\meld_proxy.csv `
+  data\manifests\ravdess_proxy.csv `
+  --output-path data\manifests\comorbidity_balanced.csv `
+  --bucket-targets 0:600,1:600,2:500,3:600,4:1400
+```
+
+### Train Modality Models
 
 Train text from `MELD` proxy labels:
 
@@ -225,9 +318,9 @@ python -m src.mental_health_screening.training data\manifests\daic_clinical.csv 
 python -m src.mental_health_screening.training data\manifests\daic_clinical.csv --modality audio
 ```
 
-### 3. Train from your own manifest too
+### Train Your Own Manifest
 
-If you are collecting your own field data, use the template at `data/training_manifest_template.csv` and provide:
+If you are collecting your own field data, use `data/training_manifest_template.csv` and provide:
 
 - `text`: free-text response or transcript
 - `audio_path`: relative or absolute path to the audio file
@@ -242,8 +335,43 @@ python -m src.mental_health_screening.training data\training_manifest_template.c
 
 Saved model bundles are written under `models/mental_health_screening/`.
 
-Important implementation detail:
+Implementation notes:
 
-- the trainer now works per domain, so datasets that only supervise some outcomes can still be used honestly
+- the trainer works per domain, so datasets that only supervise some outcomes can still be used honestly
 - `DAIC-WOZ` is treated as clinical supervision mainly for `depression`, with conservative derived support for `sleep_disorder` and `burnout` when PHQ item columns are present
 - proxy datasets are useful for representation learning, but they are not a substitute for clinically validated labels
+- the comorbidity head uses a classifier-chain ensemble so it can learn label co-occurrence and emit joint probabilities for combinations like depression + anxiety
+
+### Rural Voice Models
+
+This repo includes dialect-aware ASR fine-tuning for rural Bengali and Hindi speech. It fine-tunes either `wav2vec2` or `Whisper` from a local Hugging Face checkpoint and trains one model per `dialect` value by default.
+
+Use a manifest with these columns:
+
+- `audio_path`: path to the speech clip
+- `transcript` or `text`: the transcript for supervised fine-tuning
+- `language`: `bengali` or `hindi`
+- `dialect`: a rural dialect label, such as `west_bengal_rural` or `up_rural`
+
+Config-driven runs:
+
+| Template | Copy local | Run command |
+| --- | --- | --- |
+| wav2vec2 | `Copy-Item examples\voice_training.example.json examples\voice_training.local.json` | `python tools\run_real_training_pipeline.py --config examples\voice_training.local.json` |
+| Whisper | `Copy-Item examples\voice_training.whisper.example.json examples\voice_training.whisper.local.json` | `python tools\run_real_training_pipeline.py --config examples\voice_training.whisper.local.json` |
+
+Use a checkpoint you already have cached locally, or point `voice_base_model_name` at a local model path.
+
+Useful flags:
+
+- `--base-model-name`: use a specific local Whisper or wav2vec2 checkpoint
+- `--output-dir`: choose where the dialect-specific models are saved
+- `--min-samples-per-dialect`: skip tiny dialect slices
+- `--no-per-dialect`: train a single shared voice model instead of separate dialect slices
+
+Direct helper:
+
+```powershell
+python tools\run_voice_finetuning.py examples\voice_manifest.example.csv --model-family wav2vec2
+python tools\run_voice_finetuning.py examples\voice_manifest.example.csv --model-family whisper
+```

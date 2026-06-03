@@ -29,6 +29,8 @@ REPORT_TRANSLATIONS = {
         "disclaimer": "Disclaimer",
         "questionnaire_suffix": "Questionnaire",
         "multimodal_suffix": "Multimodal",
+        "comorbidity_signal": "Comorbidity signal",
+        "comorbidity_confidence": "Comorbidity confidence",
         "unknown": "unknown",
     },
     "hindi": {
@@ -42,6 +44,8 @@ REPORT_TRANSLATIONS = {
         "disclaimer": "अस्वीकरण",
         "questionnaire_suffix": "प्रश्नावली",
         "multimodal_suffix": "मल्टीमॉडल",
+        "comorbidity_signal": "कॉमॉर्बिडिटी संकेत",
+        "comorbidity_confidence": "कॉमॉर्बिडिटी विश्वास",
         "unknown": "अज्ञात",
     },
     "bengali": {
@@ -55,6 +59,8 @@ REPORT_TRANSLATIONS = {
         "disclaimer": "সতর্কীকরণ",
         "questionnaire_suffix": "প্রশ্নমালা",
         "multimodal_suffix": "মাল্টিমোডাল",
+        "comorbidity_signal": "কমোরবিডিটি সংকেত",
+        "comorbidity_confidence": "কমোরবিডিটি আত্মবিশ্বাস",
         "unknown": "অজানা",
     },
 }
@@ -204,6 +210,22 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
                 f"{_domain_label(language, domain)} {_report_text(language, 'multimodal_suffix')}: "
                 f"{_risk_label(language, record['multimodal']['overall'].get(domain, 'unknown'))}"
             )
+        comorbidity = record.get("multimodal", {}).get("comorbidity") or {}
+        top_pairs = comorbidity.get("top_pairs") or []
+        if top_pairs:
+            top_pair = top_pairs[0]
+            domains = top_pair.get("domains") or []
+        if len(domains) == 2:
+            pair_label = f"{_domain_label(language, domains[0])} + {_domain_label(language, domains[1])}"
+            lines.append(
+                f"{_report_text(language, 'comorbidity_signal')}: {pair_label} "
+                f"({float(top_pair.get('probability', 0.0) or 0.0):.2f})"
+            )
+        if comorbidity.get("confidence") is not None:
+            lines.append(
+                f"{_report_text(language, 'comorbidity_confidence')}: "
+                f"{float(comorbidity.get('confidence', 0.0) or 0.0):.2f}"
+            )
         lines.append(f"{_report_text(language, 'recommendation')}: {record['multimodal']['recommendation']}")
         text_stream = ["BT", "/F1 11 Tf", "40 800 Td"]
         for line in lines:
@@ -287,6 +309,34 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
         y = _write_line(pdf, f"{label}: {risk} ({score:.2f})", margin, y, width - (2 * margin), body_font, 11)
 
     y -= 8
+    comorbidity = record.get("multimodal", {}).get("comorbidity") or {}
+    top_pairs = comorbidity.get("top_pairs") or []
+    if top_pairs:
+        top_pair = top_pairs[0]
+        domains = top_pair.get("domains") or []
+        if len(domains) == 2:
+            pair_label = f"{_domain_label(language, domains[0])} + {_domain_label(language, domains[1])}"
+            y = _write_line(
+                pdf,
+                f"{_report_text(language, 'comorbidity_signal')}: {pair_label} ({float(top_pair.get('probability', 0.0) or 0.0):.2f})",
+                margin,
+                y,
+                width - (2 * margin),
+                body_font,
+                11,
+            )
+            y -= 4
+    if comorbidity.get("confidence") is not None:
+        y = _write_line(
+            pdf,
+            f"{_report_text(language, 'comorbidity_confidence')}: {float(comorbidity.get('confidence', 0.0) or 0.0):.2f}",
+            margin,
+            y,
+            width - (2 * margin),
+            body_font,
+            11,
+        )
+        y -= 4
     y = _write_line(
         pdf,
         f"{_report_text(language, 'recommendation')}: {record['multimodal']['recommendation']}",

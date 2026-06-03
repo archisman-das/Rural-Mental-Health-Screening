@@ -1,0 +1,9 @@
+source_dataset,source_split,sample_id,label_source,centre_id,text,audio_path,image_path,depression,anxiety,stress,sleep_disorder,burnout,loneliness,substance_abuse
+FIELD,alpha,field-alpha-001,example_demo,alpha,"Feeling overwhelmed and tired","",,0.82,0.58,0.76,0.64,0.7,0.75,0.18
+FIELD,alpha,field-alpha-002,example_demo,alpha,"Sleeping badly and feeling low","",,0.8,0.42,0.6,0.78,0.68,0.7,0.12
+FIELD,alpha,field-alpha-003,example_demo,alpha,"Work stress keeps building","",,0.46,0.36,0.84,0.34,0.66,0.3,0.1
+FIELD,alpha,field-alpha-004,example_demo,alpha,"I feel isolated most days","",,0.74,0.4,0.48,0.44,0.5,0.88,0.08
+FIELD,beta,field-beta-001,example_demo,beta,"Most days are manageable","",,0.16,0.12,0.14,0.1,0.14,0.12,0.04
+FIELD,beta,field-beta-002,example_demo,beta,"I can rest and recover well","",,0.1,0.08,0.1,0.08,0.1,0.1,0.03
+FIELD,beta,field-beta-003,example_demo,beta,"Family support helps a lot","",,0.12,0.1,0.12,0.08,0.1,0.14,0.03
+FIELD,beta,field-beta-004,example_demo,beta,"Work feels steady this week","",,0.14,0.1,0.16,0.08,0.12,0.1,0.04

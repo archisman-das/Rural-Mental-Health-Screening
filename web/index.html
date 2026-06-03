@@ -4,17 +4,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rural Mental Health Dashboard</title>
+  <meta name="theme-color" content="#9e4d29">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/web/styles.css">
 </head>
 <body>
   <div class="page-shell">
     <header class="hero panel">
       <div class="hero-copy">
-        <p class="eyebrow">Dashboard-Only Workflow</p>
-        <h1>Rural Mental Health Screening Dashboard</h1>
+        <p class="eyebrow">Start Screening</p>
+        <h1>Rural Mental Health Screening</h1>
         <p class="hero-text">
-          Conduct assessments, score risk, explore analytics, fetch records, and export reports from one interactive dashboard.
+          Begin one diagnostic screening session at a time, save the result, and view the current assessment without loading background records.
         </p>
+        <div id="offlineStatus" class="offline-pill online">Online sync ready</div>
+        <div class="hero-metrics" aria-label="At a glance">
+          <article class="hero-metric-card">
+            <span class="hero-metric-value">7</span>
+            <span class="hero-metric-label">risk domains tracked</span>
+          </article>
+          <article class="hero-metric-card">
+            <span class="hero-metric-value">3</span>
+            <span class="hero-metric-label">modalities blended</span>
+          </article>
+          <article class="hero-metric-card">
+            <span class="hero-metric-value">24/7</span>
+            <span class="hero-metric-label">offline capture support</span>
+          </article>
+        </div>
         <div class="language-switcher">
           <label for="dashboardLanguage">Dashboard language</label>
           <div class="language-switcher-row">
@@ -29,8 +46,45 @@
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="hero-visual-card">
-          <div class="hero-graphic">
-            <img src="/web/assets/mental-health-icon.svg" alt="Mental health icon" class="hero-graphic-image">
+          <div class="signal-stage">
+            <div class="signal-orbit orbit-one"></div>
+            <div class="signal-orbit orbit-two"></div>
+            <div class="signal-orbit orbit-three"></div>
+            <div class="signal-core">
+              <div class="signal-ring signal-ring-one"></div>
+              <div class="signal-ring signal-ring-two"></div>
+              <div class="signal-center">
+                <img src="/web/assets/mental-health-icon.svg" alt="Mental health icon" class="hero-graphic-image">
+              </div>
+            </div>
+            <article class="signal-card signal-card-text">
+              <span class="signal-card-label">Narrative NLP</span>
+              <strong>Sentiment, stress, safety</strong>
+              <p>Live text screening signals update while the story is being entered.</p>
+            </article>
+            <article class="signal-card signal-card-audio">
+              <span class="signal-card-label">Speech cues</span>
+              <strong>Voice energy and pacing</strong>
+              <p>Audio markers strengthen the confidence band when a sample is present.</p>
+            </article>
+            <article class="signal-card signal-card-face">
+              <span class="signal-card-label">Face snapshot</span>
+              <strong>Expression support</strong>
+              <p>Image-based cues enrich the multimodal picture for field workers.</p>
+            </article>
+            <div class="signal-chart">
+              <div class="signal-chart-header">
+                <span>Live risk pulse</span>
+                <span>updated</span>
+              </div>
+              <div class="signal-bars">
+                <span class="signal-bar signal-bar-one"></span>
+                <span class="signal-bar signal-bar-two"></span>
+                <span class="signal-bar signal-bar-three"></span>
+                <span class="signal-bar signal-bar-four"></span>
+                <span class="signal-bar signal-bar-five"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -38,6 +92,7 @@
 
     <section class="tab-bar panel reveal">
       <button class="tab-btn active" data-view="workspaceView" type="button">Assessment Workspace</button>
+      <button class="tab-btn" data-view="adaptiveView" type="button">Adaptive Test</button>
       <button class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
       <button class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
     </section>
@@ -191,6 +246,74 @@
       </div>
     </section>
 
+    <section class="panel reveal view-section is-hidden" id="adaptiveView">
+      <div class="section-heading">
+        <h2>Adaptive Test</h2>
+        <p>Ask one question at a time using the backend IRT selector and reuse the workspace uploads.</p>
+      </div>
+
+      <div id="adaptiveStatus" class="status-banner">Start an adaptive session to fetch the first backend-selected question.</div>
+
+      <form id="adaptiveForm" class="assessment-form">
+        <div class="form-grid">
+          <div class="form-card">
+            <h3>Candidate Profile</h3>
+            <label>Full name <input id="adaptiveFullName" type="text" placeholder="Enter full name"></label>
+            <label>Age <input id="adaptiveAge" type="number" min="10" max="100" value="25"></label>
+            <label>Gender
+              <select id="adaptiveGender">
+                <option>Prefer not to say</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label>Village / Local area <input id="adaptiveVillage" type="text" placeholder="Village or locality"></label>
+            <label>Assessor name <input id="adaptiveAssessor" type="text" placeholder="Health worker or counselor"></label>
+            <label>Preferred language
+              <select id="adaptiveLanguage">
+                <option>English</option>
+                <option>Hindi</option>
+                <option>Bengali</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label class="checkbox-row"><input id="adaptiveConsent" type="checkbox"> Consent received for screening</label>
+          </div>
+
+          <div class="form-card">
+            <h3>Adaptive Question</h3>
+            <p id="adaptiveQuestionPrompt" class="detail-muted">Start the session to fetch the first question.</p>
+            <p id="adaptiveQuestionMeta" class="capture-status">No adaptive session started yet.</p>
+            <label>Select one answer
+              <select id="adaptiveAnswer">
+                <option>Choose one</option>
+                <option>Not at all</option>
+                <option>Several days</option>
+                <option>More than half the days</option>
+                <option>Nearly every day</option>
+              </select>
+            </label>
+            <div class="action-row">
+              <button id="adaptiveStartBtn" class="primary-btn" type="button">Start Session</button>
+              <button id="adaptiveNextBtn" class="ghost-btn" type="button">Submit Answer</button>
+              <button id="adaptiveResetBtn" class="ghost-btn" type="button">Reset Session</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card questionnaire-card">
+          <div class="section-heading inline-heading">
+            <h3>Workspace Narrative</h3>
+            <p>Use this text note alongside the files already uploaded in the main screening workspace.</p>
+          </div>
+          <label>Describe how the person has been feeling
+            <textarea id="adaptiveTextNarrative" rows="7" placeholder="Example: I have been feeling tired, disconnected, anxious, and unable to sleep well."></textarea>
+          </label>
+        </div>
+      </form>
+    </section>
+
     <section class="panel reveal view-section is-hidden" id="analyticsView">
       <div class="section-heading">
         <h2>Analytics Hub</h2>
@@ -235,6 +358,10 @@
         <article class="metric-card panel">
           <p class="metric-label">Submission Time</p>
           <p id="analysisSubmissionTime" class="metric-value metric-small">No data</p>
+        </article>
+        <article class="metric-card panel">
+          <p class="metric-label">Trajectory</p>
+          <p id="analysisTrajectory" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
           <p class="metric-label">Overall Risk</p>
@@ -290,6 +417,23 @@
             <p>End-user explanation, follow-up note, and screening disclaimer</p>
           </div>
           <div id="nlpTrends" class="chart-stack empty-state">No recommendation details available yet.</div>
+        </article>
+      </section>
+
+      <section class="analytics-grid analytics-grid-secondary reveal">
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Longitudinal Trajectory</h2>
+            <p>Trend modeling across repeated screenings for the same person</p>
+          </div>
+          <div id="trajectoryModel" class="chart-stack empty-state">No longitudinal trajectory available yet.</div>
+        </article>
+        <article class="panel">
+          <div class="section-heading">
+            <h2>Trend Summary</h2>
+            <p>Change since baseline, recent change, and domain movement</p>
+          </div>
+          <div id="trajectorySummary" class="chart-stack empty-state">No trend summary available yet.</div>
         </article>
       </section>
     </section>
@@ -369,6 +513,23 @@
             <p>NLP and record features for the selected assessment</p>
           </div>
           <div id="featureSnapshot" class="empty-state">No assessment selected.</div>
+        </article>
+      </section>
+
+      <section class="detail-grid reveal">
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Patient History</h2>
+            <p>Prior screenings and overall risk movement over time</p>
+          </div>
+          <div id="patientHistory" class="empty-state">No assessment selected.</div>
+        </article>
+        <article class="panel detail-panel">
+          <div class="section-heading">
+            <h2>Domain Drift</h2>
+            <p>Which risk domains are worsening, improving, or staying stable</p>
+          </div>
+          <div id="domainTrajectory" class="empty-state">No assessment selected.</div>
         </article>
       </section>
     </section>

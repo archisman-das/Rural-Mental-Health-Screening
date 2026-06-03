@@ -15,6 +15,7 @@ MANIFEST_COLUMNS = [
     "source_dataset",
     "source_split",
     "sample_id",
+    "label_source",
     "text",
     "audio_path",
     "image_path",
@@ -59,6 +60,79 @@ RAVDESS_PROXY_SCORES = {
     "surprised": {"depression": 0.12, "anxiety": 0.44, "stress": 0.38, "sleep_disorder": 0.14, "burnout": 0.12, "loneliness": 0.08, "substance_abuse": 0.05},
 }
 
+SLEEP_KEYWORDS = {
+    "sleep",
+    "slept",
+    "insomnia",
+    "sleepless",
+    "awake",
+    "nightmare",
+    "nightmares",
+    "tired",
+    "fatigued",
+    "fatigue",
+    "exhausted",
+    "exhaustion",
+    "restless",
+    "restless night",
+    "cannot sleep",
+    "can't sleep",
+    "cant sleep",
+    "not sleeping",
+    "trouble sleeping",
+    "hard to sleep",
+}
+
+SUBSTANCE_KEYWORDS = {
+    "alcohol",
+    "drink",
+    "drinking",
+    "drunk",
+    "beer",
+    "wine",
+    "liquor",
+    "whisky",
+    "whiskey",
+    "cigarette",
+    "cigarettes",
+    "smoke",
+    "smoking",
+    "tobacco",
+    "weed",
+    "cannabis",
+    "marijuana",
+    "drug",
+    "drugs",
+    "pill",
+    "pills",
+    "medication abuse",
+    "substance",
+    "opioid",
+    "opiate",
+    "heroin",
+    "cocaine",
+    "meth",
+    "vape",
+}
+
+DAIC_PHQ_DOMAIN_BLUEPRINTS = {
+    "depression": {"total": 0.35, 1: 0.2, 2: 0.2, 6: 0.15, 7: 0.1},
+    "anxiety": {"total": 0.25, 3: 0.15, 4: 0.2, 6: 0.2, 7: 0.2},
+    "stress": {"total": 0.2, 4: 0.25, 6: 0.2, 7: 0.2, 8: 0.15},
+    "sleep_disorder": {"total": 0.15, 3: 0.7, 4: 0.15},
+    "burnout": {"total": 0.2, 1: 0.15, 4: 0.3, 7: 0.2, 8: 0.15},
+    "loneliness": {"total": 0.2, 1: 0.2, 2: 0.25, 6: 0.25, 7: 0.1},
+    "substance_abuse": {"total": 0.15, 4: 0.25, 5: 0.15, 6: 0.15, 8: 0.3},
+}
+
+COMORBIDITY_BALANCE_TARGETS = {
+    0: 600,
+    1: 600,
+    2: 500,
+    3: 600,
+    4: 1400,
+}
+
 
 def _empty_row() -> dict:
     return {column: "" for column in MANIFEST_COLUMNS}
@@ -66,6 +140,17 @@ def _empty_row() -> dict:
 
 def _clip_score(value: float) -> float:
     return round(max(0.0, min(1.0, float(value))), 4)
+
+
+def _keyword_boost(text: str, keywords: set[str], base: float = 0.0, per_hit: float = 0.16, cap: float = 0.65) -> float:
+    lower = str(text or "").strip().lower()
+    if not lower:
+        return float(base)
+    hits = sum(1 for keyword in keywords if keyword in lower)
+    if hits <= 0:
+        return float(base)
+    length_bonus = min(len(lower) / 240.0, 0.15)
+    return _clip_score(base + min(cap, hits * per_hit + length_bonus))
 
 
 def _discover_file(root: Path, name: str) -> Path | None:
@@ -87,10 +172,94 @@ def _write_manifest(rows: list[dict], output_path: str | Path) -> Path:
     return output_path
 
 
-def _meld_proxy_scores(emotion: str, sentiment: str) -> dict:
+def _cardinality_bucket(row: dict) -> int:
+    return min(
+        sum(float(row.get(domain, 0.0) or 0.0) >= 0.5 for domain in PREDICTION_DOMAINS),
+        4,
+    )
+
+
+def build_comorbidity_balanced_manifest(
+    source_manifest_paths: list[str | Path],
+    output_path: str | Path,
+    bucket_targets: dict[int, int] | None = None,
+    random_state: int = 42,
+) -> Path:
+    bucket_targets = dict(bucket_targets or COMORBIDITY_BALANCE_TARGETS)
+    rows: list[dict] = []
+    fieldnames: list[str] | None = None
+    for manifest_path in source_manifest_paths:
+        with Path(manifest_path).open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if fieldnames is None:
+                fieldnames = list(reader.fieldnames or [])
+            rows.extend(list(reader))
+
+    if not rows or fieldnames is None:
+        raise ValueError("No source rows were found when building the balanced comorbidity manifest.")
+
+    buckets: dict[int, list[dict]] = {bucket: [] for bucket in sorted(bucket_targets)}
+    for row in rows:
+        bucket = _cardinality_bucket(row)
+        buckets.setdefault(bucket, []).append(row)
+
+    import random
+
+    rng = random.Random(random_state)
+    balanced_rows: list[dict] = []
+    for bucket in sorted(bucket_targets):
+        bucket_rows = buckets.get(bucket, [])
+        if not bucket_rows:
+            continue
+        sampled_rows = bucket_rows[:]
+        rng.shuffle(sampled_rows)
+        balanced_rows.extend(sampled_rows[: min(bucket_targets[bucket], len(sampled_rows))])
+
+    rng.shuffle(balanced_rows)
+    return _write_manifest(balanced_rows, output_path)
+
+
+def _parse_bucket_targets(raw_value: str | None) -> dict[int, int] | None:
+    if raw_value is None:
+        return None
+    targets: dict[int, int] = {}
+    for chunk in raw_value.split(","):
+        piece = chunk.strip()
+        if not piece:
+            continue
+        if ":" not in piece:
+            raise ValueError("Bucket targets must use the form bucket:count, for example 0:600,1:600,4:1400.")
+        bucket_text, count_text = piece.split(":", 1)
+        bucket = int(bucket_text.strip())
+        count = int(count_text.strip())
+        if bucket < 0 or count < 0:
+            raise ValueError("Bucket targets must be non-negative integers.")
+        targets[bucket] = count
+    return targets or None
+
+
+def _meld_proxy_scores(emotion: str, sentiment: str, text: str) -> dict:
     emotion_scores = dict(MELD_EMOTION_SCORES.get(str(emotion).strip().lower(), MELD_EMOTION_SCORES["neutral"]))
     for domain, adjustment in MELD_SENTIMENT_ADJUSTMENTS.get(str(sentiment).strip().lower(), {}).items():
         emotion_scores[domain] = _clip_score(emotion_scores[domain] + adjustment)
+    lower_text = str(text or "").strip().lower()
+    sleep_proxy = emotion_scores["sleep_disorder"]
+    substance_proxy = emotion_scores["substance_abuse"]
+
+    sleep_proxy = _clip_score(
+        sleep_proxy
+        + _keyword_boost(lower_text, SLEEP_KEYWORDS, base=0.0, per_hit=0.18, cap=0.7)
+        + (0.16 if str(emotion).strip().lower() in {"sadness", "fear"} else 0.0)
+        + (0.08 if str(sentiment).strip().lower() == "negative" else -0.03 if str(sentiment).strip().lower() == "positive" else 0.0)
+    )
+    substance_proxy = _clip_score(
+        substance_proxy
+        + _keyword_boost(lower_text, SUBSTANCE_KEYWORDS, base=0.0, per_hit=0.2, cap=0.9)
+        + (0.18 if str(emotion).strip().lower() in {"anger", "fear"} else 0.0)
+        + (0.12 if str(sentiment).strip().lower() == "negative" else -0.02 if str(sentiment).strip().lower() == "positive" else 0.0)
+    )
+    emotion_scores["sleep_disorder"] = sleep_proxy
+    emotion_scores["substance_abuse"] = substance_proxy
     return {domain: _clip_score(emotion_scores.get(domain, 0.0)) for domain in PREDICTION_DOMAINS}
 
 
@@ -117,21 +286,30 @@ def build_meld_manifest(dataset_root: str | Path, output_path: str | Path) -> Pa
                     "source_dataset": "MELD",
                     "source_split": split_name,
                     "sample_id": sample_id,
+                    "label_source": "meld_emotion_sentiment_keyword_proxy",
                     "text": str(record.get("Utterance", "") or "").strip(),
                 }
             )
-            row.update(_meld_proxy_scores(record.get("Emotion", "neutral"), record.get("Sentiment", "neutral")))
+            row.update(_meld_proxy_scores(record.get("Emotion", "neutral"), record.get("Sentiment", "neutral"), row["text"]))
             rows.append(row)
 
     return _write_manifest(rows, output_path)
 
 
-def _ravdess_proxy_scores(emotion_code: str, intensity_code: str) -> dict:
+def _ravdess_proxy_scores(emotion_code: str, intensity_code: str, sample_text: str = "") -> dict:
     emotion_name = RAVDESS_EMOTION_CODE_MAP.get(emotion_code, "neutral")
     base_scores = dict(RAVDESS_PROXY_SCORES[emotion_name])
     if intensity_code == "02":
-        for domain in ("anxiety", "stress", "burnout", "substance_abuse"):
+        for domain in ("anxiety", "stress", "burnout"):
             base_scores[domain] = _clip_score(base_scores[domain] + 0.05)
+        base_scores["substance_abuse"] = _clip_score(base_scores["substance_abuse"] + 0.12)
+    if emotion_name in {"sad", "fearful"}:
+        base_scores["sleep_disorder"] = _clip_score(base_scores["sleep_disorder"] + 0.24)
+    if emotion_name in {"angry", "fearful", "disgust"}:
+        base_scores["substance_abuse"] = _clip_score(base_scores["substance_abuse"] + 0.32)
+    if intensity_code == "02":
+        base_scores["sleep_disorder"] = _clip_score(base_scores["sleep_disorder"] + 0.12)
+        base_scores["substance_abuse"] = _clip_score(base_scores["substance_abuse"] + 0.14)
     return {domain: _clip_score(base_scores.get(domain, 0.0)) for domain in PREDICTION_DOMAINS}
 
 
@@ -186,6 +364,7 @@ def build_ravdess_manifest(
                 "source_dataset": "RAVDESS",
                 "source_split": "full",
                 "sample_id": f"ravdess-{path.stem}",
+                "label_source": "ravdess_emotion_intensity_proxy",
             }
         )
         row.update(_ravdess_proxy_scores(emotion_code, intensity_code))
@@ -231,6 +410,15 @@ def _safe_float(value) -> float | None:
         return None
 
 
+def _find_phq_item(record: dict, item_number: int) -> float | None:
+    exact_names = (
+        f"PHQ8_{item_number}",
+        f"PHQ_{item_number}",
+        f"Q{item_number}",
+    )
+    return _find_row_value(record, exact_names=exact_names, contains_any=("phq", str(item_number)))
+
+
 def _find_daic_session_dir(dataset_root: Path, participant_id: int) -> Path | None:
     expected = dataset_root / f"{participant_id}_P"
     if expected.exists():
@@ -268,22 +456,35 @@ def _load_daic_transcript_text(transcript_path: Path) -> str:
 def _daic_labels(record: dict) -> dict:
     labels = {domain: "" for domain in PREDICTION_DOMAINS}
     phq_total = _find_row_value(record, exact_names=("PHQ8_Score", "PHQ_Score"), contains_any=("phq8", "score"))
-    if phq_total is not None:
-        labels["depression"] = _clip_score(phq_total / 24.0)
+    phq_items = {
+        item_number: _find_phq_item(record, item_number)
+        for item_number in range(1, 9)
+    }
+    normalized_total = None if phq_total is None else max(0.0, min(1.0, phq_total / 24.0))
+    normalized_items = {
+        item_number: None if value is None else max(0.0, min(1.0, value / 3.0))
+        for item_number, value in phq_items.items()
+    }
 
-    sleep_item = _find_row_value(record, contains_any=("sleep",))
-    if sleep_item is None:
-        sleep_item = _find_row_value(record, exact_names=("PHQ8_3", "Q3"))
-    if sleep_item is not None:
-        labels["sleep_disorder"] = _clip_score(sleep_item / 3.0)
+    for domain, blueprint in DAIC_PHQ_DOMAIN_BLUEPRINTS.items():
+        weighted_sum = 0.0
+        weight_total = 0.0
+        for key, weight in blueprint.items():
+            if key == "total":
+                if normalized_total is None:
+                    continue
+                weighted_sum += normalized_total * weight
+                weight_total += weight
+                continue
 
-    energy_item = _find_row_value(record, contains_any=("energy",))
-    if energy_item is None:
-        energy_item = _find_row_value(record, contains_any=("tired",))
-    if energy_item is None:
-        energy_item = _find_row_value(record, exact_names=("PHQ8_4", "Q4"))
-    if energy_item is not None:
-        labels["burnout"] = _clip_score(energy_item / 3.0)
+            item_value = normalized_items.get(int(key))
+            if item_value is None:
+                continue
+            weighted_sum += item_value * weight
+            weight_total += weight
+
+        if weight_total > 0:
+            labels[domain] = _clip_score(weighted_sum / weight_total)
 
     return labels
 
@@ -322,6 +523,7 @@ def build_daic_woz_manifest(dataset_root: str | Path, output_path: str | Path) -
                     "source_dataset": "DAIC-WOZ",
                     "source_split": split_name,
                     "sample_id": f"daic-{split_name}-{participant_id}",
+                    "label_source": "daic_woz_phq_domain_mapping",
                     "text": text,
                     "audio_path": str(audio_path.resolve()) if audio_path.exists() else "",
                 }
@@ -363,6 +565,32 @@ def main() -> None:
     daic_parser.add_argument("dataset_root", help="Path to the DAIC-WOZ dataset root.")
     daic_parser.add_argument("output_path", help="Where to write the generated manifest CSV.")
 
+    comorbidity_parser = subparsers.add_parser(
+        "comorbidity-balance",
+        help="Build a balanced comorbidity manifest from one or more source manifests.",
+    )
+    comorbidity_parser.add_argument(
+        "source_manifests",
+        nargs="+",
+        help="One or more source manifests to merge before balancing.",
+    )
+    comorbidity_parser.add_argument(
+        "--output-path",
+        required=True,
+        help="Where to write the balanced comorbidity manifest CSV.",
+    )
+    comorbidity_parser.add_argument(
+        "--bucket-targets",
+        default=None,
+        help="Optional comma-separated bucket targets such as 0:600,1:600,2:500,3:600,4:1400.",
+    )
+    comorbidity_parser.add_argument(
+        "--random-state",
+        type=int,
+        default=42,
+        help="Random seed used when sampling each cardinality bucket.",
+    )
+
     args = parser.parse_args()
     if args.dataset == "meld":
         output_path = build_meld_manifest(args.dataset_root, args.output_path)
@@ -372,6 +600,13 @@ def main() -> None:
             output_path=args.output_path,
             frame_output_dir=args.extract_frames,
             speech_only=not args.include_song,
+        )
+    elif args.dataset == "comorbidity-balance":
+        output_path = build_comorbidity_balanced_manifest(
+            source_manifest_paths=args.source_manifests,
+            output_path=args.output_path,
+            bucket_targets=_parse_bucket_targets(args.bucket_targets),
+            random_state=args.random_state,
         )
     else:
         output_path = build_daic_woz_manifest(args.dataset_root, args.output_path)

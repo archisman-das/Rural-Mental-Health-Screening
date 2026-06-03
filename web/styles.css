@@ -100,6 +100,30 @@ body {
   line-height: 1.6;
 }
 
+.language-switcher {
+  margin-top: 18px;
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.language-switcher label {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.language-switcher-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.language-switcher-row select {
+  flex: 1;
+}
+
 .hero-chip-group {
   display: flex;
   flex-wrap: wrap;

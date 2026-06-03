@@ -36,55 +36,64 @@ except ImportError:
 
 analyzer = SentimentIntensityAnalyzer() if SentimentIntensityAnalyzer is not None else None
 
-NEGATIVE_WORDS = {
-    "sad",
-    "hopeless",
-    "worried",
-    "anxious",
-    "tired",
-    "nervous",
-    "stressed",
-    "lonely",
-    "empty",
-    "afraid",
-    "panic",
-    "overwhelmed",
-    "helpless",
-    "worthless",
-}
-
-POSITIVE_WORDS = {
-    "better",
-    "hopeful",
-    "calm",
-    "good",
-    "safe",
-    "supported",
-    "strong",
-    "improving",
-}
-
-SELF_HARM_KEYWORDS = {
-    "kill myself",
-    "end my life",
-    "don't want to live",
-    "do not want to live",
-    "suicide",
-    "self harm",
-    "harm myself",
-    "hurt myself",
-    "want to die",
-    "better off dead",
-    "no reason to live",
-}
-
-EMOTION_KEYWORDS = {
-    "sadness": {"sad", "empty", "hopeless", "crying", "down", "unhappy"},
-    "fear": {"afraid", "fear", "panic", "scared", "terrified", "nervous"},
-    "anger": {"angry", "irritated", "frustrated", "annoyed", "furious"},
-    "joy": {"happy", "relieved", "calm", "good", "hopeful", "better"},
-    "loneliness": {"alone", "isolated", "lonely", "disconnected", "abandoned"},
-    "exhaustion": {"tired", "drained", "burned", "burnout", "exhausted", "sleepy"},
+LANGUAGE_TEXT_RULES = {
+    "english": {
+        "negative_words": {
+            "sad", "hopeless", "worried", "anxious", "tired", "nervous", "stressed",
+            "lonely", "empty", "afraid", "panic", "overwhelmed", "helpless", "worthless",
+        },
+        "positive_words": {"better", "hopeful", "calm", "good", "safe", "supported", "strong", "improving"},
+        "self_harm_keywords": {
+            "kill myself", "end my life", "don't want to live", "do not want to live", "suicide",
+            "self harm", "harm myself", "hurt myself", "want to die", "better off dead", "no reason to live",
+        },
+        "emotion_keywords": {
+            "sadness": {"sad", "empty", "hopeless", "crying", "down", "unhappy"},
+            "fear": {"afraid", "fear", "panic", "scared", "terrified", "nervous"},
+            "anger": {"angry", "irritated", "frustrated", "annoyed", "furious"},
+            "joy": {"happy", "relieved", "calm", "good", "hopeful", "better"},
+            "loneliness": {"alone", "isolated", "lonely", "disconnected", "abandoned"},
+            "exhaustion": {"tired", "drained", "burned", "burnout", "exhausted", "sleepy"},
+        },
+    },
+    "hindi": {
+        "negative_words": {
+            "उदास", "निराश", "चिंतित", "बेचैन", "थका", "थकी", "घबराहट", "तनाव", "अकेला", "अकेली",
+            "डर", "खाली", "बेबस", "बेकार", "परेशान",
+        },
+        "positive_words": {"बेहतर", "उम्मीद", "शांत", "अच्छा", "सुरक्षित", "समर्थन", "मजबूत", "सुधार"},
+        "self_harm_keywords": {
+            "मर जाना चाहता", "मर जाना चाहती", "जीने का मन नहीं", "जीना नहीं चाहता", "जीना नहीं चाहती",
+            "आत्महत्या", "खुद को नुकसान", "खुद को मार", "मरना चाहता", "मरना चाहती",
+        },
+        "emotion_keywords": {
+            "sadness": {"उदास", "निराश", "रोना", "दुखी", "टूटा"},
+            "fear": {"डर", "घबराहट", "चिंता", "बेचैन", "भय"},
+            "anger": {"गुस्सा", "चिड़चिड़ा", "नाराज", "हताश"},
+            "joy": {"खुश", "शांत", "बेहतर", "अच्छा", "उम्मीद"},
+            "loneliness": {"अकेला", "अकेली", "अलग", "कटा", "तन्हा"},
+            "exhaustion": {"थका", "थकी", "टूटा", "जला", "नींद"},
+        },
+    },
+    "bengali": {
+        "negative_words": {
+            "দুঃখিত", "উদাস", "নিরাশ", "চিন্তিত", "উদ্বিগ্ন", "ক্লান্ত", "ভয়", "স্ট্রেস", "একাকী",
+            "ফাঁকা", "অসহায়", "পanik", "ব্যর্থ", "অস্থির",
+        },
+        "positive_words": {"ভাল", "শান্ত", "নিরাপদ", "সমর্থন", "আশা", "উন্নতি", "ভালো", "শক্ত"},
+        "self_harm_keywords": {
+            "মরে যেতে চাই", "বাঁচতে চাই না", "আত্মহত্যা", "নিজেকে আঘাত", "নিজেকে মেরে ফেলতে চাই",
+            "জীবন শেষ করতে চাই", "মরে যাওয়া ভালো",
+        },
+        "emotion_keywords": {
+            "sadness": {"দুঃখিত", "উদাস", "নিরাশ", "কাঁদছি", "মন খারাপ"},
+            "fear": {"ভয়", "চিন্তা", "উদ্বিগ্ন", "আতঙ্ক", "অস্থির"},
+            "anger": {"রাগ", "বিরক্ত", "হতাশ", "ক্ষুব্ধ"},
+            "joy": {"খুশি", "শান্ত", "ভালো", "আশা", "উন্নতি"},
+            "loneliness": {"একাকী", "একলা", "বিচ্ছিন্ন", "তনহা"},
+            "exhaustion": {"ক্লান্ত", "অবসাদ", "ঘুম", "শক্তিহীন"},
+        },
+    },
 }
 
 TRANSFORMER_ENCODER_CANDIDATES = (
@@ -103,6 +112,15 @@ EMOTION_MODEL_CANDIDATES = (
 )
 
 AUDIO_MIN_DURATION_SECONDS = 2.5
+
+
+def _normalize_language(language: str | None) -> str:
+    text = str(language or "english").strip().lower()
+    if text in {"hi", "hindi", "हिन्दी", "हिंदी"}:
+        return "hindi"
+    if text in {"bn", "bengali", "bangla", "বাংলা"}:
+        return "bengali"
+    return "english"
 
 
 def save_upload_file(uploaded_file, suffix):
@@ -173,7 +191,15 @@ def _load_emotion_pipeline():
     return None
 
 
-def _transformer_text_features(text: str) -> dict:
+def _transformer_text_features(text: str, language: str = "english") -> dict:
+    if _normalize_language(language) != "english":
+        return {
+            "transformer_available": False,
+            "transformer_model": None,
+            "embedding_mean": 0.0,
+            "embedding_std": 0.0,
+            "token_count": 0,
+        }
     bundle = _load_transformer_encoder()
     if bundle is None:
         return {
@@ -213,8 +239,8 @@ def _transformer_text_features(text: str) -> dict:
         }
 
 
-def _sentiment_features(text: str, fallback_compound: float, use_ml_pipeline: bool = True) -> dict:
-    sentiment_bundle = _load_sentiment_pipeline() if use_ml_pipeline else None
+def _sentiment_features(text: str, fallback_compound: float, language: str = "english", use_ml_pipeline: bool = True) -> dict:
+    sentiment_bundle = _load_sentiment_pipeline() if use_ml_pipeline and _normalize_language(language) == "english" else None
     if sentiment_bundle is not None:
         try:
             result = sentiment_bundle["pipeline"](text[:512])[0]
@@ -238,8 +264,8 @@ def _sentiment_features(text: str, fallback_compound: float, use_ml_pipeline: bo
     }
 
 
-def _emotion_features(lowered_words: list[str], text: str, use_ml_pipeline: bool = True) -> dict:
-    emotion_bundle = _load_emotion_pipeline() if use_ml_pipeline else None
+def _emotion_features(lowered_words: list[str], text: str, language: str = "english", use_ml_pipeline: bool = True) -> dict:
+    emotion_bundle = _load_emotion_pipeline() if use_ml_pipeline and _normalize_language(language) == "english" else None
     if emotion_bundle is not None:
         try:
             raw = emotion_bundle["pipeline"](text[:512])[0]
@@ -256,9 +282,11 @@ def _emotion_features(lowered_words: list[str], text: str, use_ml_pipeline: bool
         except Exception:
             pass
 
+    language_rules = LANGUAGE_TEXT_RULES[_normalize_language(language)]
+    emotion_keywords = language_rules["emotion_keywords"]
     counts = {
         emotion: sum(1 for word in lowered_words if word in keywords)
-        for emotion, keywords in EMOTION_KEYWORDS.items()
+        for emotion, keywords in emotion_keywords.items()
     }
     total = sum(counts.values()) or 1
     scores = {emotion: count / total for emotion, count in counts.items()}
@@ -270,9 +298,10 @@ def _emotion_features(lowered_words: list[str], text: str, use_ml_pipeline: bool
     }
 
 
-def _self_harm_features(text: str) -> dict:
+def _self_harm_features(text: str, language: str = "english") -> dict:
     lowered = text.lower()
-    matches = [keyword for keyword in SELF_HARM_KEYWORDS if keyword in lowered]
+    language_rules = LANGUAGE_TEXT_RULES[_normalize_language(language)]
+    matches = [keyword for keyword in language_rules["self_harm_keywords"] if keyword in lowered]
     severity = min(1.0, len(matches) / 2.0) if matches else 0.0
     return {
         "self_harm_keyword_detected": bool(matches),
@@ -283,25 +312,30 @@ def _self_harm_features(text: str) -> dict:
 
 def extract_text_features(
     text: str,
+    language: str = "english",
     use_transformer: bool = True,
     use_ml_pipelines: bool = True,
 ) -> dict:
     if not text:
         return {"available": False}
 
-    if analyzer is not None:
+    normalized_language = _normalize_language(language)
+    language_rules = LANGUAGE_TEXT_RULES[normalized_language]
+
+    if analyzer is not None and normalized_language == "english":
         vader_sentiment = analyzer.polarity_scores(text)
     else:
         vader_sentiment = {"compound": 0.0}
 
     words = text.split()
     lowered_words = [word.strip(".,!?;:()[]{}\"'").lower() for word in words]
-    negative = sum(1 for w in lowered_words if w in NEGATIVE_WORDS)
-    positive = sum(1 for w in lowered_words if w in POSITIVE_WORDS)
+    negative = sum(1 for w in lowered_words if w in language_rules["negative_words"])
+    positive = sum(1 for w in lowered_words if w in language_rules["positive_words"])
+    heuristic_compound = np.clip((positive - negative) / max(1, len(lowered_words)), -1.0, 1.0)
     question_count = text.count("?")
     exclamation_count = text.count("!")
     unique_ratio = len(set(lowered_words)) / max(1, len(lowered_words))
-    transformer_features = _transformer_text_features(text) if use_transformer else {
+    transformer_features = _transformer_text_features(text, normalized_language) if use_transformer else {
         "transformer_available": False,
         "transformer_model": None,
         "embedding_mean": 0.0,
@@ -310,15 +344,17 @@ def extract_text_features(
     }
     sentiment_features = _sentiment_features(
         text,
-        vader_sentiment["compound"],
+        vader_sentiment["compound"] if normalized_language == "english" else heuristic_compound,
+        language=normalized_language,
         use_ml_pipeline=use_ml_pipelines,
     )
     emotion_features = _emotion_features(
         lowered_words,
         text,
+        language=normalized_language,
         use_ml_pipeline=use_ml_pipelines,
     )
-    self_harm_features = _self_harm_features(text)
+    self_harm_features = _self_harm_features(text, language=normalized_language)
 
     features = {
         "available": True,
@@ -341,6 +377,7 @@ def extract_text_features(
         "emotion_model": emotion_features["emotion_model"],
         "dominant_emotion": emotion_features["dominant_emotion"],
         "emotion_scores": emotion_features["emotion_scores"],
+        "language": normalized_language,
         "self_harm_keyword_detected": self_harm_features["self_harm_keyword_detected"],
         "self_harm_keyword_matches": self_harm_features["self_harm_keyword_matches"],
         "self_harm_risk_score": self_harm_features["self_harm_risk_score"],

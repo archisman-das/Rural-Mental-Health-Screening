@@ -209,6 +209,7 @@ def score_text_features(features: dict) -> dict:
             "sentiment_model": features["sentiment_model"],
             "dominant_emotion": features["dominant_emotion"],
             "emotion_model": features["emotion_model"],
+            "language": features.get("language", "english"),
             "self_harm_keyword_detected": features["self_harm_keyword_detected"],
             "self_harm_keyword_matches": features["self_harm_keyword_matches"],
             "self_harm_risk_score": round(features["self_harm_risk_score"], 3),
@@ -237,6 +238,7 @@ def score_text_features(features: dict) -> dict:
             "sentiment_model": features["sentiment_model"],
             "dominant_emotion": features["dominant_emotion"],
             "emotion_model": features["emotion_model"],
+            "language": features.get("language", "english"),
             "self_harm_keyword_detected": features["self_harm_keyword_detected"],
             "self_harm_keyword_matches": features["self_harm_keyword_matches"],
             "self_harm_risk_score": round(features["self_harm_risk_score"], 3),
@@ -406,9 +408,28 @@ def aggregate_scores(results: list) -> dict:
     return result
 
 
-def build_recommendation(overall: dict) -> str:
+def build_recommendation(overall: dict, language: str = "english") -> str:
+    language = str(language or "english").strip().lower()
     high_risks = [name for name in PREDICTION_DOMAINS if overall[name] == "high"]
     moderate_risks = [name for name in PREDICTION_DOMAINS if overall[name] == "moderate"]
+
+    if language == "hindi":
+        if high_risks:
+            joined = ", ".join(PREDICTION_LABELS[name].lower() for name in high_risks)
+            return f"{joined} के लिए उच्च जोखिम संकेत मिला। जल्द से जल्द मानसिक स्वास्थ्य विशेषज्ञ या प्रशिक्षित स्वास्थ्यकर्मी से फॉलो-अप कराएँ।"
+        if moderate_risks:
+            joined = ", ".join(PREDICTION_LABELS[name].lower() for name in moderate_risks)
+            return f"{joined} के लिए मध्यम जोखिम संकेत मिला। फॉलो-अप बातचीत, दोबारा स्क्रीनिंग, और सहायक जाँच की सलाह दी जाती है।"
+        return "वर्तमान बहु-मोड संकेत कम जोखिम दिखाते हैं, लेकिन लक्षण बने रहें या बढ़ें तो दोबारा स्क्रीनिंग करें।"
+
+    if language == "bengali":
+        if high_risks:
+            joined = ", ".join(PREDICTION_LABELS[name].lower() for name in high_risks)
+            return f"{joined} এর জন্য উচ্চ ঝুঁকির ইঙ্গিত পাওয়া গেছে। যত দ্রুত সম্ভব মানসিক স্বাস্থ্য বিশেষজ্ঞ বা প্রশিক্ষিত স্বাস্থ্যকর্মীর ফলো-আপ প্রয়োজন।"
+        if moderate_risks:
+            joined = ", ".join(PREDICTION_LABELS[name].lower() for name in moderate_risks)
+            return f"{joined} এর জন্য মাঝারি ঝুঁকির ইঙ্গিত পাওয়া গেছে। ফলো-আপ আলোচনা, পুনরায় স্ক্রিনিং, এবং সহায়ক পর্যবেক্ষণ প্রয়োজন।"
+        return "বর্তমান বহুমাত্রিক সংকেত কম ঝুঁকি দেখাচ্ছে, তবে উপসর্গ থাকলে বা বাড়লে আবার স্ক্রিনিং করুন।"
 
     if high_risks:
         joined = ", ".join(PREDICTION_LABELS[name].lower() for name in high_risks)
@@ -430,8 +451,8 @@ def build_recommendation(overall: dict) -> str:
     )
 
 
-def screen(text_input: str = "", audio_path: str = None, image_path: str = None) -> dict:
-    text_features = extract_text_features(text_input)
+def screen(text_input: str = "", audio_path: str = None, image_path: str = None, language: str = "english") -> dict:
+    text_features = extract_text_features(text_input, language=language)
     audio_features = extract_audio_features(audio_path)
     image_features = extract_image_features(image_path)
 
@@ -440,7 +461,15 @@ def screen(text_input: str = "", audio_path: str = None, image_path: str = None)
     image_result = score_image_features(image_features)
 
     overall = aggregate_scores([text_result, audio_result, image_result])
-    recommendation = build_recommendation(overall)
+    recommendation = build_recommendation(overall, language=language)
+    disclaimer = (
+        "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions, "
+        "and it should not replace clinical judgment or emergency care."
+    )
+    if str(language).strip().lower() == "hindi":
+        disclaimer = "यह उपकरण प्रारंभिक स्क्रीनिंग प्रोटोटाइप है। यह निदान नहीं करता और न ही चिकित्सकीय निर्णय या आपातकालीन देखभाल का विकल्प है।"
+    elif str(language).strip().lower() == "bengali":
+        disclaimer = "এই টুলটি একটি প্রাথমিক স্ক্রিনিং প্রোটোটাইপ। এটি রোগ নির্ণয় করে না এবং চিকিৎসকের সিদ্ধান্ত বা জরুরি সেবার বিকল্প নয়।"
 
     return {
         "text": text_result,
@@ -448,8 +477,5 @@ def screen(text_input: str = "", audio_path: str = None, image_path: str = None)
         "image": image_result,
         "overall": overall,
         "recommendation": recommendation,
-        "disclaimer": (
-            "This tool is an early-stage screening prototype. It cannot diagnose mental health conditions, "
-            "and it should not replace clinical judgment or emergency care."
-        ),
+        "disclaimer": disclaimer,
     }

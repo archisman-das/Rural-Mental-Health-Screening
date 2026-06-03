@@ -8,6 +8,16 @@ from pathlib import Path
 DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 RESULTS_FILE = DATA_DIR / "screening_results.json"
 DB_FILE = DATA_DIR / "screening_results.db"
+MAX_LIST_LIMIT = 250
+
+
+def _connect() -> sqlite3.Connection:
+    connection = sqlite3.connect(DB_FILE, timeout=30)
+    connection.execute("PRAGMA journal_mode=WAL")
+    connection.execute("PRAGMA synchronous=NORMAL")
+    connection.execute("PRAGMA foreign_keys=ON")
+    connection.execute("PRAGMA busy_timeout=30000")
+    return connection
 
 
 def _ensure_storage() -> None:
@@ -15,7 +25,7 @@ def _ensure_storage() -> None:
     if not RESULTS_FILE.exists():
         RESULTS_FILE.write_text("[]", encoding="utf-8")
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with _connect() as connection:
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS assessments (
@@ -25,6 +35,12 @@ def _ensure_storage() -> None:
                 questionnaire_json TEXT NOT NULL,
                 multimodal_json TEXT NOT NULL
             )
+            """
+        )
+        connection.execute(
+            """
+            CREATE INDEX IF NOT EXISTS idx_assessments_created_at
+            ON assessments(created_at DESC)
             """
         )
         connection.commit()
@@ -40,7 +56,7 @@ def _migrate_json_cache_to_sqlite() -> None:
     if not cached_records:
         return
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with _connect() as connection:
         existing_count = connection.execute("SELECT COUNT(*) FROM assessments").fetchone()[0]
         if existing_count > 0:
             return
@@ -82,6 +98,17 @@ def _sync_json_cache() -> None:
     RESULTS_FILE.write_text(json.dumps(records, indent=2), encoding="utf-8")
 
 
+def _append_json_cache(record: dict) -> None:
+    try:
+        cached_records = json.loads(RESULTS_FILE.read_text(encoding="utf-8"))
+        if not isinstance(cached_records, list):
+            raise ValueError("Cache payload is not a list.")
+        cached_records.insert(0, record)
+        RESULTS_FILE.write_text(json.dumps(cached_records, indent=2), encoding="utf-8")
+    except Exception:
+        _sync_json_cache()
+
+
 def create_assessment_record(profile: dict, questionnaire: dict, multimodal: dict) -> dict:
     _ensure_storage()
     record = {
@@ -92,7 +119,7 @@ def create_assessment_record(profile: dict, questionnaire: dict, multimodal: dic
         "multimodal": multimodal,
     }
 
-    with sqlite3.connect(DB_FILE) as connection:
+    with _connect() as connection:
         connection.execute(
             """
             INSERT INTO assessments (
@@ -113,14 +140,14 @@ def create_assessment_record(profile: dict, questionnaire: dict, multimodal: dic
         )
         connection.commit()
 
-    _sync_json_cache()
+    _append_json_cache(record)
     return record
 
 
 def fetch_assessment_record(assessment_id: str) -> dict | None:
     _ensure_storage()
     normalized = assessment_id.strip().upper()
-    with sqlite3.connect(DB_FILE) as connection:
+    with _connect() as connection:
         connection.row_factory = sqlite3.Row
         row = connection.execute(
             """
@@ -138,6 +165,8 @@ def fetch_assessment_record(assessment_id: str) -> dict | None:
 
 def list_assessment_records(limit: int | None = None) -> list[dict]:
     _ensure_storage()
+    if limit is not None:
+        limit = max(1, min(int(limit), MAX_LIST_LIMIT))
     query = """
         SELECT assessment_id, created_at, profile_json, questionnaire_json, multimodal_json
         FROM assessments

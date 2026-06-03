@@ -25,6 +25,80 @@ from mental_health_screening.utils import average, normalize_score, risk_level
 
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/web")
+app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
+
+MAX_TEXT_INPUT_LENGTH = 5000
+LIST_LIMIT_DEFAULT = 50
+LIST_LIMIT_MAX = 250
+
+
+def _json_error(message: str, status_code: int = 400, details: dict | None = None):
+    payload = {"error": message}
+    if details:
+        payload["details"] = details
+    return jsonify(payload), status_code
+
+
+def _clean_text(value: str | None, max_length: int | None = None) -> str:
+    text = str(value or "").strip()
+    if max_length is not None:
+        return text[:max_length]
+    return text
+
+
+def _normalize_profile(profile: dict | None) -> dict:
+    safe_profile = profile if isinstance(profile, dict) else {}
+    age_value = safe_profile.get("age", 0)
+    try:
+        age = int(age_value)
+    except (TypeError, ValueError):
+        age = 0
+    age = max(0, min(age, 120))
+    normalized_language = _clean_text(safe_profile.get("language") or "English", 30) or "English"
+    return {
+        "full_name": _clean_text(safe_profile.get("full_name"), 120),
+        "age": age,
+        "gender": _clean_text(safe_profile.get("gender") or "Prefer not to say", 40) or "Prefer not to say",
+        "village": _clean_text(safe_profile.get("village"), 120),
+        "phone": _clean_text(safe_profile.get("phone"), 40),
+        "assessor": _clean_text(safe_profile.get("assessor"), 120),
+        "language": normalized_language,
+        "consent_received": bool(safe_profile.get("consent_received")),
+    }
+
+
+def _normalize_questionnaire(questionnaire: dict | None) -> dict:
+    if not isinstance(questionnaire, dict):
+        return {}
+    safe_questionnaire = {
+        "available": bool(questionnaire.get("available", True)),
+        "notes": _clean_text(questionnaire.get("notes"), 500),
+    }
+    for domain in PREDICTION_DOMAINS:
+        safe_questionnaire[f"{domain}_score"] = normalize_score(questionnaire.get(f"{domain}_score", 0.0))
+        safe_questionnaire[f"{domain}_risk"] = risk_level(safe_questionnaire[f"{domain}_score"])
+    safe_questionnaire["overall_score"] = normalize_score(
+        average([safe_questionnaire[f"{domain}_score"] for domain in PREDICTION_DOMAINS])
+    )
+    return safe_questionnaire
+
+
+def _validate_assessment_payload(profile: dict, questionnaire: dict, require_consent: bool = True) -> dict | None:
+    if not profile.get("full_name"):
+        return {"field": "full_name", "message": "Candidate full name is required."}
+    if not profile.get("village"):
+        return {"field": "village", "message": "Village or local area is required."}
+    if not profile.get("assessor"):
+        return {"field": "assessor", "message": "Assessor name is required."}
+    if require_consent and not profile.get("consent_received"):
+        return {"field": "consent_received", "message": "Consent is required before saving an assessment."}
+    missing_scores = [
+        domain for domain in PREDICTION_DOMAINS
+        if f"{domain}_score" not in questionnaire
+    ]
+    if missing_scores:
+        return {"field": "questionnaire", "message": "Questionnaire scores are incomplete.", "missing_domains": missing_scores}
+    return None
 
 
 def _modality_failure_note(modality: str, reason: str | None, result: dict | None = None) -> str:
@@ -123,9 +197,28 @@ def _decorate_modality_result(result: dict, metadata: dict | None, modality: str
     return _metadata_modality(modality, metadata, reason=result.get("reason"), source_result=result)
 
 
-def _build_dashboard_recommendation(overall: dict) -> str:
+def _build_dashboard_recommendation(overall: dict, language: str = "english") -> str:
+    language = str(language or "english").strip().lower()
     high = [domain for domain in PREDICTION_DOMAINS if overall.get(domain) == "high"]
     moderate = [domain for domain in PREDICTION_DOMAINS if overall.get(domain) == "moderate"]
+
+    if language == "hindi":
+        if high:
+            joined = ", ".join(PREDICTION_LABELS[domain].lower() for domain in high)
+            return f"{joined} के लिए उच्च जोखिम संकेत मिला। संरचित फॉलो-अप और मानसिक स्वास्थ्य रेफरल जल्द करें।"
+        if moderate:
+            joined = ", ".join(PREDICTION_LABELS[domain].lower() for domain in moderate)
+            return f"{joined} के लिए मध्यम जोखिम संकेत मिला। फॉलो-अप बातचीत और दोबारा स्क्रीनिंग की योजना बनाएं।"
+        return "वर्तमान संकेत कम जोखिम दिखाते हैं। लक्षण बने रहें या बढ़ें तो निगरानी और दोबारा स्क्रीनिंग करें।"
+
+    if language == "bengali":
+        if high:
+            joined = ", ".join(PREDICTION_LABELS[domain].lower() for domain in high)
+            return f"{joined} এর জন্য উচ্চ ঝুঁকির ইঙ্গিত পাওয়া গেছে। দ্রুত ফলো-আপ ও মানসিক স্বাস্থ্য রেফারাল প্রয়োজন।"
+        if moderate:
+            joined = ", ".join(PREDICTION_LABELS[domain].lower() for domain in moderate)
+            return f"{joined} এর জন্য মাঝারি ঝুঁকির ইঙ্গিত পাওয়া গেছে। ফলো-আপ আলোচনা ও পুনরায় স্ক্রিনিং পরিকল্পনা করুন।"
+        return "বর্তমান সংকেত কম ঝুঁকি দেখাচ্ছে। উপসর্গ থাকলে বা বাড়লে পর্যবেক্ষণ ও পুনরায় স্ক্রিনিং করুন।"
 
     if high:
         joined = ", ".join(PREDICTION_LABELS[domain].lower() for domain in high)
@@ -174,6 +267,7 @@ def _dashboard_confidence(questionnaire: dict, screening_overall: dict, modaliti
 def _build_dashboard_multimodal(
     text_input: str,
     questionnaire: dict,
+    language: str = "english",
     audio_path: str | None = None,
     image_path: str | None = None,
     audio_metadata: dict | None = None,
@@ -183,6 +277,7 @@ def _build_dashboard_multimodal(
         text_input=text_input or "",
         audio_path=audio_path,
         image_path=image_path,
+        language=language,
     )
     text_result = screening.get("text") or {"available": False}
     audio_result = _decorate_modality_result(screening.get("audio") or {"available": False}, audio_metadata, "audio")
@@ -220,7 +315,7 @@ def _build_dashboard_multimodal(
         "image": image_result,
         "overall": overall,
         "model_stats": model_stats,
-        "recommendation": _build_dashboard_recommendation(overall),
+        "recommendation": _build_dashboard_recommendation(overall, language=language),
         "disclaimer": screening.get(
             "disclaimer",
             "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment.",
@@ -232,20 +327,20 @@ def _extract_request_payload():
     if request.is_json:
         payload = request.get_json(silent=True) or {}
         return {
-            "profile": payload.get("profile"),
-            "questionnaire": payload.get("questionnaire"),
+            "profile": _normalize_profile(payload.get("profile")),
+            "questionnaire": _normalize_questionnaire(payload.get("questionnaire")),
             "multimodal": payload.get("multimodal"),
-            "text_input": payload.get("text_input", ""),
+            "text_input": _clean_text(payload.get("text_input"), MAX_TEXT_INPUT_LENGTH),
             "audio_metadata": payload.get("audio_metadata"),
             "image_metadata": payload.get("image_metadata"),
             "audio_path": None,
             "image_path": None,
         }
 
-    profile = _parse_json_field(request.form.get("profile"), {})
-    questionnaire = _parse_json_field(request.form.get("questionnaire"), {})
+    profile = _normalize_profile(_parse_json_field(request.form.get("profile"), {}))
+    questionnaire = _normalize_questionnaire(_parse_json_field(request.form.get("questionnaire"), {}))
     multimodal = _parse_json_field(request.form.get("multimodal"), None)
-    text_input = request.form.get("text_input", "")
+    text_input = _clean_text(request.form.get("text_input", ""), MAX_TEXT_INPUT_LENGTH)
     audio_path, audio_metadata = _save_uploaded_file(request.files.get("audio_file"), "_audio")
     image_path, image_metadata = _save_uploaded_file(request.files.get("image_file"), "_image")
     return {
@@ -267,12 +362,23 @@ def root():
 
 @app.get("/health")
 def health():
-    return jsonify({"status": "ok", "database": get_database_metadata()})
+    return jsonify(
+        {
+            "status": "ok",
+            "database": get_database_metadata(),
+            "limits": {
+                "max_upload_mb": round(app.config["MAX_CONTENT_LENGTH"] / (1024 * 1024), 2),
+                "max_text_input_length": MAX_TEXT_INPUT_LENGTH,
+                "max_list_limit": LIST_LIMIT_MAX,
+            },
+        }
+    )
 
 
 @app.get("/api/assessments")
 def api_list_assessments():
-    limit = request.args.get("limit", type=int)
+    limit = request.args.get("limit", default=LIST_LIMIT_DEFAULT, type=int)
+    limit = max(1, min(limit, LIST_LIMIT_MAX))
     return jsonify(list_assessment_records(limit=limit))
 
 
@@ -285,12 +391,17 @@ def api_create_assessment():
 
     if not isinstance(profile, dict) or not isinstance(questionnaire, dict):
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
-        return jsonify({"error": "Invalid payload. Expected profile and questionnaire objects."}), 400
+        return _json_error("Invalid payload. Expected profile and questionnaire objects.", 400)
+    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=True)
+    if validation_error:
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        return _json_error(validation_error["message"], 400, validation_error)
     try:
         if not isinstance(multimodal, dict):
             multimodal = _build_dashboard_multimodal(
                 text_input=payload["text_input"],
                 questionnaire=questionnaire,
+                language=profile.get("language", "English"),
                 audio_path=payload["audio_path"],
                 image_path=payload["image_path"],
                 audio_metadata=payload["audio_metadata"],
@@ -311,15 +422,21 @@ def api_create_assessment():
 def api_preview_assessment():
     payload = _extract_request_payload()
     questionnaire = payload["questionnaire"] or {}
+    profile = payload["profile"] or {}
 
     if not isinstance(questionnaire, dict):
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
-        return jsonify({"error": "Invalid payload. Expected questionnaire object."}), 400
+        return _json_error("Invalid payload. Expected questionnaire object.", 400)
+    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=False)
+    if validation_error and validation_error.get("field") == "questionnaire":
+        _cleanup_temp_paths(payload["audio_path"], payload["image_path"])
+        return _json_error(validation_error["message"], 400, validation_error)
     try:
         return jsonify(
             _build_dashboard_multimodal(
                 text_input=payload["text_input"],
                 questionnaire=questionnaire,
+                language=profile.get("language", "English"),
                 audio_path=payload["audio_path"],
                 image_path=payload["image_path"],
                 audio_metadata=payload["audio_metadata"],
@@ -334,7 +451,7 @@ def api_preview_assessment():
 def api_fetch_assessment(assessment_id: str):
     record = fetch_assessment_record(assessment_id)
     if record is None:
-        return jsonify({"error": "Assessment not found."}), 404
+        return _json_error("Assessment not found.", 404)
     return jsonify(record)
 
 
@@ -342,7 +459,7 @@ def api_fetch_assessment(assessment_id: str):
 def api_assessment_pdf(assessment_id: str):
     record = fetch_assessment_record(assessment_id)
     if record is None:
-        return jsonify({"error": "Assessment not found."}), 404
+        return _json_error("Assessment not found.", 404)
 
     pdf_bytes = create_assessment_pdf_bytes(record)
     return Response(
@@ -370,6 +487,18 @@ def api_sample_dataset():
     if not sample_path.exists():
         return jsonify([])
     return Response(sample_path.read_text(encoding="utf-8"), mimetype="application/json")
+
+
+@app.errorhandler(413)
+def payload_too_large(_error):
+    return _json_error("Uploaded media is too large for the dashboard server.", 413)
+
+
+@app.errorhandler(500)
+def internal_error(_error):
+    if request.path.startswith("/api/"):
+        return _json_error("The dashboard server hit an internal error while processing this request.", 500)
+    return _error
 
 
 if __name__ == "__main__":

@@ -15,6 +15,17 @@
         <p class="hero-text">
           Conduct assessments, score risk, explore analytics, fetch records, and export reports from one interactive dashboard.
         </p>
+        <div class="language-switcher">
+          <label for="dashboardLanguage">Dashboard language</label>
+          <div class="language-switcher-row">
+            <select id="dashboardLanguage">
+              <option>English</option>
+              <option>Hindi</option>
+              <option>Bengali</option>
+            </select>
+            <button id="applyLanguageBtn" class="ghost-btn small-btn" type="button">Apply Language</button>
+          </div>
+        </div>
       </div>
       <div class="hero-visual" aria-hidden="true">
         <div class="hero-visual-card">
@@ -148,7 +159,7 @@
         </div>
 
         <div class="action-row">
-          <button class="primary-btn" type="submit">Save Assessment</button>
+          <button id="saveAssessmentBtn" class="primary-btn" type="submit">Save Assessment</button>
           <button id="resetAssessmentBtn" class="ghost-btn" type="button">Reset Form</button>
         </div>
       </form>

@@ -1,6 +1,15 @@
 # Rural Mental Health Screening AI
 
-An AI-based rural mental health screening prototype for questionnaire intake, multimodal signals, analytics, saved result retrieval, and PDF reporting.
+An AI-based rural mental health screening dashboard for questionnaire intake, multimodal signals, adaptive screening, multilingual analysis views, saved result retrieval, and PDF reporting.
+
+## What This Project Includes
+
+- Multilingual dashboard UI with English, Hindi, and Bengali switching
+- Assessment Workspace for profile intake, questionnaire capture, text narrative, audio, and image inputs
+- Adaptive Test workflow for one-question-at-a-time screening
+- Analytics Hub for live preview, component-wise analysis, model insights, trajectory tracking, and trend summaries
+- Records and Reports for record lookup, detailed assessment review, and PDF export
+- Flask backend with SQLite persistence and local offline fallback support
 
 ## Prediction Scope
 
@@ -44,7 +53,7 @@ If transformer packages or model weights are unavailable, the app falls back to 
 - Frontend: HTML, CSS, and JavaScript in `web/`
 - Backend API: Flask
 - Database: SQLite
-- Assessment flow: dashboard intake with questionnaire and live Python NLP preview
+- Assessment flow: dashboard intake with questionnaire, live Python NLP preview, and adaptive screening
 - Data exchange: backend persistence and JSON import/export
 - Reporting: backend PDF export
 
@@ -61,15 +70,15 @@ Open `http://127.0.0.1:8000/`.
 Use it to:
 
 - Create and save assessments directly from the `Assessment Workspace`
+- Switch the interface between English, Hindi, and Bengali
+- Review live prediction previews before saving
+- Run the `Adaptive Test` for an IRT-style question flow that asks the next most informative item first
+- Reuse workspace uploads in the adaptive flow instead of asking for a second upload set
 - Review detailed single-assessment analysis in the `Analytics Hub`
+- Track longitudinal trajectory, domain drift, trend summaries, and report-ready insights
 - Fetch records and export PDF reports from `Records and Reports`
 - Persist records through the API into the SQLite database
-- Try the `Adaptive Test` tab for an IRT-style question flow that asks the next most informative item first
-- The adaptive tab reuses the workspace's uploaded audio, image, and optional passive-video inputs instead of asking for a second upload set
-- If the backend adaptive endpoint is unavailable, both the web client and Streamlit app fall back to a local browser/Python selector so the interview can continue
-- Copy `examples\adaptive_question_bank.example.json` to `data\adaptive_question_bank.json` to override item difficulty and discrimination locally
-- Use `POST /api/adaptive/next` with `{"responses": {...}}` to fetch the next adaptive question from the backend API
-- Use `GET /api/adaptive/config` to inspect the pilot-calibrated stopping threshold and domain-balance weight
+- Use the local offline fallback when the adaptive endpoint is unavailable
 
 Optional zero-hardware passive inputs:
 
@@ -141,8 +150,16 @@ python dashboard_server.py
 - Audio and image uploads go to the backend during preview and save; if dependencies are installed and the media is usable, those modalities contribute real inference instead of metadata-only placeholders.
 - The `Adaptive Test` workflow uses the same workspace uploads and can continue with a local fallback selector if the adaptive API is temporarily offline.
 - Save the assessment to generate a persistent `assessment_id` in the API and SQLite database.
-- Open `Analytics Hub` after save to review component-wise analysis, model statistics, modality quality, and recommendation details.
+- Open `Analytics Hub` after save to review component-wise analysis, model statistics, modality quality, trajectory, trend summary, and recommendation details.
 - Use `Records and Reports` to fetch a saved record by `assessment_id`, inspect the detailed result, and download a PDF report.
+
+## Local Run
+
+```powershell
+python dashboard_server.py
+```
+
+Open `http://127.0.0.1:8000/` in your browser.
 
 ## Notes
 

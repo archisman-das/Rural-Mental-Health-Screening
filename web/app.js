@@ -42,12 +42,232 @@ const ADAPTIVE_CHOOSE_ONE_TRANSLATIONS = {
   Bengali: "একটি নির্বাচন করুন",
 };
 
+const LANGUAGE_OPTION_LABELS = {
+  English: {
+    English: "English",
+    Hindi: "Hindi",
+    Bengali: "Bengali",
+    Other: "Other",
+  },
+  Hindi: {
+    English: "\u0905\u0902\u0917\u094d\u0930\u0947\u091c\u0940",
+    Hindi: "\u0939\u093f\u0902\u0926\u0940",
+    Bengali: "\u092c\u093e\u0902\u0917\u094d\u0932\u093e",
+    Other: "\u0905\u0928\u094d\u092f",
+  },
+  Bengali: {
+    English: "\u0987\u0982\u09b0\u09c7\u099c\u09bf",
+    Hindi: "\u09b9\u09bf\u09a8\u09cd\u09a6\u09bf",
+    Bengali: "\u09ac\u09be\u0982\u09b2\u09be",
+    Other: "\u0985\u09a8\u09cd\u09af",
+  },
+};
+
+const GENDER_OPTION_LABELS = {
+  English: ["Prefer not to say", "Female", "Male", "Other"],
+  Hindi: ["कृपया चुनें", "महिला", "पुरुष", "अन्य"],
+  Bengali: ["অনুগ্রহ করে নির্বাচন করুন", "নারী", "পুরুষ", "অন্যান্য"],
+};
+
+const RISK_LEVEL_LABELS = {
+  English: { low: "Low", moderate: "Moderate", high: "High" },
+  Hindi: { low: "निम्न", moderate: "मध्यम", high: "उच्च" },
+  Bengali: { low: "নিম্ন", moderate: "মাঝারি", high: "উচ্চ" },
+};
+
+const TRAJECTORY_STATUS_LABELS = {
+  English: {
+    insufficient_history: "Need more screenings",
+    escalating: "Escalating risk",
+    worsening: "Worsening trend",
+    improving: "Improving trend",
+    volatile: "Volatile trajectory",
+    stable: "Stable trajectory",
+    default: "Trajectory available",
+  },
+  Hindi: {
+    insufficient_history: "और स्क्रीनिंग की ज़रूरत है",
+    escalating: "जोखिम बढ़ रहा है",
+    worsening: "रुझान बिगड़ रहा है",
+    improving: "रुझान बेहतर हो रहा है",
+    volatile: "अस्थिर रुझान",
+    stable: "स्थिर रुझान",
+    default: "रुझान उपलब्ध है",
+  },
+  Bengali: {
+    insufficient_history: "আরও স্ক্রিনিং প্রয়োজন",
+    escalating: "ঝুঁকি বাড়ছে",
+    worsening: "অবনমিত প্রবণতা",
+    improving: "উন্নতিশীল প্রবণতা",
+    volatile: "অস্থির প্রবণতা",
+    stable: "স্থিতিশীল প্রবণতা",
+    default: "প্রবণতা উপলব্ধ",
+  },
+};
+
+const TRAJECTORY_SUMMARY_TEXTS = {
+  English: {
+    insufficient_history: "Only one screening is available. Capture a follow-up visit to start trend modeling.",
+    volatile: "Risk is fluctuating across visits, so closer monitoring may be needed.",
+    improving: "Recent visits suggest improving risk scores. Continue follow-up to confirm the recovery holds.",
+    stable: "Risk has stayed relatively stable across the available screenings.",
+    escalating: "Risk is rising over time. Compare this visit with the last one and plan follow-up quickly.",
+  },
+  Hindi: {
+    insufficient_history: "केवल एक स्क्रीनिंग उपलब्ध है। रुझान मॉडलिंग शुरू करने के लिए एक फॉलो-अप विज़िट दर्ज करें।",
+    volatile: "विभिन्न विज़िट के बीच जोखिम बदल रहा है, इसलिए अधिक नज़दीकी निगरानी की ज़रूरत हो सकती है।",
+    improving: "हाल की विज़िट जोखिम स्कोर में सुधार दिखाती हैं। सुधार बने रहने की पुष्टि के लिए फॉलो-अप जारी रखें।",
+    stable: "उपलब्ध स्क्रीनिंग में जोखिम अपेक्षाकृत स्थिर रहा है।",
+    escalating: "समय के साथ जोखिम बढ़ रहा है। इस विज़िट की पिछली विज़िट से तुलना करें और जल्दी फॉलो-अप की योजना बनाएं।",
+  },
+  Bengali: {
+    insufficient_history: "শুধুমাত্র একটি স্ক্রিনিং উপলব্ধ আছে। ট্রেন্ড মডেলিং শুরু করতে একটি ফলো-আপ ভিজিট নথিভুক্ত করুন।",
+    volatile: "বিভিন্ন ভিজিটে ঝুঁকি ওঠানামা করছে, তাই আরও কাছ থেকে নজরদারি দরকার হতে পারে।",
+    improving: "সাম্প্রতিক ভিজিটগুলো ঝুঁকির স্কোর উন্নত হওয়ার ইঙ্গিত দিচ্ছে। উন্নতি বজায় আছে কিনা দেখতে ফলো-আপ চালিয়ে যান।",
+    stable: "উপলব্ধ স্ক্রিনিংগুলোতে ঝুঁকি তুলনামূলকভাবে স্থির রয়েছে।",
+    escalating: "সময়ের সাথে ঝুঁকি বাড়ছে। এই ভিজিটটি আগেরটির সাথে তুলনা করুন এবং দ্রুত ফলো-আপ পরিকল্পনা করুন।",
+  },
+};
+
+const MODALITY_LABELS = {
+  English: { text: "Text", audio: "Audio", image: "Image" },
+  Hindi: { text: "पाठ", audio: "ऑडियो", image: "छवि" },
+  Bengali: { text: "পাঠ্য", audio: "অডিও", image: "ছবি" },
+};
+
+const DOMAIN_LABEL_TRANSLATIONS = {
+  English: {
+    depression: "Depression",
+    anxiety: "Anxiety",
+    stress: "Stress",
+    sleep_disorder: "Sleep Disorder",
+    burnout: "Burnout",
+    loneliness: "Loneliness",
+    substance_abuse: "Substance Abuse",
+  },
+  Hindi: {
+    depression: "अवसाद",
+    anxiety: "चिंता",
+    stress: "तनाव",
+    sleep_disorder: "नींद विकार",
+    burnout: "बर्नआउट",
+    loneliness: "अकेलापन",
+    substance_abuse: "पदार्थ उपयोग",
+  },
+  Bengali: {
+    depression: "অবসাদ",
+    anxiety: "উদ্বেগ",
+    stress: "চাপ",
+    sleep_disorder: "ঘুমের সমস্যা",
+    burnout: "বার্নআউট",
+    loneliness: "একাকীত্ব",
+    substance_abuse: "পদার্থ ব্যবহার",
+  },
+};
+
+function localizedRiskLevel(level, language = currentLanguage()) {
+  return RISK_LEVEL_LABELS[language]?.[level] || RISK_LEVEL_LABELS.English[level] || level;
+}
+
+function localizedTrajectoryStatus(status, language = currentLanguage()) {
+  return TRAJECTORY_STATUS_LABELS[language]?.[status] || TRAJECTORY_STATUS_LABELS.English[status] || TRAJECTORY_STATUS_LABELS.English.default;
+}
+
+function localizedTrajectorySummary(status, language = currentLanguage()) {
+  return TRAJECTORY_SUMMARY_TEXTS[language]?.[status] || TRAJECTORY_SUMMARY_TEXTS.English[status] || "";
+}
+
+function localizedModalityLabel(key, language = currentLanguage()) {
+  return MODALITY_LABELS[language]?.[key] || MODALITY_LABELS.English[key] || key;
+}
+
+function localizedDomainLabel(key, language = currentLanguage()) {
+  return DOMAIN_LABEL_TRANSLATIONS[language]?.[key] || DOMAIN_LABEL_TRANSLATIONS.English[key] || key;
+}
+
+const ADAPTIVE_UI_TRANSLATIONS = {
+  English: {
+    chooseOne: "Choose one",
+    answerLabel: "Choose your answer",
+    answerHelp: "Choose the option that best matches the person's experience.",
+    narrativeSubtitle: "Use this note alongside the files already uploaded in the main screening workspace.",
+    remaining: "Remaining",
+    section: "Section",
+    irtInfo: "IRT info",
+    difficulty: "Difficulty",
+    selectionScore: "Selection score",
+    coverageBonus: "Coverage bonus",
+    stopThreshold: "Stop threshold",
+    balanceWeight: "Balance weight",
+    completedPrompt: "{id} has been saved. Start a new session to run another adaptive screening.",
+    completedMeta: "Adaptive interview complete.",
+    idleMeta: "No adaptive session started yet.",
+    loadingMeta: "Selecting the next best question...",
+    profileMissing: "Please complete the candidate profile before saving the adaptive assessment.",
+    consentMissing: "Please confirm consent before saving the adaptive assessment.",
+    fallbackNotice: "Adaptive API unavailable. Using browser fallback selector.",
+    answerRequired: "Please choose an answer before continuing.",
+  },
+  Hindi: {
+    chooseOne: "\u090f\u0915 \u091a\u0941\u0928\u0947\u0902",
+    answerLabel: "\u0905\u092a\u0928\u093e \u0909\u0924\u094d\u0924\u0930 \u091a\u0941\u0928\u0947\u0902",
+    answerHelp: "\u0909\u0938 \u0935\u093f\u0915\u0932\u094d\u092a \u091a\u0941\u0928\u0947\u0902 \u091c\u094b \u0909\u0928\u0915\u0947 \u0905\u0928\u0941\u092d\u0935 \u0938\u0947 \u0938\u092c\u0938\u0947 \u0905\u091a\u094d\u091b\u0940 \u0924\u0930\u0939 \u092e\u093f\u0932\u0924\u093e \u0939\u094b\u0964",
+    narrativeSubtitle: "\u092f\u0939 \u0928\u094b\u091f \u092e\u0941\u0916\u094d\u092f screening workspace \u092e\u0947\u0902 \u092a\u0939\u0932\u0947 \u0938\u0947 \u0905\u092a\u0932\u094b\u0921 \u0915\u0940 \u0917\u0908 \u092b\u093e\u0907\u0932\u094b\u0902 \u0915\u0947 \u0938\u093e\u0925 \u0909\u092a\u092f\u094b\u0917 \u0915\u0930\u0947\u0902\u0964",
+    remaining: "\u0936\u0947\u0937",
+    section: "\u0905\u0928\u0941\u092d\u093e\u0917",
+    irtInfo: "IRT \u091c\u093e\u0928\u0915\u093e\u0930\u0940",
+    difficulty: "\u0915\u0920\u093f\u0928\u093e\u0908",
+    selectionScore: "\u091a\u092f\u0928 \u0938\u094d\u0915\u094b\u0930",
+    coverageBonus: "\u0915\u0935\u0930\u0947\u091c \u092c\u094b\u0928\u0938",
+    stopThreshold: "\u0930\u094b\u0915\u0928\u0947 \u0915\u0940 \u0938\u0940\u092e\u093e",
+    balanceWeight: "\u0938\u0902\u0924\u0941\u0932\u0928 \u092d\u093e\u0930",
+    completedPrompt: "{id} \u0938\u0947\u0935 \u0939\u094b \u0917\u092f\u093e \u0939\u0948\u0964 \u0905\u0917\u0932\u0947 \u0906\u0902\u0915\u0932\u0928 \u0915\u0947 \u0932\u093f\u090f \u0928\u092f\u093e \u0938\u0924\u094d\u0930 \u0936\u0941\u0930\u0942 \u0915\u0930\u0947\u0902\u0964",
+    completedMeta: "\u0905\u0928\u0941\u0915\u0942\u0932\u0940 \u0938\u093e\u0915\u094d\u0937\u093e\u0924\u094d\u0915\u093e\u0930 \u092a\u0942\u0930\u093e \u0939\u0941\u0906\u0964",
+    idleMeta: "\u0905\u0928\u0941\u0915\u0942\u0932 \u0938\u0924\u094d\u0930 \u0905\u092d\u0940 \u0936\u0941\u0930\u0942 \u0928\u0939\u0940\u0902 \u0939\u0941\u0906 \u0939\u0948\u0964",
+    loadingMeta: "\u0905\u0917\u0932\u093e \u0938\u092c\u0938\u0947 \u0909\u092a\u092f\u0941\u0915\u094d\u0924 \u092a\u094d\u0930\u0936\u094d\u0928 \u091a\u0941\u0928\u093e \u091c\u093e \u0930\u0939\u093e \u0939\u0948\u0964",
+    profileMissing: "\u0905\u0928\u0941\u0915\u0942\u0932\u0940 \u0906\u0915\u0932\u0928 \u0938\u0947\u0935 \u0915\u0930\u0928\u0947 \u0938\u0947 \u092a\u0939\u0932\u0947 \u0909\u092e\u094d\u092e\u0940\u0926\u0935\u093e\u0930 \u092a\u094d\u0930\u094b\u092b\u093e\u0907\u0932 \u092a\u0942\u0930\u093e \u0915\u0930\u0947\u0902\u0964",
+    consentMissing: "\u0905\u0928\u0941\u0915\u0942\u0932\u0940 \u0906\u0915\u0932\u0928 \u0938\u0947\u0935 \u0915\u0930\u0928\u0947 \u0938\u0947 \u092a\u0939\u0932\u0947 \u0915\u0943\u092a\u092f\u093e \u0938\u0939\u092e\u0924\u093f \u0915\u0940 \u092a\u0941\u0937\u094d\u091f\u093f \u0915\u0930\u0947\u0902\u0964",
+    fallbackNotice: "\u0905\u0928\u0941\u0915\u0942\u0932\u0940 API \u0905\u092d\u0940 \u0909\u092a\u0932\u092c\u094d\u0927 \u0928\u0939\u0940\u0902 \u0939\u0948\u0964 \u092c\u094d\u0930\u093e\u0909\u091c\u093c\u0930 fallback selector \u0915\u093e \u0909\u092a\u092f\u094b\u0917 \u0939\u094b \u0930\u0939\u093e \u0939\u0948\u0964",
+    answerRequired: "\u0905\u0917\u0947 \u092c\u0922\u093c\u0928\u0947 \u0938\u0947 \u092a\u0939\u0932\u0947 \u0915\u0943\u092a\u092f\u093e \u090f\u0915 \u0909\u0924\u094d\u0924\u0930 \u091a\u0941\u0928\u0947\u0902\u0964",
+  },
+  Bengali: {
+    chooseOne: "\u098f\u0995\u099f\u09bf \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
+    answerLabel: "\u0986\u09aa\u09a8\u09be\u09b0 \u0989\u09a4\u09cd\u09a4\u09b0 \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
+    answerHelp: "\u098f\u09ae\u09a8 \u0985\u09aa\u09cd\u09b6\u09a8 \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8 \u099c\u09be \u09a4\u09be\u09b0 \u0985\u09a8\u09c1\u09ad\u09ac\u09c7\u09b0 \u09b8\u09ac\u099a\u09c7\u09af\u09bc\u09c7 \u09ad\u09be\u09b2\u09cb \u09ae\u09c7\u09b2\u09c7\u0964",
+    narrativeSubtitle: "\u09ae\u09c1\u0996\u09cd\u09af screening workspace-\u098f \u0985\u09a8\u09c1\u09aa\u09cd\u09b2\u09cb\u09a1 \u0995\u09b0\u09be \u09ab\u09be\u0987\u09b2\u0997\u09c1\u09b2\u09bf\u09b0 \u09b8\u09be\u09a5\u09c7 \u098f\u0987 \u09a8\u09cb\u099f\u099f\u09bf \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0995\u09b0\u09c1\u09a8\u0964",
+    remaining: "\u09ac\u09be\u0995\u09bf",
+    section: "\u0985\u09a7\u09cd\u09af\u09be\u09df",
+    irtInfo: "IRT \u09a4\u09a5\u09cd\u09af",
+    difficulty: "\u0995\u09a0\u09bf\u09a8\u09a4\u09be",
+    selectionScore: "\u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u09b8\u09cd\u0995\u09cb\u09b0",
+    coverageBonus: "\u0995\u09ad\u09be\u09b0\u09c7\u099c \u09ac\u09cb\u09a8\u09be\u09b8",
+    stopThreshold: "\u09b8\u09ae\u09be\u09aa\u09cd\u09a4\u09bf \u09b8\u09c0\u09ae\u09be",
+    balanceWeight: "\u09b8\u09be\u09ae\u09cd\u09af\u09a4\u09be \u0993\u099c\u09a8",
+    completedPrompt: "{id} \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09df\u09c7\u099b\u09c7\u0964 \u0986\u09b0\u09cb \u098f\u0995\u099f\u09bf adaptive screening \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09a4\u09c7 \u09a8\u09a4\u09c1\u09a8 \u09b8\u09c7\u09b6\u09a8 \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09c1\u09a8\u0964",
+    completedMeta: "\u0985\u09a8\u09c1\u0995\u09c2\u09b2 \u09b8\u09be\u0995\u09cd\u09b7\u09be\u09a4\u09cd\u0995\u09be\u09b0 \u09b8\u09ae\u09be\u09aa\u09cd\u09a4\u0964",
+    idleMeta: "\u0985\u09a8\u09c1\u0995\u09c2\u09b2 \u09b8\u09c7\u09b6\u09a8 \u098f\u09ad\u09be\u09b2\u09be \u09b6\u09c1\u09b0\u09c1 \u09b9\u09df\u09a8\u09bf\u0964",
+    loadingMeta: "\u09aa\u09b0\u09ac\u09b0\u09cd\u09a4\u09c0 \u09b8\u09ac\u099a\u09c7\u09af\u09bc\u09c7 \u0989\u09aa\u09af\u09cb\u0997\u09c0 \u09aa\u09cd\u09b0\u09b6\u09cd\u09a8 \u09ac\u09c7\u099b\u09c7 \u09a8\u09bf\u09af\u09bc\u09c7 \u09b9\u099a\u09cd\u099b\u09c7\u0964",
+    profileMissing: "\u0985\u09a8\u09c1\u0995\u09c2\u09b2 \u0986\u09a7\u09be\u09b0 \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09a3 \u09b8\u09c7\u09ac\u09c7 \u09a8\u09bf\u099a\u09cd\u099b\u09bf\u09a4 \u0995\u09b0\u09a4\u09c7 \u09b9\u09b2\u09c7 \u0989\u09ae\u09cd\u09ae\u09c0\u09a6\u09ac\u09be\u09b0 \u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2 \u09aa\u09c2\u09b0\u09cd\u09a3 \u0995\u09b0\u09c1\u09a8\u0964",
+    consentMissing: "\u0985\u09a8\u09c1\u0995\u09c2\u09b2 \u0986\u09a7\u09be\u09b0 \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09a3 \u09b8\u09c7\u09ac\u09c7 \u09a8\u09bf\u099a\u09cd\u099b\u09bf\u09a4 \u0995\u09b0\u09a4\u09c7 \u09b9\u09b2\u09c7 \u09a6\u09af\u09bc\u09be \u0995\u09b0\u09c7 \u09b8\u09ae\u09cd\u09ae\u09a4\u09bf \u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4 \u0995\u09b0\u09c1\u09a8\u0964",
+    fallbackNotice: "\u0985\u09a8\u09c1\u0995\u09c2\u09b2 API \u098f\u0996\u09a8\u0993 \u09aa\u09b0\u09bf\u09b7\u09c7\u09ac\u09be\u09df \u09a8\u09c7\u0987\u0964 \u09ac\u09cd\u09b0\u09c8\u099c\u09be\u09b0 fallback selector \u09ac\u09cd\u09af\u09ac\u09b9\u09be\u09b0 \u0995\u09b0\u09be \u09b9\u099a\u09cd\u099b\u09c7\u0964",
+    answerRequired: "\u098f\u0997\u09cb\u09a8\u09cb\u09b0 \u0986\u0997\u09c7 \u098f\u0995\u099f\u09bf \u0989\u09a4\u09cd\u09a4\u09b0 \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8\u0964",
+  },
+};
+
 const UI_TRANSLATIONS = {
   English: {
     workspaceTab: "Assessment Workspace",
+    heroEyebrow: "Start Screening",
+    heroTitle: "Rural Mental Health Screening",
+    heroText: "Begin one diagnostic screening session at a time, save the result, and view the current assessment without loading background records.",
+    heroMetricRisk: "risk domains tracked",
+    heroMetricModalities: "modalities blended",
+    heroMetricOffline: "offline capture support",
+    dashboardLanguageLabel: "Dashboard language",
     adaptiveTab: "Adaptive Test",
     analyticsTab: "Analytics Hub",
     recordsTab: "Records and Reports",
+    applyLanguageBtn: "Apply Language",
     intakeFlowTitle: "Complete one screening from start to finish",
     intakeFlowText: "Enter the person's details, capture their responses, review the live preview, and save one finalized assessment for analysis.",
     step1Title: "Capture profile and consent",
@@ -63,14 +283,23 @@ const UI_TRANSLATIONS = {
     questionnaireNotes: "Dashboard questionnaire scoring reflects symptom frequency over the last two weeks.",
     adaptiveTitle: "Adaptive Test",
     adaptiveSubtitle: "Ask one question at a time using the backend IRT selector and reuse the workspace uploads.",
+    adaptiveIntroFlowTitle: "Adaptive Flow",
+    adaptiveIntroFlowHeading: "One question at a time",
+    adaptiveIntroFlowText: "The backend selects the next most informative item and keeps the session aligned with the current language.",
+    adaptiveIntroLanguageTitle: "Language Sync",
+    adaptiveIntroLanguageHeading: "Language-aware prompts",
+    adaptiveIntroLanguageText: "Prompts, response options, and session guidance automatically follow the selected dashboard language.",
+    adaptiveIntroSharedTitle: "Shared Inputs",
+    adaptiveIntroSharedHeading: "Reuse workspace inputs",
+    adaptiveIntroSharedText: "Reuse the candidate profile and narrative inputs from the main screening workspace without re-entering them.",
     adaptiveProfileTitle: "Candidate Profile",
     adaptiveQuestionTitle: "Adaptive Question",
-    adaptiveQuestionHint: "Start the session to fetch the first backend-selected question.",
+    adaptiveQuestionHint: "Start a session to load the first adaptive question.",
     adaptiveNarrativeTitle: "Workspace Narrative",
     adaptiveStartBtn: "Start Session",
     adaptiveNextBtn: "Submit Answer",
     adaptiveResetBtn: "Reset Session",
-    adaptiveStatusIdle: "Start an adaptive session to fetch the first backend-selected question.",
+    adaptiveStatusIdle: "Start an adaptive session to load the first question.",
     adaptiveStatusLoading: "Fetching the next adaptive question...",
     adaptiveStatusReady: "Adaptive question ready.",
     adaptiveStatusComplete: "Adaptive session complete. The record has been saved.",
@@ -85,8 +314,12 @@ const UI_TRANSLATIONS = {
     assessorLabel: "Assessor name",
     languageLabel: "Preferred language",
     consentLabel: "Consent received for screening",
+    fullNamePlaceholder: "Enter full name",
+    villagePlaceholder: "Village or locality",
+    assessorPlaceholder: "Health worker or counselor",
     narrativeLabel: "Describe how the person has been feeling",
     narrativePlaceholder: "Example: I have been feeling tired, disconnected, anxious, and unable to sleep well.",
+    genderOptions: ["Prefer not to say", "Female", "Male", "Other"],
     guidedSpeechTitle: "Guided Speech Recording",
     guidedSpeechTopic: "Topic: Describe your last few days, your sleep, stress, and how connected you feel to people around you.",
     audioFileLabel: "Voice sample",
@@ -99,6 +332,12 @@ const UI_TRANSLATIONS = {
     workspacePredictionEmpty: "Start a new assessment to generate a fresh live prediction preview.",
     workspaceNlpEmpty: "Start a new assessment to see fresh NLP insights from the narrative text.",
     workspaceReadinessEmpty: "Fill in candidate details, consent, questionnaire, and narrative to see readiness feedback.",
+    workspacePredictionTitle: "Live Prediction Preview",
+    workspacePredictionText: "Combined questionnaire and NLP preview before save",
+    workspaceNlpTitle: "Live NLP Insights",
+    workspaceNlpText: "Sentiment, emotions, and safety indicators from the narrative text",
+    workspaceReadinessTitle: "Intake Readiness",
+    workspaceReadinessText: "Checks whether the record is ready to save and analyze",
     analyticsBannerDefault: "Complete and save an assessment to open detailed analysis here.",
     recordsBannerDefault: "Fetch a saved assessment by ID when you want to review or download an older report.",
     analyticsReady: "detailed component-wise analysis is ready.",
@@ -108,6 +347,8 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Refreshing the live preview from the Python NLP backend...",
     noRecordSelected: "No assessment selected.",
     assessmentIdLabel: "Assessment ID",
+    overallConfidenceLabel: "Overall Confidence",
+    overallRiskLabel: "Overall Risk",
     candidateLabel: "Candidate",
     villageShortLabel: "Village",
     assessorShortLabel: "Assessor",
@@ -123,6 +364,11 @@ const UI_TRANSLATIONS = {
     recordLookupPlaceholder: "Enter assessment ID to fetch",
     fetchRecordBtn: "Fetch Record",
     downloadPdfBtn: "Download Selected PDF",
+    domainScoreComparisonTitle: "Domain Score Comparison",
+    domainScoreComparisonText: "Questionnaire score versus combined AI score",
+    modalityQualityShortText: "Availability, confidence, and processing quality",
+    modalityQualityHelperText: "Use this section to understand which inputs were strong enough to support the final decision.",
+    domainScoreComparisonDescription: "This section compares self-reported symptoms with the final multimodal backend score for each condition.",
     domainAnalysisTitle: "Domain Analysis",
     domainAnalysisText: "Questionnaire versus combined AI score for each prediction domain",
     componentContributionTitle: "Component Contribution",
@@ -145,6 +391,10 @@ const UI_TRANSLATIONS = {
     modalityBreakdownText: "Text, audio metadata, and image metadata",
     featureSnapshotTitle: "Feature Snapshot",
     featureSnapshotText: "NLP and record features for the selected assessment",
+    patientHistoryTitle: "Patient History",
+    patientHistoryText: "Prior screenings and overall risk movement over time",
+    domainTrajectoryTitle: "Domain Drift",
+    domainTrajectoryText: "Which risk domains are worsening, improving, or staying stable",
     questionnaireRiskTitle: "Questionnaire Risk",
     questionnaireOverall: "Questionnaire Overall",
     combinedResultTitle: "Combined Dashboard Result",
@@ -152,12 +402,17 @@ const UI_TRANSLATIONS = {
     recommendationLabel: "Recommendation",
     questionnaireLabel: "Questionnaire",
     dashboardLabel: "Dashboard",
+    combinedAiLabel: "Combined AI",
     noDataModality: "No data available for this modality.",
+    noQuestionnaireNotesLabel: "No questionnaire notes available.",
     availableLabel: "Available",
     uploadReceivedLabel: "Upload Received, Not Analyzable",
     notAvailableLabel: "Not available",
     noFeaturesLabel: "No raw feature values were captured for this record.",
     noMatchRecords: "No assessments match the current filters.",
+    previousLabel: "Previous",
+    nextLabel: "Next",
+    riskLabel: "Risk",
     noRecordsLoaded: "No records loaded yet.",
     pageStatus: "Page {page} of {total}",
     noAssessmentAnalysis: "No assessment analysis available yet.",
@@ -189,11 +444,111 @@ const UI_TRANSLATIONS = {
     deleteRecordRequiresOnline: "Deletion requires an online connection for synced records.",
     deleteRecordNotFound: "The selected assessment could not be found.",
     hiddenDemoRecord: "Demo/backend records are hidden from the user list.",
+    noDataLabel: "No data",
+    noDataMetricLabel: "No data",
+    unknownUserLabel: "Unnamed user",
+    unknownLocationLabel: "Unknown location",
+    unknownLabel: "Unknown",
+    notStatedLabel: "Not stated",
+    unavailableLabel: "Unavailable",
+    noneLabel: "None",
+    detectedLabel: "Detected",
+    notDetectedLabel: "Not detected",
+    currentLabel: "Current",
+    currentUserLabel: "Current user",
+    topComorbidityLabel: "Top comorbidity",
+    scoreLabel: "Score",
+    featuresLabel: "Features",
+    recommendationAndDisclaimerTitle: "Recommendation and Disclaimer",
+    recommendationTitle: "Recommendation",
+    screeningDisclaimerTitle: "Screening Disclaimer",
+    noRecommendationText: "No recommendation available.",
+    noDisclaimerText: "No disclaimer available.",
+    recommendationOverviewText: "This area gives the end user the screening interpretation and the appropriate follow-up note.",
+    overallRiskTrajectoryTitle: "Overall Risk Trajectory",
+    trajectoryModelTitle: "Longitudinal Trajectory",
+    trajectoryModelText: "Trend modeling across repeated screenings for the same person",
+    screeningCountLabel: "{status} across {count} screenings",
+    trendSummaryTitle: "Trend Summary",
+    trajectorySummaryTitle: "Trend Summary",
+    trajectorySummaryText: "Change since baseline, recent change, and domain movement",
+    statusTitle: "Status",
+    trajectoryMetricsTitle: "Trajectory Metrics",
+    baselineToCurrentLabel: "Baseline {baseline} to current {current}",
+    changeSinceBaselineLabel: "Change since baseline",
+    recentChangeLabel: "Recent change",
+    volatilityLabel: "Volatility",
+    noTrajectoryLabel: "No longitudinal trajectory available yet.",
+    noTrendSummaryLabel: "No trend summary available yet.",
+    noMoreDataLabel: "Need more data",
+    noTrainedModelStatsLabel: "No trained model bundle statistics are available for this assessment yet.",
+    trainedBundleComparisonTitle: "Trained Bundle Comparison",
+    macroR2CoverageText: "Macro R2 and sample coverage by modality",
+    trainedBundleDescription: "This compares the locally trained bundle quality for text, audio, and image using the current saved model metadata.",
+    textTransformerLabel: "Text transformer",
+    trainedModalitiesLabel: "Trained modalities",
+    confidenceHintLabel: "Confidence Hint",
+    trainedBundleLabel: "Trained bundle",
+    fallbackLabel: "Fallback",
+    trainedAtLabel: "Trained at",
+    safetyKeywordsLabel: "Safety keywords",
+    keywordMatchesLabel: "Keyword matches",
+    narrativeWordCountLabel: "Narrative word count",
+    emotionIntensityLabel: "Emotion intensity",
+    domainCoverageLabel: "Domain coverage",
+    analysisEngineLabel: "engine",
+    macroR2Label: "Macro R2",
+    samplesLabel: "Samples",
+    domainsLabel: "Domains",
+    manifestLabel: "Manifest",
+    datasetRootLabel: "Dataset root",
+    trendModelDescription: "Trend modeling combines repeated visits, slope, and volatility so health workers can see whether risk is rising, falling, or fluctuating.",
+    noFilteredExportLabel: "There are no filtered records to export.",
+    exportedFilteredLabel: "Exported {count} filtered records.",
+    backendApiLabel: "the backend API",
+    sampleDatasetLabel: "the bundled sample dataset",
+    localOfflineStorageLabel: "local offline storage",
+    offlineQueueSyncedLabel: "Offline queue synced where possible and local records were refreshed.",
+    savedOfflineQueuedLabel: "Assessment saved offline. It will sync automatically when the connection returns.",
+    backendUnavailableSavedOfflineLabel: "Backend unavailable. The assessment was saved offline and queued for sync.",
+    backendPreviewUnavailableLabel: "Backend preview unavailable. Showing offline heuristic preview instead.",
+    loadedOfflineRecordLabel: "Loaded {id} from offline storage.",
+    savedOfflineQueuedShortLabel: "saved offline and queued for sync.",
+    savedOfflineQueuedAfterApiLabel: "saved offline after the API became unavailable.",
+    loadRecordsFromApiFailedLabel: "Could not load records from the backend API. Import a JSON file manually instead.",
+    offlineRecordsLoadedLabel: "Backend unavailable. Loaded records from offline storage.",
+    loadRecordsFromApiGenericErrorLabel: "Could not load records from the backend API.",
+    offlineModeActiveLabel: "Offline mode active. New assessments will be saved locally and synced later.",
+    onlineSyncReadyLabel: "Online sync ready",
+    offlineModeQueuedLabel: "Offline mode active | {count} queued",
+    offlineScreeningElevatedLabel: "Offline screening suggests elevated {domain} risk. Sync this assessment when a connection is available for backend review.",
+    offlineScreeningCompletedLabel: "Offline screening completed. Sync this assessment when a connection is available for backend confirmation.",
+    pdfReportTitle: "Rural Mental Health Screening Dashboard Report",
+    pdfQuestionnaireLabel: "Questionnaire",
+    pdfDashboardLabel: "Dashboard",
+    pdfRecommendationLabel: "Recommendation",
+    pdfWhyFlaggedLabel: "Why {domain} was flagged",
+    pdfTopContributorsLabel: "Top model contributors for this domain:",
+    usableLabel: "Usable",
+    limitedLabel: "Limited",
+    noModalityNoteLabel: "No modality note available.",
+    noAdditionalProcessingStatsLabel: "No additional processing statistics available.",
+    whyFlaggedLabel: "Why {domain} was flagged",
+    topModelContributorsLabel: "Top model contributors for this domain:",
   },
   Hindi: {
+    adaptiveTab: "अनुकूली परीक्षण",
     workspaceTab: "आकलन कार्यक्षेत्र",
+    heroEyebrow: "स्क्रीनिंग शुरू करें",
+    heroTitle: "ग्रामीण मानसिक स्वास्थ्य स्क्रीनिंग",
+    heroText: "एक समय में एक नैदानिक स्क्रीनिंग सत्र शुरू करें, परिणाम सहेजें, और बैकग्राउंड रिकॉर्ड लोड किए बिना वर्तमान आकलन देखें।",
+    heroMetricRisk: "जोखिम डोमेन ट्रैक किए गए",
+    heroMetricModalities: "मॉडेलिटी जोड़ी गई",
+    heroMetricOffline: "ऑफलाइन कैप्चर समर्थन",
+    dashboardLanguageLabel: "डैशबोर्ड भाषा",
     analyticsTab: "विश्लेषण केंद्र",
     recordsTab: "रिकॉर्ड और रिपोर्ट",
+    applyLanguageBtn: "भाषा लागू करें",
     intakeFlowTitle: "एक स्क्रीनिंग शुरू से अंत तक पूरी करें",
     intakeFlowText: "व्यक्ति का विवरण भरें, उनके उत्तर दर्ज करें, लाइव प्रीव्यू देखें, और विश्लेषण के लिए अंतिम आकलन सहेजें।",
     step1Title: "प्रोफ़ाइल और सहमति दर्ज करें",
@@ -207,6 +562,29 @@ const UI_TRANSLATIONS = {
     questionnaireTitle: "प्रश्नावली",
     questionnaireSubtitle: "पिछले दो हफ्तों में लक्षण कितनी बार दिखाई दिए, यह चुनें।",
     questionnaireNotes: "डैशबोर्ड प्रश्नावली स्कोर पिछले दो हफ्तों की लक्षण आवृत्ति पर आधारित है।",
+    adaptiveTitle: "अनुकूली परीक्षण",
+    adaptiveSubtitle: "बैकएंड IRT चयनकर्ता का उपयोग करके एक समय में एक प्रश्न पूछें और कार्यक्षेत्र अपलोड का पुन: उपयोग करें।",
+    adaptiveIntroFlowTitle: "अनुकूली प्रवाह",
+    adaptiveIntroFlowHeading: "एक समय में एक प्रश्न",
+    adaptiveIntroFlowText: "बैकएंड अगले सबसे उपयोगी प्रश्न का चयन करता है और सत्र को वर्तमान भाषा के साथ संरेखित रखता है।",
+    adaptiveIntroLanguageTitle: "भाषा समन्वय",
+    adaptiveIntroLanguageHeading: "भाषा-सचेत प्रॉम्प्ट",
+    adaptiveIntroLanguageText: "प्रॉम्प्ट, उत्तर विकल्प और सत्र मार्गदर्शन चयनित डैशबोर्ड भाषा के अनुसार स्वतः बदलते हैं।",
+    adaptiveIntroSharedTitle: "साझा इनपुट",
+    adaptiveIntroSharedHeading: "कार्यक्षेत्र इनपुट पुन: उपयोग करें",
+    adaptiveIntroSharedText: "मुख्य स्क्रीनिंग कार्यक्षेत्र से उम्मीदवार प्रोफ़ाइल और विवरण पुनः दर्ज किए बिना उपयोग करें।",
+    adaptiveProfileTitle: "उम्मीदवार प्रोफ़ाइल",
+    adaptiveQuestionTitle: "अनुकूली प्रश्न",
+    adaptiveQuestionHint: "पहला अनुकूली प्रश्न लोड करने के लिए सत्र शुरू करें।",
+    adaptiveNarrativeTitle: "कार्यस्थान विवरण",
+    adaptiveStartBtn: "सत्र शुरू करें",
+    adaptiveNextBtn: "उत्तर भेजें",
+    adaptiveResetBtn: "सत्र रीसेट करें",
+    adaptiveStatusIdle: "पहला प्रश्न लोड करने के लिए अनुकूली सत्र शुरू करें।",
+    adaptiveStatusLoading: "अगला सबसे उपयुक्त प्रश्न चुना जा रहा है...",
+    adaptiveStatusReady: "अनुकूली प्रश्न तैयार है।",
+    adaptiveStatusComplete: "अनुकूली सत्र पूरा हुआ। रिकॉर्ड सहेज लिया गया है।",
+    adaptiveStatusError: "अनुकूली API उपलब्ध नहीं है। कृपया पुनः प्रयास करें।",
     candidateProfileTitle: "उम्मीदवार प्रोफ़ाइल",
     freeTextTitle: "मुक्त पाठ और अपलोड विवरण",
     fullNameLabel: "पूरा नाम",
@@ -217,8 +595,12 @@ const UI_TRANSLATIONS = {
     assessorLabel: "आकलनकर्ता का नाम",
     languageLabel: "पसंदीदा भाषा",
     consentLabel: "स्क्रीनिंग के लिए सहमति प्राप्त हुई",
+    fullNamePlaceholder: "पूरा नाम दर्ज करें",
+    villagePlaceholder: "गाँव या क्षेत्र",
+    assessorPlaceholder: "स्वास्थ्य कार्यकर्ता या परामर्शदाता",
     narrativeLabel: "व्यक्ति कैसा महसूस कर रहा है, इसका वर्णन करें",
     narrativePlaceholder: "उदाहरण: मैं थका हुआ, अलग-थलग, चिंतित और ठीक से सो नहीं पा रहा हूँ।",
+    genderOptions: ["कृपया चुनें", "महिला", "पुरुष", "अन्य"],
     guidedSpeechTitle: "निर्देशित वॉइस रिकॉर्डिंग",
     guidedSpeechTopic: "विषय: पिछले कुछ दिनों, नींद, तनाव और लोगों से जुड़ाव के बारे में बताएं।",
     audioFileLabel: "आवाज़ नमूना",
@@ -231,6 +613,12 @@ const UI_TRANSLATIONS = {
     workspacePredictionEmpty: "लाइव प्रेडिक्शन प्रीव्यू के लिए आकलन भरना शुरू करें।",
     workspaceNlpEmpty: "वर्णन लिखते समय NLP संकेत यहाँ दिखाई देंगे।",
     workspaceReadinessEmpty: "तैयारी फीडबैक देखने के लिए विवरण, सहमति, प्रश्नावली और वर्णन भरें।",
+    workspacePredictionTitle: "लाइव प्रेडिक्शन प्रीव्यू",
+    workspacePredictionText: "सहेजने से पहले प्रश्नावली और NLP का संयुक्त प्रीव्यू",
+    workspaceNlpTitle: "लाइव NLP इनसाइट्स",
+    workspaceNlpText: "वर्णन पाठ से भाव, भावना और सुरक्षा संकेत",
+    workspaceReadinessTitle: "इनटेक तैयारी",
+    workspaceReadinessText: "जाँचता है कि रिकॉर्ड सहेजने और विश्लेषण के लिए तैयार है या नहीं",
     analyticsBannerDefault: "विस्तृत विश्लेषण देखने के लिए आकलन पूरा करके सहेजें।",
     recordsBannerDefault: "पुरानी रिपोर्ट देखने या डाउनलोड करने के लिए आकलन ID से रिकॉर्ड खोजें।",
     analyticsReady: "का विस्तृत घटक-आधारित विश्लेषण तैयार है।",
@@ -240,6 +628,8 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Python NLP बैकएंड से लाइव प्रीव्यू ताज़ा किया जा रहा है...",
     noRecordSelected: "कोई आकलन चुना नहीं गया है।",
     assessmentIdLabel: "आकलन आईडी",
+    overallConfidenceLabel: "कुल कॉन्फिडेंस",
+    overallRiskLabel: "कुल जोखिम",
     candidateLabel: "उम्मीदवार",
     villageShortLabel: "गाँव",
     assessorShortLabel: "आकलनकर्ता",
@@ -255,6 +645,11 @@ const UI_TRANSLATIONS = {
     recordLookupPlaceholder: "खोजने के लिए आकलन ID दर्ज करें",
     fetchRecordBtn: "रिकॉर्ड खोजें",
     downloadPdfBtn: "चयनित PDF डाउनलोड करें",
+    domainScoreComparisonTitle: "डोमेन स्कोर तुलना",
+    domainScoreComparisonText: "प्रश्नावली स्कोर बनाम संयुक्त AI स्कोर",
+    modalityQualityShortText: "उपलब्धता, कॉन्फिडेंस और प्रोसेसिंग गुणवत्ता",
+    modalityQualityHelperText: "यह अनुभाग समझने में मदद करता है कि कौन-से इनपुट अंतिम निर्णय के लिए पर्याप्त मज़बूत थे।",
+    domainScoreComparisonDescription: "यह अनुभाग हर स्थिति के लिए स्व-रिपोर्ट किए गए लक्षणों की अंतिम बहु-मॉडेल AI स्कोर से तुलना करता है।",
     domainAnalysisTitle: "डोमेन विश्लेषण",
     domainAnalysisText: "हर पूर्वानुमान क्षेत्र के लिए प्रश्नावली बनाम संयुक्त AI स्कोर",
     componentContributionTitle: "घटक योगदान",
@@ -277,6 +672,10 @@ const UI_TRANSLATIONS = {
     modalityBreakdownText: "टेक्स्ट, ऑडियो मेटाडेटा और इमेज मेटाडेटा",
     featureSnapshotTitle: "फीचर स्नैपशॉट",
     featureSnapshotText: "चयनित आकलन के NLP और रिकॉर्ड फीचर",
+    patientHistoryTitle: "रोगी इतिहास",
+    patientHistoryText: "पिछली स्क्रीनिंग और समय के साथ कुल जोखिम में बदलाव",
+    domainTrajectoryTitle: "डोमेन ड्रिफ्ट",
+    domainTrajectoryText: "कौन से जोखिम डोमेन बिगड़ रहे हैं, सुधर रहे हैं, या स्थिर हैं",
     questionnaireRiskTitle: "प्रश्नावली जोखिम",
     questionnaireOverall: "प्रश्नावली कुल स्कोर",
     combinedResultTitle: "संयुक्त डैशबोर्ड परिणाम",
@@ -284,12 +683,17 @@ const UI_TRANSLATIONS = {
     recommendationLabel: "सिफारिश",
     questionnaireLabel: "प्रश्नावली",
     dashboardLabel: "डैशबोर्ड",
+    combinedAiLabel: "संयुक्त AI",
     noDataModality: "इस मॉडेलिटी के लिए कोई डेटा उपलब्ध नहीं है।",
+    noQuestionnaireNotesLabel: "प्रश्नावली नोट उपलब्ध नहीं हैं।",
     availableLabel: "उपलब्ध",
     uploadReceivedLabel: "अपलोड मिला, लेकिन विश्लेषण योग्य नहीं",
     notAvailableLabel: "उपलब्ध नहीं",
     noFeaturesLabel: "इस रिकॉर्ड के लिए कोई कच्चे फीचर मान उपलब्ध नहीं हैं।",
     noMatchRecords: "मौजूदा फ़िल्टर से कोई आकलन मेल नहीं खाता।",
+    previousLabel: "पिछला",
+    nextLabel: "अगला",
+    riskLabel: "जोखिम",
     noRecordsLoaded: "अभी तक कोई रिकॉर्ड लोड नहीं हुआ है।",
     pageStatus: "पृष्ठ {page} / {total}",
     noAssessmentAnalysis: "अभी तक कोई आकलन विश्लेषण उपलब्ध नहीं है।",
@@ -321,11 +725,111 @@ const UI_TRANSLATIONS = {
     deleteRecordRequiresOnline: "सिंक किए गए रिकॉर्ड को हटाने के लिए ऑनलाइन कनेक्शन चाहिए।",
     deleteRecordNotFound: "चुना गया आकलन नहीं मिला।",
     hiddenDemoRecord: "डेमो/बैकएंड रिकॉर्ड उपयोगकर्ता सूची से छिपाए गए हैं।",
+    noDataLabel: "कोई डेटा नहीं",
+    noDataMetricLabel: "कोई डेटा नहीं",
+    unknownUserLabel: "बिना नाम का उपयोगकर्ता",
+    unknownLocationLabel: "अज्ञात स्थान",
+    unknownLabel: "अज्ञात",
+    notStatedLabel: "दर्ज नहीं",
+    unavailableLabel: "उपलब्ध नहीं",
+    noneLabel: "कोई नहीं",
+    detectedLabel: "पाया गया",
+    notDetectedLabel: "नहीं पाया गया",
+    currentLabel: "वर्तमान",
+    currentUserLabel: "वर्तमान उपयोगकर्ता",
+    topComorbidityLabel: "शीर्ष सह-रुग्णता",
+    scoreLabel: "स्कोर",
+    featuresLabel: "विशेषताएँ",
+    recommendationAndDisclaimerTitle: "सिफारिश और अस्वीकरण",
+    recommendationTitle: "सिफारिश",
+    screeningDisclaimerTitle: "स्क्रीनिंग अस्वीकरण",
+    noRecommendationText: "कोई सिफारिश उपलब्ध नहीं है।",
+    noDisclaimerText: "कोई अस्वीकरण उपलब्ध नहीं है।",
+    recommendationOverviewText: "यह क्षेत्र उपयोगकर्ता को स्क्रीनिंग व्याख्या और उचित फॉलो-अप नोट देता है।",
+    overallRiskTrajectoryTitle: "कुल जोखिम रुझान",
+    trajectoryModelTitle: "अनुदैर्ध्य रुझान",
+    trajectoryModelText: "एक ही व्यक्ति की बार-बार स्क्रीनिंग के बीच रुझान मॉडलिंग",
+    screeningCountLabel: "{status} - {count} स्क्रीनिंग",
+    trendSummaryTitle: "रुझान सारांश",
+    trajectorySummaryTitle: "रुझान सारांश",
+    trajectorySummaryText: "आधार से परिवर्तन, हाल का परिवर्तन और डोमेन गति",
+    statusTitle: "स्थिति",
+    trajectoryMetricsTitle: "रुझान मीट्रिक्स",
+    baselineToCurrentLabel: "आधार {baseline} से वर्तमान {current} तक",
+    changeSinceBaselineLabel: "आधार से परिवर्तन",
+    recentChangeLabel: "हाल का परिवर्तन",
+    volatilityLabel: "अस्थिरता",
+    noTrajectoryLabel: "अभी तक कोई दीर्घकालिक रुझान उपलब्ध नहीं है।",
+    noTrendSummaryLabel: "अभी तक कोई रुझान सारांश उपलब्ध नहीं है।",
+    noMoreDataLabel: "और डेटा चाहिए",
+    noTrainedModelStatsLabel: "इस आकलन के लिए अभी कोई प्रशिक्षित मॉडल आँकड़े उपलब्ध नहीं हैं।",
+    trainedBundleComparisonTitle: "प्रशिक्षित बंडल तुलना",
+    macroR2CoverageText: "मॉडेलिटी के अनुसार Macro R2 और सैंपल कवरेज",
+    trainedBundleDescription: "यह मौजूदा सहेजे गए मॉडल मेटाडेटा का उपयोग करके टेक्स्ट, ऑडियो और इमेज के स्थानीय रूप से प्रशिक्षित बंडल की गुणवत्ता की तुलना करता है।",
+    textTransformerLabel: "पाठ ट्रांसफॉर्मर",
+    trainedModalitiesLabel: "प्रशिक्षित मॉडेलिटियाँ",
+    confidenceHintLabel: "विश्वास संकेत",
+    trainedBundleLabel: "प्रशिक्षित बंडल",
+    fallbackLabel: "विकल्प",
+    trainedAtLabel: "प्रशिक्षण समय",
+    safetyKeywordsLabel: "सुरक्षा शब्द",
+    keywordMatchesLabel: "मिलान शब्द",
+    narrativeWordCountLabel: "विवरण शब्द गणना",
+    emotionIntensityLabel: "भाव तीव्रता",
+    domainCoverageLabel: "डोमेन कवरेज",
+    analysisEngineLabel: "इंजन",
+    macroR2Label: "Macro R2",
+    samplesLabel: "नमूने",
+    domainsLabel: "डोमेन",
+    manifestLabel: "मैनिफेस्ट",
+    datasetRootLabel: "डेटासेट रूट",
+    trendModelDescription: "रुझान मॉडलिंग में बार-बार हुई स्क्रीनिंग, ढलान और अस्थिरता को मिलाकर यह देखा जाता है कि जोखिम बढ़ रहा है, घट रहा है या उतार-चढ़ाव कर रहा है।",
+    noFilteredExportLabel: "निर्यात करने के लिए कोई फ़िल्टर किया गया रिकॉर्ड नहीं है।",
+    exportedFilteredLabel: "{count} फ़िल्टर किए गए रिकॉर्ड निर्यात किए गए।",
+    backendApiLabel: "बैकएंड API",
+    sampleDatasetLabel: "बंडल किया गया सैंपल डेटासेट",
+    localOfflineStorageLabel: "स्थानीय ऑफलाइन स्टोरेज",
+    offlineQueueSyncedLabel: "जहाँ संभव हुआ, ऑफलाइन क्यू सिंक हो गई और स्थानीय रिकॉर्ड ताज़ा कर दिए गए।",
+    savedOfflineQueuedLabel: "आकलन ऑफलाइन सहेजा गया। कनेक्शन वापस आते ही यह अपने आप सिंक हो जाएगा।",
+    backendUnavailableSavedOfflineLabel: "बैकएंड उपलब्ध नहीं है। आकलन ऑफलाइन सहेज दिया गया और सिंक के लिए कतार में डाल दिया गया।",
+    backendPreviewUnavailableLabel: "बैकएंड प्रीव्यू उपलब्ध नहीं है। इसके बजाय ऑफलाइन हीयूरिस्टिक प्रीव्यू दिखाया जा रहा है।",
+    loadedOfflineRecordLabel: "{id} ऑफलाइन स्टोरेज से लोड किया गया।",
+    savedOfflineQueuedShortLabel: "ऑफलाइन सहेजा गया और सिंक के लिए कतार में डाल दिया गया।",
+    savedOfflineQueuedAfterApiLabel: "API अनुपलब्ध होने के बाद ऑफलाइन सहेजा गया।",
+    loadRecordsFromApiFailedLabel: "बैकएंड API से रिकॉर्ड लोड नहीं हो सके। आवश्यकता हो तो JSON फाइल मैन्युअली आयात करें।",
+    offlineRecordsLoadedLabel: "बैकएंड उपलब्ध नहीं है। ऑफलाइन स्टोरेज से रिकॉर्ड लोड किए गए।",
+    loadRecordsFromApiGenericErrorLabel: "बैकएंड API से रिकॉर्ड लोड नहीं हो सके।",
+    offlineModeActiveLabel: "ऑफलाइन मोड सक्रिय है। नए आकलन स्थानीय रूप से सहेजे जाएंगे और बाद में सिंक होंगे।",
+    onlineSyncReadyLabel: "ऑनलाइन सिंक तैयार है",
+    offlineModeQueuedLabel: "ऑफलाइन मोड सक्रिय | {count} कतार में",
+    offlineScreeningElevatedLabel: "ऑफलाइन स्क्रीनिंग में {domain} जोखिम अधिक दिख रहा है। बैकएंड समीक्षा के लिए कनेक्शन उपलब्ध होने पर इस आकलन को सिंक करें।",
+    offlineScreeningCompletedLabel: "ऑफलाइन स्क्रीनिंग पूरी हुई। बैकएंड पुष्टि के लिए कनेक्शन उपलब्ध होने पर इस आकलन को सिंक करें।",
+    pdfReportTitle: "ग्रामीण मानसिक स्वास्थ्य स्क्रीनिंग डैशबोर्ड रिपोर्ट",
+    pdfQuestionnaireLabel: "प्रश्नावली",
+    pdfDashboardLabel: "डैशबोर्ड",
+    pdfRecommendationLabel: "सिफारिश",
+    pdfWhyFlaggedLabel: "{domain} को क्यों चिह्नित किया गया",
+    pdfTopContributorsLabel: "इस डोमेन के लिए शीर्ष मॉडल योगदानकर्ता:",
+    usableLabel: "उपयोगी",
+    limitedLabel: "सीमित",
+    noModalityNoteLabel: "मोडालिटी के लिए कोई नोट उपलब्ध नहीं है।",
+    noAdditionalProcessingStatsLabel: "अतिरिक्त प्रोसेसिंग सांख्यिकी उपलब्ध नहीं है।",
+    whyFlaggedLabel: "{domain} को क्यों चिह्नित किया गया",
+    topModelContributorsLabel: "इस डोमेन के लिए शीर्ष मॉडल योगदानकर्ता:",
   },
   Bengali: {
+    adaptiveTab: "অভিযোজিত পরীক্ষা",
     workspaceTab: "মূল্যায়ন কর্মক্ষেত্র",
+    heroEyebrow: "স্ক্রিনিং শুরু করুন",
+    heroTitle: "গ্রামীণ মানসিক স্বাস্থ্য স্ক্রিনিং",
+    heroText: "একবারে একটি ডায়াগনস্টিক স্ক্রিনিং সেশন শুরু করুন, ফলাফল সংরক্ষণ করুন, এবং ব্যাকগ্রাউন্ড রেকর্ড লোড না করেই বর্তমান মূল্যায়ন দেখুন।",
+    heroMetricRisk: "ঝুঁকির ডোমেইন ট্র্যাক করা হয়",
+    heroMetricModalities: "মডালিটি মিশ্রিত",
+    heroMetricOffline: "অফলাইন ক্যাপচার সহায়তা",
+    dashboardLanguageLabel: "ড্যাশবোর্ড ভাষা",
     analyticsTab: "বিশ্লেষণ কেন্দ্র",
     recordsTab: "রেকর্ড ও রিপোর্ট",
+    applyLanguageBtn: "ভাষা প্রয়োগ করুন",
     intakeFlowTitle: "শুরু থেকে শেষ পর্যন্ত একটি স্ক্রিনিং সম্পূর্ণ করুন",
     intakeFlowText: "ব্যক্তির তথ্য পূরণ করুন, প্রতিক্রিয়া নিন, লাইভ প্রিভিউ দেখুন, এবং বিশ্লেষণের জন্য চূড়ান্ত মূল্যায়ন সংরক্ষণ করুন।",
     step1Title: "প্রোফাইল ও সম্মতি নিন",
@@ -339,6 +843,29 @@ const UI_TRANSLATIONS = {
     questionnaireTitle: "প্রশ্নমালা",
     questionnaireSubtitle: "গত দুই সপ্তাহে উপসর্গ কতবার দেখা গেছে তা নির্বাচন করুন।",
     questionnaireNotes: "ড্যাশবোর্ড প্রশ্নমালার স্কোর গত দুই সপ্তাহের উপসর্গের ঘনত্বের উপর ভিত্তি করে।",
+    adaptiveTitle: "অ্যাডাপটিভ পরীক্ষা",
+    adaptiveSubtitle: "ব্যাকএন্ড IRT selector ব্যবহার করে একবারে একটি প্রশ্ন করুন এবং workspace uploads পুনরায় ব্যবহার করুন।",
+    adaptiveIntroFlowTitle: "অ্যাডাপটিভ প্রবাহ",
+    adaptiveIntroFlowHeading: "একবারে একটি প্রশ্ন",
+    adaptiveIntroFlowText: "ব্যাকএন্ড সবচেয়ে তথ্যবহ প্রশ্নটি বেছে নেয় এবং সেশনকে বর্তমান ভাষার সাথে সঙ্গতিপূর্ণ রাখে।",
+    adaptiveIntroLanguageTitle: "ভাষা সমন্বয়",
+    adaptiveIntroLanguageHeading: "ভাষা-সচেতন প্রম্পট",
+    adaptiveIntroLanguageText: "প্রম্পট, উত্তর বিকল্প এবং সেশন নির্দেশনা নির্বাচিত dashboard ভাষা অনুযায়ী স্বয়ংক্রিয়ভাবে বদলে যায়।",
+    adaptiveIntroSharedTitle: "শেয়ার করা ইনপুট",
+    adaptiveIntroSharedHeading: "workspace ইনপুট পুনরায় ব্যবহার করুন",
+    adaptiveIntroSharedText: "main screening workspace থেকে candidate profile এবং narrative input আবার না লিখেই ব্যবহার করুন।",
+    adaptiveProfileTitle: "প্রার্থীর প্রোফাইল",
+    adaptiveQuestionTitle: "অভিযোজিত প্রশ্ন",
+    adaptiveQuestionHint: "প্রথম অভিযোজিত প্রশ্ন লোড করতে একটি সেশন শুরু করুন।",
+    adaptiveNarrativeTitle: "ওয়ার্কস্পেস নোট",
+    adaptiveStartBtn: "সেশন শুরু করুন",
+    adaptiveNextBtn: "উত্তর জমা দিন",
+    adaptiveResetBtn: "সেশন রিসেট করুন",
+    adaptiveStatusIdle: "প্রথম প্রশ্ন লোড করতে অভিযোজিত সেশন শুরু করুন।",
+    adaptiveStatusLoading: "পরবর্তী সবচেয়ে উপযোগী প্রশ্ন বেছে নেওয়া হচ্ছে...",
+    adaptiveStatusReady: "অভিযোজিত প্রশ্ন প্রস্তুত।",
+    adaptiveStatusComplete: "অভিযোজিত সেশন সম্পন্ন হয়েছে। রেকর্ড সংরক্ষিত হয়েছে।",
+    adaptiveStatusError: "অভিযোজিত API উপলব্ধ নয়। অনুগ্রহ করে আবার চেষ্টা করুন।",
     candidateProfileTitle: "প্রার্থীর প্রোফাইল",
     freeTextTitle: "মুক্ত লেখা ও আপলোড তথ্য",
     fullNameLabel: "পূর্ণ নাম",
@@ -349,8 +876,12 @@ const UI_TRANSLATIONS = {
     assessorLabel: "মূল্যায়নকারীর নাম",
     languageLabel: "পছন্দের ভাষা",
     consentLabel: "স্ক্রিনিং-এর জন্য সম্মতি পাওয়া গেছে",
+    fullNamePlaceholder: "পূর্ণ নাম লিখুন",
+    villagePlaceholder: "গ্রাম বা এলাকা",
+    assessorPlaceholder: "স্বাস্থ্যকর্মী বা পরামর্শদাতা",
     narrativeLabel: "ব্যক্তি কেমন অনুভব করছেন তা বর্ণনা করুন",
     narrativePlaceholder: "উদাহরণ: আমি ক্লান্ত, বিচ্ছিন্ন, উদ্বিগ্ন এবং ঠিকমতো ঘুমাতে পারছি না।",
+    genderOptions: ["অনুগ্রহ করে নির্বাচন করুন", "নারী", "পুরুষ", "অন্যান্য"],
     guidedSpeechTitle: "নির্দেশিত কণ্ঠ রেকর্ডিং",
     guidedSpeechTopic: "বিষয়: গত কয়েক দিন, ঘুম, চাপ ও মানুষের সাথে সংযোগ সম্পর্কে বলুন।",
     audioFileLabel: "কণ্ঠের নমুনা",
@@ -363,6 +894,12 @@ const UI_TRANSLATIONS = {
     workspacePredictionEmpty: "লাইভ প্রেডিকশন প্রিভিউ পেতে মূল্যায়ন পূরণ শুরু করুন।",
     workspaceNlpEmpty: "বর্ণনা লিখতে থাকলে NLP সংকেত এখানে দেখা যাবে।",
     workspaceReadinessEmpty: "প্রস্তুতির বার্তা দেখতে বিবরণ, সম্মতি, প্রশ্নমালা ও বর্ণনা পূরণ করুন।",
+    workspacePredictionTitle: "লাইভ প্রেডিকশন প্রিভিউ",
+    workspacePredictionText: "সংরক্ষণের আগে প্রশ্নমালা ও NLP-এর যৌথ প্রিভিউ",
+    workspaceNlpTitle: "লাইভ NLP ইনসাইটস",
+    workspaceNlpText: "বর্ণনা পাঠ থেকে সেন্টিমেন্ট, আবেগ ও নিরাপত্তা সংকেত",
+    workspaceReadinessTitle: "ইনটেক প্রস্তুতি",
+    workspaceReadinessText: "রেকর্ডটি সংরক্ষণ ও বিশ্লেষণের জন্য প্রস্তুত কি না তা যাচাই করে",
     analyticsBannerDefault: "বিস্তারিত বিশ্লেষণ দেখতে মূল্যায়ন সম্পূর্ণ করে সংরক্ষণ করুন।",
     recordsBannerDefault: "পুরোনো রিপোর্ট দেখতে বা ডাউনলোড করতে মূল্যায়ন আইডি দিয়ে রেকর্ড আনুন।",
     analyticsReady: "এর বিস্তারিত অংশভিত্তিক বিশ্লেষণ প্রস্তুত।",
@@ -372,6 +909,8 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Python NLP ব্যাকএন্ড থেকে লাইভ প্রিভিউ আপডেট করা হচ্ছে...",
     noRecordSelected: "কোনো মূল্যায়ন নির্বাচন করা হয়নি।",
     assessmentIdLabel: "মূল্যায়ন আইডি",
+    overallConfidenceLabel: "সামগ্রিক কনফিডেন্স",
+    overallRiskLabel: "সামগ্রিক ঝুঁকি",
     candidateLabel: "প্রার্থী",
     villageShortLabel: "গ্রাম",
     assessorShortLabel: "মূল্যায়নকারী",
@@ -387,6 +926,11 @@ const UI_TRANSLATIONS = {
     recordLookupPlaceholder: "রেকর্ড আনতে মূল্যায়ন আইডি লিখুন",
     fetchRecordBtn: "রেকর্ড আনুন",
     downloadPdfBtn: "নির্বাচিত PDF ডাউনলোড করুন",
+    domainScoreComparisonTitle: "ডোমেইন স্কোর তুলনা",
+    domainScoreComparisonText: "প্রশ্নমালা স্কোর বনাম যৌথ AI স্কোর",
+    modalityQualityShortText: "প্রাপ্যতা, কনফিডেন্স এবং প্রসেসিং মান",
+    modalityQualityHelperText: "এই অংশটি বোঝাতে সাহায্য করে কোন ইনপুটগুলো চূড়ান্ত সিদ্ধান্তকে সমর্থন করার জন্য যথেষ্ট শক্তিশালী ছিল।",
+    domainScoreComparisonDescription: "এই অংশটি প্রতিটি অবস্থার জন্য স্ব-প্রতিবেদিত উপসর্গের সাথে চূড়ান্ত বহুমাত্রিক backend স্কোর তুলনা করে।",
     domainAnalysisTitle: "ডোমেইন বিশ্লেষণ",
     domainAnalysisText: "প্রতিটি পূর্বাভাস ক্ষেত্রের জন্য প্রশ্নমালা ও যৌথ AI স্কোরের তুলনা",
     componentContributionTitle: "উপাদানের অবদান",
@@ -409,6 +953,10 @@ const UI_TRANSLATIONS = {
     modalityBreakdownText: "টেক্সট, অডিও মেটাডেটা এবং ইমেজ মেটাডেটা",
     featureSnapshotTitle: "ফিচার স্ন্যাপশট",
     featureSnapshotText: "নির্বাচিত মূল্যায়নের NLP ও রেকর্ড ফিচার",
+    patientHistoryTitle: "রোগীর ইতিহাস",
+    patientHistoryText: "পূর্ববর্তী স্ক্রিনিং এবং সময়ের সঙ্গে সামগ্রিক ঝুঁকির পরিবর্তন",
+    domainTrajectoryTitle: "ডোমেইন ড্রিফট",
+    domainTrajectoryText: "কোন ঝুঁকির ডোমেইনগুলো খারাপ হচ্ছে, উন্নত হচ্ছে, বা স্থিতিশীল আছে",
     questionnaireRiskTitle: "প্রশ্নমালার ঝুঁকি",
     questionnaireOverall: "প্রশ্নমালার সামগ্রিক স্কোর",
     combinedResultTitle: "সমন্বিত ড্যাশবোর্ড ফলাফল",
@@ -416,12 +964,17 @@ const UI_TRANSLATIONS = {
     recommendationLabel: "পরামর্শ",
     questionnaireLabel: "প্রশ্নমালা",
     dashboardLabel: "ড্যাশবোর্ড",
+    combinedAiLabel: "যৌথ AI",
     noDataModality: "এই ইনপুট উৎসের জন্য কোনো তথ্য পাওয়া যায়নি।",
+    noQuestionnaireNotesLabel: "প্রশ্নমালার কোনো নোট নেই।",
     availableLabel: "উপলব্ধ",
     uploadReceivedLabel: "আপলোড পাওয়া গেছে, তবে বিশ্লেষণযোগ্য নয়",
     notAvailableLabel: "উপলব্ধ নয়",
     noFeaturesLabel: "এই রেকর্ডের জন্য কোনো কাঁচা ফিচার মান সংরক্ষিত নেই।",
     noMatchRecords: "বর্তমান ফিল্টারের সাথে কোনো মূল্যায়ন মেলেনি।",
+    previousLabel: "পূর্ববর্তী",
+    nextLabel: "পরবর্তী",
+    riskLabel: "ঝুঁকি",
     noRecordsLoaded: "এখনও কোনো রেকর্ড লোড করা হয়নি।",
     pageStatus: "পৃষ্ঠা {page} / {total}",
     noAssessmentAnalysis: "এখনও কোনো মূল্যায়ন বিশ্লেষণ পাওয়া যায়নি।",
@@ -453,6 +1006,97 @@ const UI_TRANSLATIONS = {
     deleteRecordRequiresOnline: "সিঙ্ক করা রেকর্ড মুছতে অনলাইন সংযোগ প্রয়োজন।",
     deleteRecordNotFound: "নির্বাচিত মূল্যায়নটি পাওয়া যায়নি।",
     hiddenDemoRecord: "ডেমো/ব্যাকএন্ড রেকর্ড ব্যবহারকারী তালিকা থেকে লুকানো হয়েছে।",
+    noDataLabel: "কোনো তথ্য নেই",
+    noDataMetricLabel: "কোনো তথ্য নেই",
+    unknownUserLabel: "নামহীন ব্যবহারকারী",
+    unknownLocationLabel: "অজানা স্থান",
+    unknownLabel: "অজানা",
+    notStatedLabel: "উল্লেখ করা হয়নি",
+    unavailableLabel: "উপলব্ধ নয়",
+    noneLabel: "কিছু নেই",
+    detectedLabel: "সনাক্ত হয়েছে",
+    notDetectedLabel: "সনাক্ত হয়নি",
+    currentLabel: "বর্তমান",
+    currentUserLabel: "বর্তমান ব্যবহারকারী",
+    topComorbidityLabel: "শীর্ষ সহ-অসুস্থতা",
+    scoreLabel: "স্কোর",
+    featuresLabel: "বৈশিষ্ট্য",
+    recommendationAndDisclaimerTitle: "সুপারিশ ও সতর্কীকরণ",
+    recommendationTitle: "সুপারিশ",
+    screeningDisclaimerTitle: "স্ক্রিনিং সতর্কীকরণ",
+    noRecommendationText: "কোনো সুপারিশ নেই।",
+    noDisclaimerText: "কোনো সতর্কীকরণ নেই।",
+    recommendationOverviewText: "এই অংশে ব্যবহারকারীর জন্য স্ক্রিনিং ব্যাখ্যা ও উপযুক্ত ফলো-আপ নোট দেওয়া হয়।",
+    overallRiskTrajectoryTitle: "সামগ্রিক ঝুঁকির প্রবণতা",
+    trajectoryModelTitle: "দীর্ঘমেয়াদি প্রবণতা",
+    trajectoryModelText: "একই ব্যক্তির পুনরাবৃত্ত স্ক্রিনিং জুড়ে প্রবণতা মডেলিং",
+    screeningCountLabel: "{status} — {count}টি স্ক্রিনিং",
+    trendSummaryTitle: "প্রবণতার সারাংশ",
+    trajectorySummaryTitle: "প্রবণতার সারাংশ",
+    trajectorySummaryText: "বেসলাইন থেকে পরিবর্তন, সাম্প্রতিক পরিবর্তন, এবং ডোমেইন গতি",
+    statusTitle: "অবস্থা",
+    trajectoryMetricsTitle: "প্রবণতার মেট্রিক্স",
+    baselineToCurrentLabel: "বেসলাইন {baseline} থেকে বর্তমান {current} পর্যন্ত",
+    changeSinceBaselineLabel: "বেসলাইন থেকে পরিবর্তন",
+    recentChangeLabel: "সাম্প্রতিক পরিবর্তন",
+    volatilityLabel: "অস্থিরতা",
+    noTrajectoryLabel: "এখনও কোনো দীর্ঘমেয়াদি প্রবণতা পাওয়া যায়নি।",
+    noTrendSummaryLabel: "এখনও কোনো প্রবণতার সারাংশ পাওয়া যায়নি।",
+    noMoreDataLabel: "আরও তথ্য প্রয়োজন",
+    noTrainedModelStatsLabel: "এই মূল্যায়নের জন্য এখনও কোনো প্রশিক্ষিত মডেল পরিসংখ্যান নেই।",
+    trainedBundleComparisonTitle: "প্রশিক্ষিত বান্ডেল তুলনা",
+    macroR2CoverageText: "মডালিটি অনুযায়ী Macro R2 এবং স্যাম্পল কভারেজ",
+    trainedBundleDescription: "এটি বর্তমান সংরক্ষিত মডেল মেটাডেটা ব্যবহার করে টেক্সট, অডিও এবং ইমেজের স্থানীয়ভাবে প্রশিক্ষিত বান্ডেলের মান তুলনা করে।",
+    textTransformerLabel: "টেক্সট ট্রান্সফর্মার",
+    trainedModalitiesLabel: "প্রশিক্ষিত ইনপুট উৎস",
+    confidenceHintLabel: "আত্মবিশ্বাস সূচক",
+    trainedBundleLabel: "প্রশিক্ষিত বান্ডেল",
+    fallbackLabel: "ফলব্যাক",
+    trainedAtLabel: "প্রশিক্ষণের সময়",
+    safetyKeywordsLabel: "নিরাপত্তা কীওয়ার্ড",
+    keywordMatchesLabel: "মিলে যাওয়া কীওয়ার্ড",
+    narrativeWordCountLabel: "বর্ণনার শব্দসংখ্যা",
+    emotionIntensityLabel: "আবেগের তীব্রতা",
+    domainCoverageLabel: "ডোমেইন কভারেজ",
+    analysisEngineLabel: "ইঞ্জিন",
+    macroR2Label: "Macro R2",
+    samplesLabel: "নমুনা",
+    domainsLabel: "ডোমেইন",
+    manifestLabel: "ম্যানিফেস্ট",
+    datasetRootLabel: "ডেটাসেট রুট",
+    trendModelDescription: "পুনরাবৃত্ত ভিজিট, ঢাল এবং অস্থিরতা একত্র করে ট্রেন্ড মডেলিং করা হয় যাতে স্বাস্থ্যকর্মীরা ঝুঁকি বাড়ছে, কমছে, নাকি ওঠানামা করছে তা বুঝতে পারেন।",
+    noFilteredExportLabel: "রপ্তানি করার মতো কোনো ফিল্টার করা রেকর্ড নেই।",
+    exportedFilteredLabel: "{count}টি ফিল্টার করা রেকর্ড রপ্তানি হয়েছে।",
+    backendApiLabel: "ব্যাকএন্ড API",
+    sampleDatasetLabel: "সংযুক্ত স্যাম্পল ডেটাসেট",
+    localOfflineStorageLabel: "স্থানীয় অফলাইন স্টোরেজ",
+    offlineQueueSyncedLabel: "যেখানে সম্ভব অফলাইন কিউ সিঙ্ক করা হয়েছে এবং স্থানীয় রেকর্ডগুলো রিফ্রেশ করা হয়েছে।",
+    savedOfflineQueuedLabel: "মূল্যায়ন অফলাইনে সংরক্ষণ করা হয়েছে। সংযোগ ফিরে এলে এটি স্বয়ংক্রিয়ভাবে সিঙ্ক হবে।",
+    backendUnavailableSavedOfflineLabel: "ব্যাকএন্ড অনুপলব্ধ। মূল্যায়নটি অফলাইনে সংরক্ষণ করে সিঙ্কের জন্য কিউ করা হয়েছে।",
+    backendPreviewUnavailableLabel: "ব্যাকএন্ড প্রিভিউ অনুপলব্ধ। এর বদলে অফলাইন heuristic preview দেখানো হচ্ছে।",
+    loadedOfflineRecordLabel: "{id} অফলাইন স্টোরেজ থেকে লোড করা হয়েছে।",
+    savedOfflineQueuedShortLabel: "অফলাইনে সংরক্ষণ করা হয়েছে এবং সিঙ্কের জন্য কিউ করা হয়েছে।",
+    savedOfflineQueuedAfterApiLabel: "API অনুপলব্ধ হওয়ার পরে অফলাইনে সংরক্ষণ করা হয়েছে।",
+    loadRecordsFromApiFailedLabel: "ব্যাকএন্ড API থেকে রেকর্ড লোড করা যায়নি। প্রয়োজনে JSON ফাইল ম্যানুয়ালি আনুন।",
+    offlineRecordsLoadedLabel: "ব্যাকএন্ড অনুপলব্ধ। অফলাইন স্টোরেজ থেকে রেকর্ড লোড করা হয়েছে।",
+    loadRecordsFromApiGenericErrorLabel: "ব্যাকএন্ড API থেকে রেকর্ড লোড করা যায়নি।",
+    offlineModeActiveLabel: "অফলাইন মোড সক্রিয়। নতুন মূল্যায়নগুলো স্থানীয়ভাবে সংরক্ষণ করা হবে এবং পরে সিঙ্ক হবে।",
+    onlineSyncReadyLabel: "অনলাইন সিঙ্ক প্রস্তুত",
+    offlineModeQueuedLabel: "অফলাইন মোড সক্রিয় | {count}টি কিউতে আছে",
+    offlineScreeningElevatedLabel: "অফলাইন স্ক্রিনিংয়ে {domain} ঝুঁকি বেশি দেখা যাচ্ছে। ব্যাকএন্ড পর্যালোচনার জন্য সংযোগ উপলব্ধ হলে এই মূল্যায়নটি সিঙ্ক করুন।",
+    offlineScreeningCompletedLabel: "অফলাইন স্ক্রিনিং সম্পন্ন হয়েছে। ব্যাকএন্ড নিশ্চিতকরণের জন্য সংযোগ উপলব্ধ হলে এই মূল্যায়নটি সিঙ্ক করুন।",
+    pdfReportTitle: "গ্রামীণ মানসিক স্বাস্থ্য স্ক্রিনিং ড্যাশবোর্ড রিপোর্ট",
+    pdfQuestionnaireLabel: "প্রশ্নমালা",
+    pdfDashboardLabel: "ড্যাশবোর্ড",
+    pdfRecommendationLabel: "পরামর্শ",
+    pdfWhyFlaggedLabel: "{domain} কেন চিহ্নিত হয়েছে",
+    pdfTopContributorsLabel: "এই ডোমেইনের জন্য শীর্ষ মডেল অবদানকারী:",
+    usableLabel: "ব্যবহারযোগ্য",
+    limitedLabel: "সীমিত",
+    noModalityNoteLabel: "মডালিটির জন্য কোনো নোট নেই।",
+    noAdditionalProcessingStatsLabel: "অতিরিক্ত প্রসেসিং পরিসংখ্যান নেই।",
+    whyFlaggedLabel: "{domain} কেন চিহ্নিত হয়েছে",
+    topModelContributorsLabel: "এই ডোমেইনের জন্য শীর্ষ মডেল অবদানকারী:",
   },
 };
 
@@ -614,6 +1258,7 @@ const state = {
   currentPage: 1,
   latestCreatedRecord: null,
   adaptiveResponses: {},
+  adaptiveSelectedAnswer: "",
   adaptiveCurrentQuestion: null,
   adaptiveProgress: null,
   adaptiveCompleted: false,
@@ -655,7 +1300,8 @@ const elements = {
   adaptiveStatus: document.getElementById("adaptiveStatus"),
   adaptiveQuestionPrompt: document.getElementById("adaptiveQuestionPrompt"),
   adaptiveQuestionMeta: document.getElementById("adaptiveQuestionMeta"),
-  adaptiveAnswer: document.getElementById("adaptiveAnswer"),
+  adaptiveAnswerOptions: document.getElementById("adaptiveAnswerOptions"),
+  adaptiveAnswerHint: document.getElementById("adaptiveAnswerHint"),
   adaptiveFullName: document.getElementById("adaptiveFullName"),
   adaptiveAge: document.getElementById("adaptiveAge"),
   adaptiveGender: document.getElementById("adaptiveGender"),
@@ -787,13 +1433,13 @@ function updateOfflineStatus() {
   if (!elements.offlineStatus) return;
   const online = state.networkOnline;
   const pending = Number(state.pendingSyncCount || 0);
-  let label = online ? "Online sync ready" : "Offline mode active";
+  let label = online ? t("onlineSyncReadyLabel") : t("offlineModeActiveLabel");
   let className = online ? "offline-pill online" : "offline-pill offline";
   if (online && pending > 0) {
     label = `Sync pending: ${pending} assessment${pending === 1 ? "" : "s"}`;
     className = "offline-pill syncing";
   } else if (!online && pending > 0) {
-    label = `Offline mode active | ${pending} queued`;
+    label = t("offlineModeQueuedLabel", { count: pending });
     className = "offline-pill offline";
   }
   elements.offlineStatus.className = className;
@@ -844,7 +1490,7 @@ function normalizeRecord(record) {
   const normalizedQuestionnaire = {
     available: questionnaire.available ?? true,
     overall_score: Number(questionnaire.overall_score || 0),
-    notes: questionnaire.notes || "No questionnaire notes available.",
+    notes: questionnaire.notes || t("noQuestionnaireNotesLabel"),
   };
   DOMAINS.forEach((domain) => {
     normalizedQuestionnaire[`${domain}_score`] = Number(questionnaire[`${domain}_score`] || 0);
@@ -938,9 +1584,12 @@ function tf(key, replacements = {}) {
   return value;
 }
 
-function questionPrompt(question) {
-  return question.prompt_localized
-    || QUESTION_TRANSLATIONS[question.id]?.[currentLanguage()]
+function questionPrompt(question, language = currentLanguage()) {
+  if (question?.language === language && question.prompt_localized) {
+    return question.prompt_localized;
+  }
+  return QUESTION_TRANSLATIONS[question.id]?.[language]
+    || question.prompt_en
     || question.prompt;
 }
 
@@ -959,12 +1608,41 @@ function adaptiveLanguageCopy(english, hindi, bengali) {
   return english;
 }
 
-function adaptiveChooseOneLabel() {
-  return ADAPTIVE_CHOOSE_ONE_TRANSLATIONS[currentAdaptiveLanguage()] || ADAPTIVE_CHOOSE_ONE_TRANSLATIONS.English;
+function adaptiveText(key, replacements = {}, language = currentAdaptiveLanguage()) {
+  const template = ADAPTIVE_UI_TRANSLATIONS[language]?.[key]
+    || ADAPTIVE_UI_TRANSLATIONS.English[key]
+    || "";
+  return template.replace(/\{(\w+)\}/g, (_, token) => {
+    const replacement = replacements[token];
+    return replacement === undefined || replacement === null ? `{${token}}` : String(replacement);
+  });
 }
 
-function adaptiveSectionLabel(section) {
-  return SECTION_TRANSLATIONS[section]?.[currentAdaptiveLanguage()] || section;
+function adaptiveChooseOneLabel(progress = state.adaptiveProgress, language = currentAdaptiveLanguage()) {
+  if (progress?.language === language && progress?.choose_one_label) {
+    return progress.choose_one_label;
+  }
+  return adaptiveText("chooseOne", {}, language)
+    || ADAPTIVE_CHOOSE_ONE_TRANSLATIONS[language]
+    || ADAPTIVE_CHOOSE_ONE_TRANSLATIONS.English;
+}
+
+function adaptiveSectionLabel(section, language = currentAdaptiveLanguage()) {
+  return SECTION_TRANSLATIONS[section]?.[language] || section;
+}
+
+function adaptiveResponseOptions(progress = state.adaptiveProgress, language = currentAdaptiveLanguage()) {
+  if (progress?.language === language && Array.isArray(progress.response_options) && progress.response_options.length) {
+    return progress.response_options.map((option) => ({
+      label: String(option.label ?? ""),
+      value: String(option.value ?? ""),
+    }));
+  }
+  const labels = RESPONSE_OPTION_TRANSLATIONS[language] || RESPONSE_OPTION_TRANSLATIONS.English;
+  return RESPONSE_OPTIONS.map((option, index) => ({
+    label: labels[index] || option.label,
+    value: String(option.value),
+  }));
 }
 
 function setNodeText(selector, text) {
@@ -992,6 +1670,15 @@ function setCheckboxLabel(inputElement, text) {
   label.append(` ${text}`);
 }
 
+function setSelectOptionLabels(selectElement, labels) {
+  if (!selectElement?.options) return;
+  [...selectElement.options].forEach((option, index) => {
+    if (labels[index] !== undefined) {
+      option.textContent = labels[index];
+    }
+  });
+}
+
 function applyLanguage() {
   document.documentElement.lang = currentLanguage() === "Hindi" ? "hi" : currentLanguage() === "Bengali" ? "bn" : "en";
   if (elements.language && elements.language.value !== currentLanguage()) {
@@ -1003,12 +1690,53 @@ function applyLanguage() {
   if (elements.adaptiveLanguage && elements.adaptiveLanguage.value !== currentLanguage()) {
     elements.adaptiveLanguage.value = currentLanguage();
   }
-  setNodeText('.tab-btn[data-view="workspaceView"]', t("workspaceTab"));
-  setNodeText('.tab-btn[data-view="adaptiveView"]', t("adaptiveTab"));
-  setNodeText('.tab-btn[data-view="analyticsView"]', t("analyticsTab"));
-  setNodeText('.tab-btn[data-view="recordsView"]', t("recordsTab"));
-  setNodeText(".language-switcher label", currentLanguage() === "Hindi" ? "डैशबोर्ड भाषा" : currentLanguage() === "Bengali" ? "ড্যাশবোর্ড ভাষা" : "Dashboard language");
-  setNodeText("#applyLanguageBtn", currentLanguage() === "Hindi" ? "भाषा लागू करें" : currentLanguage() === "Bengali" ? "ভাষা প্রয়োগ করুন" : "Apply Language");
+  setNodeText("#heroEyebrow", t("heroEyebrow"));
+  setNodeText("#heroTitle", t("heroTitle"));
+  setNodeText("#heroText", t("heroText"));
+  setNodeText("#heroMetricRisk", t("heroMetricRisk"));
+  setNodeText("#heroMetricModalities", t("heroMetricModalities"));
+  setNodeText("#heroMetricOffline", t("heroMetricOffline"));
+  setNodeText("#dashboardLanguageLabel", t("dashboardLanguageLabel"));
+  setNodeText("#applyLanguageBtn", t("applyLanguageBtn"));
+  setNodeText("#signalNarrativeLabel", currentLanguage() === "Hindi" ? "वर्णन NLP" : currentLanguage() === "Bengali" ? "বর্ণনা NLP" : "Narrative NLP");
+  setNodeText("#signalNarrativeStrong", currentLanguage() === "Hindi" ? "भाव, तनाव, सुरक्षा" : currentLanguage() === "Bengali" ? "সেন্টিমেন্ট, চাপ, নিরাপত্তা" : "Sentiment, stress, safety");
+  setNodeText("#signalNarrativeText", currentLanguage() === "Hindi" ? "लाइव टेक्स्ट स्क्रीनिंग संकेत कहानी लिखते समय अपडेट होते हैं।" : currentLanguage() === "Bengali" ? "গল্পটি লিখতে লিখতে লাইভ টেক্সট স্ক্রিনিং সংকেত আপডেট হয়।" : "Live text screening signals update while the story is being entered.");
+  setNodeText("#signalSpeechLabel", currentLanguage() === "Hindi" ? "भाषण संकेत" : currentLanguage() === "Bengali" ? "কথন সংকেত" : "Speech cues");
+  setNodeText("#signalSpeechStrong", currentLanguage() === "Hindi" ? "आवाज़ की ऊर्जा और गति" : currentLanguage() === "Bengali" ? "কণ্ঠের শক্তি ও গতি" : "Voice energy and pacing");
+  setNodeText("#signalSpeechText", currentLanguage() === "Hindi" ? "जब नमूना उपलब्ध हो, ऑडियो मार्कर कॉन्फिडेंस बैंड को मजबूत करते हैं।" : currentLanguage() === "Bengali" ? "নমুনা থাকলে অডিও মার্কার কনফিডেন্স ব্যান্ডকে শক্তিশালী করে।" : "Audio markers strengthen the confidence band when a sample is present.");
+  setNodeText("#signalFaceLabel", currentLanguage() === "Hindi" ? "चेहरे का स्नैपशॉट" : currentLanguage() === "Bengali" ? "মুখের স্ন্যাপশট" : "Face snapshot");
+  setNodeText("#signalFaceStrong", currentLanguage() === "Hindi" ? "अभिव्यक्ति समर्थन" : currentLanguage() === "Bengali" ? "অভিব্যক্তি সহায়তা" : "Expression support");
+  setNodeText("#signalFaceText", currentLanguage() === "Hindi" ? "इमेज-आधारित संकेत क्षेत्रकर्मियों के लिए बहु-मोडल चित्र को समृद्ध करते हैं।" : currentLanguage() === "Bengali" ? "ছবিভিত্তিক সংকেত মাঠকর্মীদের জন্য মাল্টিমোডাল চিত্রকে সমৃদ্ধ করে।" : "Image-based cues enrich the multimodal picture for field workers.");
+  setNodeText("#signalPulseLabel", currentLanguage() === "Hindi" ? "लाइव जोखिम पल्स" : currentLanguage() === "Bengali" ? "লাইভ ঝুঁকির পালস" : "Live risk pulse");
+  setNodeText("#signalPulseStatus", currentLanguage() === "Hindi" ? "अद्यतन" : currentLanguage() === "Bengali" ? "আপডেটেড" : "updated");
+  setNodeText("#workspaceTabBtn", t("workspaceTab"));
+  setNodeText("#adaptiveTabBtn", t("adaptiveTab"));
+  setNodeText("#analyticsTabBtn", t("analyticsTab"));
+  setNodeText("#recordsTabBtn", t("recordsTab"));
+  const languageOptionLabels = LANGUAGE_OPTION_LABELS[currentLanguage()] || LANGUAGE_OPTION_LABELS.English;
+  const genderOptionLabels = GENDER_OPTION_LABELS[currentLanguage()] || GENDER_OPTION_LABELS.English;
+  setSelectOptionLabels(elements.dashboardLanguage, [
+    languageOptionLabels.English,
+    languageOptionLabels.Hindi,
+    languageOptionLabels.Bengali,
+  ]);
+  setSelectOptionLabels(elements.language, [
+    languageOptionLabels.English,
+    languageOptionLabels.Hindi,
+    languageOptionLabels.Bengali,
+    languageOptionLabels.Other,
+  ]);
+  setSelectOptionLabels(elements.adaptiveLanguage, [
+    languageOptionLabels.English,
+    languageOptionLabels.Hindi,
+    languageOptionLabels.Bengali,
+    languageOptionLabels.Other,
+  ]);
+  setSelectOptionLabels(elements.gender, genderOptionLabels);
+  setSelectOptionLabels(elements.adaptiveGender, genderOptionLabels);
+  const numericLang = currentLanguage() === "Bengali" ? "bn" : currentLanguage() === "Hindi" ? "hi" : "en";
+  if (elements.age) elements.age.lang = numericLang;
+  if (elements.adaptiveAge) elements.adaptiveAge.lang = numericLang;
   setNodeText(".intake-card-strong h3", t("intakeFlowTitle"));
   setNodeText(".intake-card-strong p:last-child", t("intakeFlowText"));
   setNodeText(".intake-strip .intake-card:nth-child(2) h3", t("step1Title"));
@@ -1021,11 +1749,25 @@ function applyLanguage() {
   setNodeText(".intake-strip .intake-card:nth-child(5) p:last-child", t("step4Text"));
   setNodeText(".form-card h3", t("candidateProfileTitle"));
   setNodeText(".form-grid .form-card:nth-child(2) h3", t("freeTextTitle"));
-  setNodeText("#adaptiveView .section-heading h2", t("adaptiveTitle"));
-  setNodeText("#adaptiveView .section-heading p", t("adaptiveSubtitle"));
-  setNodeText("#adaptiveView .form-grid .form-card:nth-child(1) h3", t("adaptiveProfileTitle"));
-  setNodeText("#adaptiveView .form-grid .form-card:nth-child(2) h3", t("adaptiveQuestionTitle"));
-  setNodeText("#adaptiveView .form-card.questionnaire-card .section-heading h3", t("adaptiveNarrativeTitle"));
+  setNodeText("#adaptiveSectionTitle", t("adaptiveTitle"));
+  setNodeText("#adaptiveSectionText", t("adaptiveSubtitle"));
+  setNodeText("#adaptiveIntroFlowTitle", t("adaptiveIntroFlowTitle"));
+  setNodeText("#adaptiveIntroFlowHeading", t("adaptiveIntroFlowHeading"));
+  setNodeText("#adaptiveIntroFlowText", t("adaptiveIntroFlowText"));
+  setNodeText("#adaptiveIntroLanguageTitle", t("adaptiveIntroLanguageTitle"));
+  setNodeText("#adaptiveIntroLanguageHeading", t("adaptiveIntroLanguageHeading"));
+  setNodeText("#adaptiveIntroLanguageText", t("adaptiveIntroLanguageText"));
+  setNodeText("#adaptiveIntroSharedTitle", t("adaptiveIntroSharedTitle"));
+  setNodeText("#adaptiveIntroSharedHeading", t("adaptiveIntroSharedHeading"));
+  setNodeText("#adaptiveIntroSharedText", t("adaptiveIntroSharedText"));
+  setNodeText("#adaptiveProfileTitle", t("adaptiveProfileTitle"));
+  setNodeText("#adaptiveQuestionTitle", t("adaptiveQuestionTitle"));
+  setNodeText("#adaptiveNarrativeTitle", t("adaptiveNarrativeTitle"));
+  setNodeText("#adaptiveNarrativeText", adaptiveText("narrativeSubtitle"));
+  setNodeText("#adaptiveQuestionPrompt", t("adaptiveQuestionHint"));
+  setNodeText("#adaptiveQuestionMeta", adaptiveText("idleMeta"));
+  setNodeText("#adaptiveAnswerLabel", adaptiveText("answerLabel"));
+  setNodeText("#adaptiveAnswerHint", adaptiveText("answerHelp"));
   setNodeText("#adaptiveStartBtn", t("adaptiveStartBtn"));
   setNodeText("#adaptiveNextBtn", t("adaptiveNextBtn"));
   setNodeText("#adaptiveResetBtn", t("adaptiveResetBtn"));
@@ -1036,28 +1778,61 @@ function applyLanguage() {
   setLabelText(elements.phone, t("phoneLabel"));
   setLabelText(elements.assessor, t("assessorLabel"));
   setLabelText(elements.language, t("languageLabel"));
+  setLabelText(elements.adaptiveLanguage, t("languageLabel"));
   setCheckboxLabel(elements.consent, t("consentLabel"));
+  setLabelText(elements.adaptiveFullName, t("fullNameLabel"));
+  setLabelText(elements.adaptiveAge, t("ageLabel"));
+  setLabelText(elements.adaptiveGender, t("genderLabel"));
+  setLabelText(elements.adaptiveVillage, t("villageLabel"));
+  setLabelText(elements.adaptiveAssessor, t("assessorLabel"));
+  setCheckboxLabel(elements.adaptiveConsent, t("consentLabel"));
   setLabelText(elements.textNarrative, t("narrativeLabel"));
+  setLabelText(elements.adaptiveTextNarrative, t("narrativeLabel"));
+  elements.fullName.placeholder = t("fullNamePlaceholder");
+  elements.village.placeholder = t("villagePlaceholder");
+  elements.assessor.placeholder = t("assessorPlaceholder");
+  elements.adaptiveFullName.placeholder = t("fullNamePlaceholder");
+  elements.adaptiveVillage.placeholder = t("villagePlaceholder");
+  elements.adaptiveAssessor.placeholder = t("assessorPlaceholder");
   elements.textNarrative.placeholder = t("narrativePlaceholder");
+  elements.adaptiveTextNarrative.placeholder = t("narrativePlaceholder");
   setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(1) .capture-head strong", t("guidedSpeechTitle"));
   setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(1) .capture-head .capture-topic", t("guidedSpeechTopic"));
   setLabelText(elements.audioFile, t("audioFileLabel"));
   setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(2) .capture-head strong", t("liveFaceTitle"));
   setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(2) .capture-head .capture-topic", t("liveFaceTopic"));
   setLabelText(elements.imageFile, t("imageFileLabel"));
-  setNodeText(".questionnaire-card h3", t("questionnaireTitle"));
-  setNodeText(".questionnaire-card .section-heading p", t("questionnaireSubtitle"));
-  setNodeText(".action-row .primary-btn", t("saveAssessmentBtn"));
-  setNodeText(".action-row .ghost-btn", t("resetAssessmentBtn"));
-  setNodeText("#workspaceView .section-heading h2", t("workspaceTab"));
-  setNodeText("#workspaceView .section-heading p", currentLanguage() === "Hindi" ? "डैशबोर्ड से सीधे नया स्क्रीनिंग रिकॉर्ड बनाएं।" : currentLanguage() === "Bengali" ? "ড্যাশবোর্ড থেকেই নতুন স্ক্রিনিং রেকর্ড তৈরি করুন।" : "Create a new screening record directly from the dashboard.");
-  setNodeText("#analyticsView .section-heading h2", t("analyticsTab"));
-  setNodeText("#analyticsView .section-heading p", t("detailAnalysisTitle"));
-  setNodeText("#recordsView .section-heading h2", t("recordsTab"));
-  setNodeText("#recordsView .section-heading p", t("recordsHeadingText"));
+  setNodeText("#questionnaireTitle", t("questionnaireTitle"));
+  setNodeText("#questionnaireSubtitle", t("questionnaireSubtitle"));
+  setNodeText("#saveAssessmentBtn", t("saveAssessmentBtn"));
+  setNodeText("#resetAssessmentBtn", t("resetAssessmentBtn"));
+  setNodeText("#workspaceTitle", t("workspaceTab"));
+  setNodeText("#workspaceText", currentLanguage() === "Hindi" ? "डैशबोर्ड से सीधे नया स्क्रीनिंग रिकॉर्ड बनाएं।" : currentLanguage() === "Bengali" ? "ড্যাশবোর্ড থেকেই নতুন স্ক্রিনিং রেকর্ড তৈরি করুন।" : "Create a new screening record directly from the dashboard.");
+  setNodeText("#workspacePredictionTitle", t("workspacePredictionTitle"));
+  setNodeText("#workspacePredictionText", t("workspacePredictionText"));
+  setNodeText("#workspaceNlpTitle", t("workspaceNlpTitle"));
+  setNodeText("#workspaceNlpText", t("workspaceNlpText"));
+  setNodeText("#workspaceReadinessTitle", t("workspaceReadinessTitle"));
+  setNodeText("#workspaceReadinessText", t("workspaceReadinessText"));
+  setNodeText("#analyticsTitle", t("analyticsTab"));
+  setNodeText("#analyticsText", t("detailAnalysisTitle"));
+  setNodeText("#recordsSectionTitle", t("recordsTab"));
+  setNodeText("#recordsSectionText", t("recordsHeadingText"));
   setNodeText("#fetchRecordBtn", t("fetchRecordBtn"));
   setNodeText("#downloadSelectedPdfBtn", t("downloadPdfBtn"));
   elements.recordLookup.placeholder = t("recordLookupPlaceholder");
+  setNodeText("#analysisAssessmentIdLabel", t("assessmentIdLabel"));
+  setNodeText("#analysisConfidenceLabel", t("overallConfidenceLabel"));
+  setNodeText("#analysisOverallRiskLabel", t("overallRiskLabel"));
+  setNodeText("#recordsTableAssessmentIdHeader", t("assessmentIdLabel"));
+  setNodeText("#recordsTableNameHeader", t("candidateLabel"));
+  setNodeText("#recordsTableVillageHeader", t("villageShortLabel"));
+  setNodeText("#recordsTableAssessorHeader", t("assessorShortLabel"));
+  setNodeText("#recordsTableSubmittedHeader", t("createdAtLabel"));
+  setNodeText("#recordsTableRiskHeader", t("riskLabel"));
+  setNodeText("#recordsTableConfidenceHeader", t("confidenceLabel"));
+  setNodeText("#prevPageBtn", t("previousLabel"));
+  setNodeText("#nextPageBtn", t("nextLabel"));
   setNodeText("#analyticsView .analytics-intro .info-card:nth-child(1) h3", t("analyticsIntroCurrent"));
   setNodeText("#analyticsView .analytics-intro .info-card:nth-child(1) p:last-child", t("analyticsIntroCurrentText"));
   setNodeText("#analyticsView .analytics-intro .info-card:nth-child(2) p.intake-kicker", t("analyticsIntroModel"));
@@ -1076,16 +1851,24 @@ function applyLanguage() {
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(5) .panel:nth-child(1) .section-heading p", t("modalityQualityText"));
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(5) .panel:nth-child(2) .section-heading h2", t("recommendationTitle"));
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(5) .panel:nth-child(2) .section-heading p", t("recommendationText"));
-  setNodeText("#recordsView .table-section .section-heading h2", t("recordsExplorerTitle"));
-  setNodeText("#recordsView .table-section .section-heading p", t("recordsExplorerText"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(4) .panel:nth-child(1) .section-heading h2", t("assessmentDetailTitle"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(4) .panel:nth-child(1) .section-heading p", t("assessmentDetailText"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(4) .panel:nth-child(2) .section-heading h2", t("scoreComparisonTitle"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(4) .panel:nth-child(2) .section-heading p", t("scoreComparisonText"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(5) .panel:nth-child(1) .section-heading h2", t("modalityBreakdownTitle"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(5) .panel:nth-child(1) .section-heading p", t("modalityBreakdownText"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(5) .panel:nth-child(2) .section-heading h2", t("featureSnapshotTitle"));
-  setNodeText("#recordsView .detail-grid:nth-of-type(5) .panel:nth-child(2) .section-heading p", t("featureSnapshotText"));
+  setNodeText("#recordsExplorerTitle", t("recordsExplorerTitle"));
+  setNodeText("#recordsExplorerText", t("recordsExplorerText"));
+  setNodeText("#assessmentDetailTitle", t("assessmentDetailTitle"));
+  setNodeText("#assessmentDetailText", t("assessmentDetailText"));
+  setNodeText("#scoreComparisonTitle", t("scoreComparisonTitle"));
+  setNodeText("#scoreComparisonText", t("scoreComparisonText"));
+  setNodeText("#modalityBreakdownTitle", t("modalityBreakdownTitle"));
+  setNodeText("#modalityBreakdownText", t("modalityBreakdownText"));
+  setNodeText("#featureSnapshotTitle", t("featureSnapshotTitle"));
+  setNodeText("#featureSnapshotText", t("featureSnapshotText"));
+  setNodeText("#patientHistoryTitle", t("patientHistoryTitle"));
+  setNodeText("#patientHistoryText", t("patientHistoryText"));
+  setNodeText("#domainTrajectoryTitle", t("domainTrajectoryTitle"));
+  setNodeText("#domainTrajectoryText", t("domainTrajectoryText"));
+  setNodeText("#trajectoryModelTitle", t("trajectoryModelTitle"));
+  setNodeText("#trajectoryModelText", t("trajectoryModelText"));
+  setNodeText("#trajectorySummaryTitle", t("trajectorySummaryTitle"));
+  setNodeText("#trajectorySummaryText", t("trajectorySummaryText"));
 }
 
 function applyDashboardLanguageSelection() {
@@ -1462,7 +2245,7 @@ function buildQuestionnaire() {
     `).join("");
     blocks.push(`
       <div class="question-item">
-        <p>${questionPrompt(question)}</p>
+        <p>${questionPrompt(question, currentLanguage())}</p>
         <div class="choice-row">${choices}</div>
       </div>
     `);
@@ -1666,8 +2449,8 @@ function buildOfflineMultimodal(payload) {
     .map((domain) => ({ domain, score: overallScores[domain] }))
     .sort((left, right) => right.score - left.score)[0];
   const recommendation = highestDomain && highestDomain.score >= 0.66
-    ? `Offline screening suggests elevated ${DOMAIN_LABELS[highestDomain.domain]} risk. Sync this assessment when a connection is available for backend review.`
-    : "Offline screening completed. Sync this assessment when a connection is available for backend confirmation.";
+    ? t("offlineScreeningElevatedLabel", { domain: localizedDomainLabel(highestDomain.domain) })
+    : t("offlineScreeningCompletedLabel");
 
   return {
     text: textResult,
@@ -1764,20 +2547,20 @@ function buildAssessmentRecordFromAnalysis(payload, multimodal, assessmentId = "
 
 function createPdfBytes(record) {
   const lines = [
-    "Rural Mental Health Screening Dashboard Report",
-    `Assessment ID: ${record.assessment_id}`,
+    t("pdfReportTitle"),
+    `${t("assessmentIdLabel")}: ${record.assessment_id}`,
     `${t("createdAtLabel")}: ${record.created_at}`,
-    `${t("candidateLabel")}: ${record.profile.full_name || "Unnamed user"}`,
-    `${t("villageShortLabel")}: ${record.profile.village || "Unknown"}`,
-    `${t("assessorShortLabel")}: ${record.profile.assessor || "Unknown"}`,
+    `${t("candidateLabel")}: ${record.profile.full_name || t("unknownUserLabel")}`,
+    `${t("villageShortLabel")}: ${record.profile.village || t("unknownLabel")}`,
+    `${t("assessorShortLabel")}: ${record.profile.assessor || t("unknownLabel")}`,
     "",
   ];
   DOMAINS.forEach((domain) => {
-    lines.push(`${DOMAIN_LABELS[domain]} Questionnaire: ${record.questionnaire[`${domain}_risk`]}`);
-    lines.push(`${DOMAIN_LABELS[domain]} Dashboard: ${record.multimodal.overall[domain]}`);
+    lines.push(`${localizedDomainLabel(domain)} ${t("pdfQuestionnaireLabel")}: ${localizedRiskLevel(record.questionnaire[`${domain}_risk`])}`);
+    lines.push(`${localizedDomainLabel(domain)} ${t("pdfDashboardLabel")}: ${localizedRiskLevel(record.multimodal.overall[domain])}`);
   });
   lines.push("");
-  lines.push(`Recommendation: ${record.multimodal.recommendation}`);
+  lines.push(`${t("pdfRecommendationLabel")}: ${record.multimodal.recommendation}`);
 
   const textOps = ["BT", "/F1 11 Tf", "40 800 Td"];
   lines.forEach((line) => {
@@ -1826,7 +2609,6 @@ function downloadPdfForRecord(record) {
 function loadResults(records, sourceLabel, focusLatest = false) {
   setActiveResults(records, {
     focusLatest,
-    bannerMessage: `Loaded ${visibleUserRecords(records).length} assessment records from ${sourceLabel}.`,
     bannerTone: "success",
   });
 }
@@ -1965,11 +2747,11 @@ function strongestDomain(record) {
 }
 
 function overallRiskLabel(record) {
-  if (!record) return "No data";
+  if (!record) return t("noDataLabel");
   const levels = DOMAINS.map((domain) => record.multimodal?.overall?.[domain] || "low");
-  if (levels.includes("high")) return "High";
-  if (levels.includes("moderate")) return "Moderate";
-  return "Low";
+  if (levels.includes("high")) return localizedRiskLevel("high");
+  if (levels.includes("moderate")) return localizedRiskLevel("moderate");
+  return localizedRiskLevel("low");
 }
 
 function normalizeIdentityValue(value) {
@@ -2012,15 +2794,7 @@ function linearSlope(points) {
 }
 
 function trajectoryStatusLabel(status) {
-  const labels = {
-    insufficient_history: "Need more screenings",
-    escalating: "Escalating risk",
-    worsening: "Worsening trend",
-    improving: "Improving trend",
-    volatile: "Volatile trajectory",
-    stable: "Stable trajectory",
-  };
-  return labels[status] || "Trajectory available";
+  return localizedTrajectoryStatus(status);
 }
 
 function buildLocalTrajectory(record) {
@@ -2082,15 +2856,7 @@ function buildLocalTrajectory(record) {
     status = "improving";
   }
 
-  const summary = status === "insufficient_history"
-    ? "Only one screening is available. Capture a follow-up visit to start trend modeling."
-    : status === "volatile"
-      ? "Risk is fluctuating across visits, so closer monitoring may be needed."
-      : status === "improving"
-        ? "Recent visits suggest improving risk scores. Continue follow-up to confirm the recovery holds."
-        : status === "stable"
-          ? "Risk has stayed relatively stable across the available screenings."
-          : "Risk is rising over time. Compare this visit with the last one and plan follow-up quickly.";
+  const summary = localizedTrajectorySummary(status);
 
   return {
     patient_key: patientKey,
@@ -2123,13 +2889,13 @@ function getTrajectory(record) {
 function renderOverview() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.analysisAssessmentId.textContent = "No data";
+    elements.analysisAssessmentId.textContent = t("noDataLabel");
     elements.analysisConfidence.textContent = "0%";
-    elements.analysisStrongestDomain.textContent = "No data";
+    elements.analysisStrongestDomain.textContent = t("noDataLabel");
     elements.analysisCoverage.textContent = "0/3";
-    elements.analysisSubmissionTime.textContent = "No data";
-    if (elements.analysisTrajectory) elements.analysisTrajectory.textContent = "No data";
-    elements.analysisOverallRisk.textContent = "No data";
+    elements.analysisSubmissionTime.textContent = t("noDataLabel");
+    if (elements.analysisTrajectory) elements.analysisTrajectory.textContent = t("noDataLabel");
+    elements.analysisOverallRisk.textContent = t("noDataLabel");
     setBanner(elements.analysisStatusBanner, t("analyticsBannerDefault"), "neutral");
     return;
   }
@@ -2139,19 +2905,19 @@ function renderOverview() {
   const trajectory = getTrajectory(record);
   elements.analysisAssessmentId.textContent = record.assessment_id;
   elements.analysisConfidence.textContent = formatPercent(record.multimodal?.overall?.confidence || 0);
-  elements.analysisStrongestDomain.textContent = dominant ? DOMAIN_LABELS[dominant] : "No data";
+  elements.analysisStrongestDomain.textContent = dominant ? localizedDomainLabel(dominant) : t("noDataLabel");
   elements.analysisCoverage.textContent = `${modalitiesUsed}/3`;
   elements.analysisSubmissionTime.textContent = formatDate(record.created_at);
   if (elements.analysisTrajectory) {
-    elements.analysisTrajectory.textContent = trajectory?.status_label || "Need more data";
+    elements.analysisTrajectory.textContent = trajectory ? trajectoryStatusLabel(trajectory.status) : t("noMoreDataLabel");
   }
   elements.analysisOverallRisk.textContent = overallRiskLabel(record);
   const comorbidity = record.multimodal?.comorbidity || {};
   const topPair = comorbidity.top_pairs?.[0] || null;
   const comorbidityText = topPair?.domains?.length === 2
-    ? ` Top comorbidity: ${DOMAIN_LABELS[topPair.domains[0]] || topPair.domains[0]} + ${DOMAIN_LABELS[topPair.domains[1]] || topPair.domains[1]} (${Number(topPair.probability || 0).toFixed(2)})`
+    ? ` ${t("topComorbidityLabel")}: ${localizedDomainLabel(topPair.domains[0])} + ${localizedDomainLabel(topPair.domains[1])} (${Number(topPair.probability || 0).toFixed(2)})`
     : "";
-  setBanner(elements.analysisStatusBanner, `${record.profile?.full_name || "Current user"}: ${t("analyticsReady")}${comorbidityText}`, "success");
+  setBanner(elements.analysisStatusBanner, `${record.profile?.full_name || t("currentUserLabel")}: ${t("analyticsReady")}${comorbidityText}`, "success");
 }
 
 function formatShortDateLabel(value) {
@@ -2360,18 +3126,18 @@ function renderRiskDistribution() {
 
   const comparisonCards = DOMAINS.map((domain) => `
     <div class="compare-card">
-      <div class="score-header"><span>${DOMAIN_LABELS[domain]}</span><strong>${(record.multimodal?.overall?.[domain] || "low").toUpperCase()}</strong></div>
-      ${scoreLine("Questionnaire", Number(record.questionnaire?.[`${domain}_score`] || 0))}
-      ${scoreLine("Combined AI", Number(record.multimodal?.overall?.scores?.[domain] || 0))}
+      <div class="score-header"><span>${localizedDomainLabel(domain)}</span><strong>${(record.multimodal?.overall?.[domain] || "low").toUpperCase()}</strong></div>
+      ${scoreLine(t("questionnaireLabel"), Number(record.questionnaire?.[`${domain}_score`] || 0))}
+      ${scoreLine(t("combinedAiLabel"), Number(record.multimodal?.overall?.scores?.[domain] || 0))}
     </div>
   `).join("");
 
   elements.riskDistribution.className = "chart-stack";
   elements.riskDistribution.innerHTML = buildChartCard(
-    "Domain Score Comparison",
-    "Questionnaire score versus combined AI score",
+    t("domainScoreComparisonTitle"),
+    t("domainScoreComparisonText"),
     comparisonCards,
-    "This section compares self-reported symptoms with the final multimodal backend score for each condition."
+    t("domainScoreComparisonDescription")
   );
 }
 
@@ -2418,20 +3184,20 @@ function renderRiskHotspots() {
     if (features.voiced_ratio !== undefined) metadata.push(`voiced ${Math.round(Number(features.voiced_ratio) * 100)}%`);
     return `
       <div class="detail-card">
-        <div class="detail-inline"><h3>${modality.charAt(0).toUpperCase() + modality.slice(1)}</h3><strong>${payload.available ? "Usable" : "Limited"}</strong></div>
-        ${scoreLine("Confidence", Number(payload.confidence || 0))}
-        <p class="detail-muted">${payload.notes || "No modality note available."}</p>
-        <p class="detail-muted">${metadata.join(" | ") || "No additional processing statistics available."}</p>
+        <div class="detail-inline"><h3>${localizedModalityLabel(modality)}</h3><strong>${payload.available ? t("usableLabel") : t("limitedLabel")}</strong></div>
+        ${scoreLine(t("confidenceLabel"), Number(payload.confidence || 0))}
+        <p class="detail-muted">${payload.notes || t("noModalityNoteLabel")}</p>
+        <p class="detail-muted">${metadata.join(" | ") || t("noAdditionalProcessingStatsLabel")}</p>
       </div>
     `;
   }).join("");
 
   elements.riskHotspots.className = "chart-stack";
   elements.riskHotspots.innerHTML = buildChartCard(
-    "Modality Quality",
-    "Availability, confidence, and processing quality",
+    t("modalityQualityTitle"),
+    t("modalityQualityShortText"),
     cards,
-    "Use this section to understand which inputs were strong enough to support the final decision."
+    t("modalityQualityHelperText")
   );
 }
 
@@ -2445,19 +3211,19 @@ function renderNlpTrends() {
 
   elements.nlpTrends.className = "chart-stack";
   elements.nlpTrends.innerHTML = buildChartCard(
-    "Recommendation And Disclaimer",
+    t("recommendationAndDisclaimerTitle"),
     overallRiskLabel(record),
     `
       <div class="detail-card">
-        <h3>Recommendation</h3>
-        <p>${record.multimodal?.recommendation || "No recommendation available."}</p>
+        <h3>${t("recommendationTitle")}</h3>
+        <p>${record.multimodal?.recommendation || t("noRecommendationText")}</p>
       </div>
       <div class="detail-card">
-        <h3>Screening Disclaimer</h3>
-        <p>${record.multimodal?.disclaimer || "No disclaimer available."}</p>
+        <h3>${t("screeningDisclaimerTitle")}</h3>
+        <p>${record.multimodal?.disclaimer || t("noDisclaimerText")}</p>
       </div>
     `,
-    "This area gives the end user the screening interpretation and the appropriate follow-up note."
+    t("recommendationOverviewText")
   );
 }
 
@@ -2466,9 +3232,9 @@ function renderTrajectoryModel() {
   const trajectory = getTrajectory(record);
   if (!record || !trajectory) {
     elements.trajectoryModel.className = "chart-stack empty-state";
-    elements.trajectoryModel.textContent = "No longitudinal trajectory available yet.";
+    elements.trajectoryModel.textContent = t("noTrajectoryLabel");
     elements.trajectorySummary.className = "chart-stack empty-state";
-    elements.trajectorySummary.textContent = "No trend summary available yet.";
+    elements.trajectorySummary.textContent = t("noTrendSummaryLabel");
     return;
   }
 
@@ -2478,8 +3244,8 @@ function renderTrajectoryModel() {
   }));
   elements.trajectoryModel.className = "chart-stack";
   elements.trajectoryModel.innerHTML = buildChartCard(
-    "Overall Risk Trajectory",
-    `${trajectory.status_label} across ${trajectory.history_count} screening${trajectory.history_count === 1 ? "" : "s"}`,
+    t("overallRiskTrajectoryTitle"),
+    t("screeningCountLabel", { count: trajectory.history_count, status: trajectoryStatusLabel(trajectory.status) }),
     buildLineTrendSvg(chartPoints),
     trajectory.summary,
   );
@@ -2489,33 +3255,36 @@ function renderTrajectoryModel() {
     const change = Number(info.change_from_baseline || 0);
     return `
       <div class="detail-card">
-        <div class="detail-inline"><h3>${DOMAIN_LABELS[domain]}</h3><strong>${info.direction || "stable"}</strong></div>
-        ${scoreLine("Current", Number(info.latest_score || 0))}
-        <p class="detail-muted">Baseline change: ${change >= 0 ? "+" : ""}${change.toFixed(2)}</p>
+        <div class="detail-inline"><h3>${localizedDomainLabel(domain)}</h3><strong>${localizedTrajectoryStatus(info.direction || "stable")}</strong></div>
+        ${scoreLine(t("currentLabel"), Number(info.latest_score || 0))}
+        <p class="detail-muted">${t("changeSinceBaselineLabel")}: ${change >= 0 ? "+" : ""}${change.toFixed(2)}</p>
       </div>
     `;
   }).join("");
   elements.trajectorySummary.className = "chart-stack";
   elements.trajectorySummary.innerHTML = buildChartCard(
-    "Trend Summary",
-    `Baseline ${Number(trajectory.baseline_overall_score || 0).toFixed(2)} to current ${Number(trajectory.latest_overall_score || 0).toFixed(2)}`,
+    t("trendSummaryTitle"),
+    t("baselineToCurrentLabel", {
+      baseline: Number(trajectory.baseline_overall_score || 0).toFixed(2),
+      current: Number(trajectory.latest_overall_score || 0).toFixed(2),
+    }),
     `
       <div class="detail-grid compact-grid">
         <div class="detail-card">
-          <h3>Status</h3>
-          <p>${trajectory.status_label}</p>
+          <h3>${t("statusTitle")}</h3>
+          <p>${trajectoryStatusLabel(trajectory.status)}</p>
           <p class="detail-muted">${trajectory.summary}</p>
         </div>
         <div class="detail-card">
-          <h3>Trajectory Metrics</h3>
-          <p>Change since baseline: ${Number(trajectory.change_from_baseline || 0).toFixed(2)}</p>
-          <p>Recent change: ${Number(trajectory.change_from_previous || 0).toFixed(2)}</p>
-          <p>Volatility: ${Number(trajectory.volatility || 0).toFixed(2)}</p>
+          <h3>${t("trajectoryMetricsTitle")}</h3>
+          <p>${t("changeSinceBaselineLabel")}: ${Number(trajectory.change_from_baseline || 0).toFixed(2)}</p>
+          <p>${t("recentChangeLabel")}: ${Number(trajectory.change_from_previous || 0).toFixed(2)}</p>
+          <p>${t("volatilityLabel")}: ${Number(trajectory.volatility || 0).toFixed(2)}</p>
         </div>
       </div>
       <div class="detail-grid compact-grid">${domainCards}</div>
     `,
-    "Trend modeling combines repeated visits, slope, and volatility so health workers can see whether risk is rising, falling, or fluctuating.",
+    t("trendModelDescription"),
   );
 }
 
@@ -2533,15 +3302,15 @@ function renderModelStatistics() {
 
   if (!availableRows.length) {
     elements.villageSummary.className = "chart-stack empty-state";
-    elements.villageSummary.textContent = "No trained model bundle statistics are available for this assessment yet.";
+    elements.villageSummary.textContent = t("noTrainedModelStatsLabel");
     return;
   }
 
   const summaryCards = [
-    { label: "Text transformer", value: textFeatures.transformer_model || "Unavailable" },
-    { label: `${t("sentimentLabel")} engine`, value: textFeatures.sentiment_model || "Unavailable" },
-    { label: `${t("emotionLabel")} engine`, value: textFeatures.emotion_model || "Unavailable" },
-    { label: "Trained modalities", value: `${availableRows.length}/3` },
+    { label: t("textTransformerLabel"), value: textFeatures.transformer_model || t("unavailableLabel") },
+    { label: `${t("sentimentLabel")} ${t("analysisEngineLabel")}`, value: textFeatures.sentiment_model || t("unavailableLabel") },
+    { label: `${t("emotionLabel")} ${t("analysisEngineLabel")}`, value: textFeatures.emotion_model || t("unavailableLabel") },
+    { label: t("trainedModalitiesLabel"), value: `${availableRows.length}/3` },
   ];
 
   const metricChart = buildHorizontalMetricSvg(
@@ -2555,14 +3324,14 @@ function renderModelStatistics() {
 
   const comparisonCards = availableRows.map((item) => `
     <div class="detail-card">
-      <div class="detail-inline"><h3>${item.label}</h3><strong>${item.source === "trained_bundle" ? "Trained bundle" : "Fallback"}</strong></div>
-      ${scoreLine("Confidence Hint", item.confidenceHint)}
-      <p class="detail-muted">Macro R2: ${formatMetricNumber(item.macroR2, 3)}</p>
-      <p class="detail-muted">Samples: ${item.sampleCount}</p>
-      <p class="detail-muted">Domains: ${item.domains.length ? item.domains.map((domain) => DOMAIN_LABELS[domain] || domain).join(", ") : "Unavailable"}</p>
-      <p class="detail-muted">Manifest: ${formatCompactPath(item.manifestPath)}</p>
-      <p class="detail-muted">Dataset root: ${formatCompactPath(item.datasetRoot)}</p>
-      <p class="detail-muted">Trained at: ${item.trainedAt === "Unavailable" ? "Unavailable" : formatDate(item.trainedAt)}</p>
+      <div class="detail-inline"><h3>${item.label}</h3><strong>${item.source === "trained_bundle" ? t("trainedBundleLabel") : t("fallbackLabel")}</strong></div>
+      ${scoreLine(t("confidenceHintLabel"), item.confidenceHint)}
+      <p class="detail-muted">${t("macroR2Label")}: ${formatMetricNumber(item.macroR2, 3)}</p>
+      <p class="detail-muted">${t("samplesLabel")}: ${item.sampleCount}</p>
+      <p class="detail-muted">${t("domainsLabel")}: ${item.domains.length ? item.domains.map((domain) => localizedDomainLabel(domain)).join(", ") : t("unavailableLabel")}</p>
+      <p class="detail-muted">${t("manifestLabel")}: ${formatCompactPath(item.manifestPath)}</p>
+      <p class="detail-muted">${t("datasetRootLabel")}: ${formatCompactPath(item.datasetRoot)}</p>
+      <p class="detail-muted">${t("trainedAtLabel")}: ${item.trainedAt === "Unavailable" ? t("unavailableLabel") : formatDate(item.trainedAt)}</p>
     </div>
   `).join("");
 
@@ -2576,10 +3345,10 @@ function renderModelStatistics() {
       `).join("")}
     </div>
     ${buildChartCard(
-      "Trained Bundle Comparison",
-      "Macro R2 and sample coverage by modality",
+      t("trainedBundleComparisonTitle"),
+      t("macroR2CoverageText"),
       metricChart,
-      "This compares the locally trained bundle quality for text, audio, and image using the current saved model metadata."
+      t("trainedBundleDescription")
     )}
     <div class="compare-grid">
       ${comparisonCards}
@@ -2599,14 +3368,14 @@ function renderNlpSignalSummary() {
   const modelRows = getModelComparisonRows(record).filter((item) => item.sampleCount > 0 || item.source === "trained_bundle");
   const trainedDomainTotal = modelRows.reduce((sum, item) => sum + item.domains.length, 0);
   const cards = [
-    { label: t("sentimentLabel"), value: features.sentiment_label || "Unknown" },
-    { label: t("emotionLabel"), value: features.dominant_emotion || "Unknown" },
-    { label: "Safety keywords", value: features.self_harm_keyword_detected ? "Detected" : "Not detected" },
-    { label: "Keyword matches", value: (features.self_harm_keyword_matches || []).join(", ") || "None" },
-    { label: "Narrative word count", value: features.word_count || 0 },
-    { label: `${t("emotionLabel")} intensity`, value: Number(features.emotion_intensity || 0).toFixed(2) },
-    { label: "Trained modalities", value: modelRows.length || 0 },
-    { label: "Domain coverage", value: trainedDomainTotal || 0 },
+    { label: t("sentimentLabel"), value: features.sentiment_label || t("unknownLabel") },
+    { label: t("emotionLabel"), value: features.dominant_emotion || t("unknownLabel") },
+    { label: t("safetyKeywordsLabel"), value: features.self_harm_keyword_detected ? t("detectedLabel") : t("notDetectedLabel") },
+    { label: t("keywordMatchesLabel"), value: (features.self_harm_keyword_matches || []).join(", ") || t("noneLabel") },
+    { label: t("narrativeWordCountLabel"), value: features.word_count || 0 },
+    { label: `${t("emotionLabel")} ${t("emotionIntensityLabel")}`, value: Number(features.emotion_intensity || 0).toFixed(2) },
+    { label: t("trainedModalitiesLabel"), value: modelRows.length || 0 },
+    { label: t("domainCoverageLabel"), value: trainedDomainTotal || 0 },
   ];
   elements.assessorSummary.className = "tile-grid";
   elements.assessorSummary.innerHTML = cards.map((item) => `
@@ -2639,11 +3408,11 @@ function renderTable() {
     return `
       <tr class="table-row ${state.selectedRecord?.assessment_id === record.assessment_id ? "selected" : ""}" data-id="${record.assessment_id}">
         <td>${record.assessment_id}</td>
-        <td>${record.profile?.full_name || "Unnamed user"}</td>
-        <td>${record.profile?.village || "Unknown"}</td>
-        <td>${record.profile?.assessor || "Unknown"}</td>
+        <td>${record.profile?.full_name || t("unknownUserLabel")}</td>
+        <td>${record.profile?.village || t("unknownLabel")}</td>
+        <td>${record.profile?.assessor || t("unknownLabel")}</td>
         <td>${formatDate(record.created_at)}</td>
-        <td><span class="risk-pill ${level}">${DOMAIN_LABELS[domain]} ${level}</span></td>
+        <td><span class="risk-pill ${level}">${localizedDomainLabel(domain)} ${localizedRiskLevel(level)}</span></td>
         <td>${formatPercent(record.multimodal?.overall?.confidence || 0)}</td>
       </tr>
     `;
@@ -2675,14 +3444,14 @@ function renderSelectedAssessment() {
     elements.selectedAssessment.textContent = t("noRecordSelected");
     return;
   }
-  const questionnairePills = DOMAINS.map((domain) => `<span class="risk-pill ${record.questionnaire[`${domain}_risk`]}">${DOMAIN_LABELS[domain]} ${record.questionnaire[`${domain}_risk`]}</span>`).join("");
-  const overallPills = DOMAINS.map((domain) => `<span class="risk-pill ${record.multimodal.overall[domain]}">${DOMAIN_LABELS[domain]} ${record.multimodal.overall[domain]}</span>`).join("");
+  const questionnairePills = DOMAINS.map((domain) => `<span class="risk-pill ${record.questionnaire[`${domain}_risk`]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.questionnaire[`${domain}_risk`])}</span>`).join("");
+  const overallPills = DOMAINS.map((domain) => `<span class="risk-pill ${record.multimodal.overall[domain]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.multimodal.overall[domain])}</span>`).join("");
   elements.selectedAssessment.className = "detail-stack";
   elements.selectedAssessment.innerHTML = `
     <div class="detail-card">
-      <div class="detail-inline"><h3>${record.profile.full_name || "Unnamed user"}</h3><strong>${record.assessment_id}</strong></div>
-      <p class="detail-muted">${record.profile.village || "Unknown location"} | Age ${record.profile.age || "N/A"} | ${record.profile.gender || "Not stated"}</p>
-      <p class="detail-muted">${t("assessorLabel")}: ${record.profile.assessor || "N/A"} | ${t("languageLabel")}: ${record.profile.language || "N/A"} | ${t("phoneLabel")}: ${record.profile.phone || "N/A"}</p>
+      <div class="detail-inline"><h3>${record.profile.full_name || t("unknownUserLabel")}</h3><strong>${record.assessment_id}</strong></div>
+      <p class="detail-muted">${record.profile.village || t("unknownLocationLabel")} | ${t("ageLabel")}: ${record.profile.age || t("noDataMetricLabel")} | ${record.profile.gender || t("notStatedLabel")}</p>
+      <p class="detail-muted">${t("assessorLabel")}: ${record.profile.assessor || t("noDataMetricLabel")} | ${t("languageLabel")}: ${record.profile.language || t("noDataMetricLabel")} | ${t("phoneLabel")}: ${record.profile.phone || t("noDataMetricLabel")}</p>
       <p class="detail-muted">${t("createdAtLabel")}: ${formatDate(record.created_at)}</p>
       <div class="action-row">
         <button id="deleteSelectedRecordBtn" class="ghost-btn small-btn" type="button">${t("deleteRecord")}</button>
@@ -2697,7 +3466,7 @@ function renderSelectedAssessment() {
       <h3>${t("combinedResultTitle")}</h3>
       <div class="detail-inline">${overallPills}</div>
       ${scoreLine(t("confidenceLabel"), record.multimodal.overall.confidence)}
-      ${DOMAINS.map((domain) => scoreLine(`${DOMAIN_LABELS[domain]} Score`, record.multimodal.overall.scores[domain])).join("")}
+      ${DOMAINS.map((domain) => scoreLine(`${localizedDomainLabel(domain)} ${t("scoreLabel")}`, record.multimodal.overall.scores[domain])).join("")}
     </div>
     <div class="detail-card">
       <h3>${t("recommendationLabel")}</h3>
@@ -2742,7 +3511,7 @@ function renderScoreComparison() {
       <span><span class="legend-dot questionnaire"></span>${t("questionnaireLabel")}</span>
       <span><span class="legend-dot multimodal"></span>${t("dashboardLabel")}</span>
     </div>
-    ${DOMAINS.map((domain) => comparisonRow(DOMAIN_LABELS[domain], record.questionnaire[`${domain}_score`], record.multimodal.overall.scores[domain])).join("")}
+    ${DOMAINS.map((domain) => comparisonRow(localizedDomainLabel(domain), record.questionnaire[`${domain}_score`], record.multimodal.overall.scores[domain])).join("")}
   `;
 }
 
@@ -2769,9 +3538,9 @@ function renderModalityBreakdown() {
   }
   elements.modalityBreakdown.className = "modality-grid";
   elements.modalityBreakdown.innerHTML = [
-    modalityCard("Text", record.multimodal.text),
-    modalityCard("Audio", record.multimodal.audio),
-    modalityCard("Image", record.multimodal.image),
+    modalityCard(localizedModalityLabel("text"), record.multimodal.text),
+    modalityCard(localizedModalityLabel("audio"), record.multimodal.audio),
+    modalityCard(localizedModalityLabel("image"), record.multimodal.image),
   ].join("");
 }
 
@@ -2786,7 +3555,7 @@ function renderFeatureSnapshot() {
     .filter((key) => record.multimodal[key]?.features)
     .map((key) => {
       const items = Object.entries(record.multimodal[key].features).map(([name, value]) => `<li>${name}: ${formatFeatureValue(value)}</li>`).join("");
-      return `<div class="feature-card"><h3>${key.charAt(0).toUpperCase() + key.slice(1)} Features</h3><ul class="feature-list">${items}</ul></div>`;
+      return `<div class="feature-card"><h3>${localizedModalityLabel(key)} ${t("featuresLabel")}</h3><ul class="feature-list">${items}</ul></div>`;
     });
   if (!featureCards.length) {
     elements.featureSnapshot.className = "empty-state";
@@ -2812,7 +3581,7 @@ function renderPatientHistory() {
     elements.patientHistory.className = "detail-stack";
     elements.patientHistory.innerHTML = `
       <div class="detail-card">
-        <h3>${trajectory.status_label}</h3>
+        <h3>${trajectoryStatusLabel(trajectory.status)}</h3>
         <p>${trajectory.summary}</p>
       </div>
     `;
@@ -2824,7 +3593,7 @@ function renderPatientHistory() {
     const visitCards = trajectory.points.map((point) => `
       <div class="summary-tile">
         <div class="tile-top"><span>${formatShortDateLabel(point.created_at)}</span><strong>${Math.round(Number(point.overall_score || 0) * 100)}%</strong></div>
-        <p class="detail-muted">${point.assessment_id} | ${DOMAIN_LABELS[point.strongest_domain] || point.strongest_domain}</p>
+        <p class="detail-muted">${point.assessment_id} | ${localizedDomainLabel(point.strongest_domain)}</p>
       </div>
     `).join("");
     elements.patientHistory.className = "chart-stack";
@@ -2838,15 +3607,15 @@ function renderPatientHistory() {
     const info = trajectory.domains?.[domain] || {};
     const delta = Number(info.change_from_baseline || 0);
     return {
-      label: DOMAIN_LABELS[domain],
+      label: localizedDomainLabel(domain),
       value: Math.abs(delta),
-      display: `${info.direction || "stable"} | ${delta >= 0 ? "+" : ""}${delta.toFixed(2)}`,
+      display: `${localizedTrajectoryStatus(info.direction || "stable")} | ${delta >= 0 ? "+" : ""}${delta.toFixed(2)}`,
     };
   });
   elements.domainTrajectory.className = "chart-stack";
   elements.domainTrajectory.innerHTML = `
     <div class="detail-card">
-      <h3>${trajectory.status_label}</h3>
+      <h3>${trajectoryStatusLabel(trajectory.status)}</h3>
       <p>${trajectory.summary}</p>
     </div>
     ${buildHorizontalMetricSvg(domainRows, "#ad4a21")}
@@ -2887,8 +3656,8 @@ function renderExplanationSummary(features) {
     .map((item) => `<li>${item.feature}: ${item.direction} risk (${Number(item.shap_value || 0).toFixed(3)})</li>`)
     .join("");
   return `
-      <h3>Why ${DOMAIN_LABELS[domain] || domain} was flagged</h3>
-      <p>Top model contributors for this domain:</p>
+      <h3>${t("whyFlaggedLabel", { domain: localizedDomainLabel(domain) })}</h3>
+      <p>${t("topModelContributorsLabel")}</p>
       <ul>${items}</ul>
   `;
 }
@@ -2910,7 +3679,7 @@ function renderWorkspacePanels() {
     <div class="detail-card">
       <div class="detail-inline"><h3>${record.profile.full_name || "Unnamed user"}</h3><strong>${record.assessment_id}</strong></div>
       <p class="detail-muted">${state.draftRecord ? `${t("livePreviewLabel")}${state.draftPreviewLoading ? " | refreshing..." : ""}` : `${t("savedAtLabel")} ${formatDate(record.created_at)}`}</p>
-      ${DOMAINS.map((domain) => scoreLine(`${DOMAIN_LABELS[domain]} Score`, record.multimodal.overall.scores[domain])).join("")}
+      ${DOMAINS.map((domain) => scoreLine(`${localizedDomainLabel(domain)} Score`, record.multimodal.overall.scores[domain])).join("")}
       <p class="detail-muted">${record.multimodal.recommendation}</p>
     </div>
   `;
@@ -3041,31 +3810,66 @@ function resetAssessmentForm() {
   setBanner(elements.workspaceStatus, t("workspacePredictionEmpty"), "neutral");
 }
 
-function adaptiveResponseOptions() {
-  const labels = RESPONSE_OPTION_TRANSLATIONS[currentLanguage()] || RESPONSE_OPTION_TRANSLATIONS.English;
-  return RESPONSE_OPTIONS.map((option, index) => ({
-    label: labels[index] || option.label,
-    value: option.value,
-  }));
+function adaptiveResponseOptionsFromLanguage(language = currentAdaptiveLanguage()) {
+  return adaptiveResponseOptions(null, language);
 }
 
 function renderAdaptiveAnswerOptions() {
-  if (!elements.adaptiveAnswer) return;
-  const currentValue = elements.adaptiveAnswer.value;
-  const options = [
-    { label: adaptiveChooseOneLabel(), value: "" },
-    ...adaptiveResponseOptions(),
-  ];
-  elements.adaptiveAnswer.innerHTML = options
-    .map((option) => `<option value="${option.value}">${option.label}</option>`)
-    .join("");
-  if (currentValue && options.some((option) => String(option.value) === String(currentValue))) {
-    elements.adaptiveAnswer.value = currentValue;
-  }
+  if (!elements.adaptiveAnswerOptions) return;
+  const currentValue = state.adaptiveSelectedAnswer ?? "";
+  const options = adaptiveResponseOptions();
+  const cards = options.map((option, index) => {
+    const card = document.createElement("label");
+    card.className = "adaptive-choice-card";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "adaptiveAnswer";
+    input.value = String(option.value);
+    input.checked = String(currentValue) === String(option.value);
+    input.disabled = !state.adaptiveSessionStarted || !state.adaptiveCurrentQuestion || state.adaptiveLoading;
+    input.addEventListener("change", () => {
+      state.adaptiveSelectedAnswer = input.value;
+      elements.adaptiveAnswerOptions.querySelectorAll(".adaptive-choice-card").forEach((node) => {
+        const radio = node.querySelector('input[type="radio"]');
+        node.classList.toggle("is-selected", Boolean(radio?.checked));
+      });
+    });
+
+    const badge = document.createElement("span");
+    badge.className = "adaptive-choice-badge";
+    badge.textContent = String(index + 1);
+
+    const text = document.createElement("span");
+    text.className = "adaptive-choice-text";
+    text.textContent = option.label;
+
+    card.classList.toggle("is-selected", input.checked);
+    card.append(input, badge, text);
+    return card;
+  });
+  elements.adaptiveAnswerOptions.replaceChildren(...cards);
 }
 
 function renderAdaptiveStatus(message, tone = "neutral") {
   setBanner(elements.adaptiveStatus, message, tone);
+}
+
+function renderAdaptiveMetaPills(items) {
+  if (!elements.adaptiveQuestionMeta) return;
+  if (!items.length) {
+    elements.adaptiveQuestionMeta.textContent = "";
+    return;
+  }
+  const nodes = items.map((item) => {
+    const pill = document.createElement("span");
+    pill.className = "adaptive-meta-pill";
+    const label = document.createElement("strong");
+    label.textContent = item.label;
+    pill.append(label);
+    pill.append(` ${item.value}`);
+    return pill;
+  });
+  elements.adaptiveQuestionMeta.replaceChildren(...nodes);
 }
 
 function adaptiveLogistic(value) {
@@ -3238,6 +4042,8 @@ function buildLocalAdaptiveQuestionBank(responses, language = currentLanguage())
     max_information: Number(maxInformation.toFixed(6)),
     selected_information: Number(selectedInformation.toFixed(6)),
     tuning,
+    response_options: adaptiveResponseOptionsFromLanguage(language),
+    choose_one_label: adaptiveText("chooseOne", {}, language),
     language,
   };
 }
@@ -3246,16 +4052,10 @@ function renderAdaptiveQuestion() {
   renderAdaptiveAnswerOptions();
 
   if (state.adaptiveCompleted && state.adaptiveLastRecord) {
-    elements.adaptiveQuestionPrompt.textContent = adaptiveLanguageCopy(
-      `${state.adaptiveLastRecord.assessment_id} has been saved. Start a new session to run another adaptive screening.`,
-      `${state.adaptiveLastRecord.assessment_id} सहेजा गया है। नया अनुकूली स्क्रीनिंग शुरू करने के लिए नया सत्र शुरू करें।`,
-      `${state.adaptiveLastRecord.assessment_id} সংরক্ষণ করা হয়েছে। আরেকটি অ্যাডাপটিভ screening শুরু করতে নতুন session শুরু করুন.`,
-    );
-    elements.adaptiveQuestionMeta.textContent = adaptiveLanguageCopy(
-      "Adaptive interview complete.",
-      "अनुकूली साक्षात्कार पूरा हुआ।",
-      "অ্যাডাপটিভ সাক্ষাৎকার সম্পূর্ণ হয়েছে।",
-    );
+    elements.adaptiveQuestionPrompt.textContent = adaptiveText("completedPrompt", {
+      id: state.adaptiveLastRecord.assessment_id,
+    });
+    elements.adaptiveQuestionMeta.textContent = adaptiveText("completedMeta");
     elements.adaptiveNextBtn.disabled = true;
     elements.adaptiveStartBtn.disabled = false;
     elements.adaptiveResetBtn.disabled = false;
@@ -3264,7 +4064,7 @@ function renderAdaptiveQuestion() {
 
   if (state.adaptiveLoading) {
     elements.adaptiveQuestionPrompt.textContent = t("adaptiveStatusLoading");
-    elements.adaptiveQuestionMeta.textContent = t("adaptiveQuestionHint");
+    elements.adaptiveQuestionMeta.textContent = adaptiveText("loadingMeta");
     elements.adaptiveNextBtn.disabled = true;
     elements.adaptiveStartBtn.disabled = true;
     elements.adaptiveResetBtn.disabled = false;
@@ -3284,25 +4084,27 @@ function renderAdaptiveQuestion() {
   const adaptiveMeta = question.adaptive || {};
   const progressMeta = state.adaptiveProgress || {};
   const tuning = progressMeta.tuning || {};
-  elements.adaptiveQuestionPrompt.textContent = questionPrompt(question);
-  const sectionLabel = question.section_label || adaptiveSectionLabel(question.section);
-  const remainingLabel = adaptiveLanguageCopy("Remaining", "शेष", "বাকি");
-  const irtInfoLabel = adaptiveLanguageCopy("IRT info", "IRT जानकारी", "IRT তথ্য");
-  const difficultyLabel = adaptiveLanguageCopy("Difficulty", "कठिनाई", "কঠিনতা");
-  const selectionScoreLabel = adaptiveLanguageCopy("Selection score", "चयन स्कोर", "নির্বাচন স্কোর");
-  const coverageBonusLabel = adaptiveLanguageCopy("Coverage bonus", "कवरेज बोनस", "কভারেজ বোনাস");
-  const stopThresholdLabel = adaptiveLanguageCopy("Stop threshold", "रोकने की सीमा", "থামার সীমা");
-  const balanceWeightLabel = adaptiveLanguageCopy("Balance weight", "संतुलन भार", "সামঞ্জস্য ওজন");
-  elements.adaptiveQuestionMeta.textContent = [
-    `${adaptiveLanguageCopy("Section", "अनुभाग", "অধ্যায়")}: ${sectionLabel}`,
-    `${irtInfoLabel}: ${(question.irt?.information || 0).toFixed(3)}`,
-    `${difficultyLabel}: ${(question.irt?.difficulty || 0).toFixed(2)}`,
-    `${selectionScoreLabel}: ${(adaptiveMeta.selection_score ?? question.irt?.information ?? 0).toFixed(3)}`,
-    `${coverageBonusLabel}: ${(adaptiveMeta.coverage_bonus ?? 1).toFixed(2)}`,
-    `${remainingLabel}: ${progressMeta.remaining_count ?? 0}`,
-    tuning.info_threshold !== undefined ? `${stopThresholdLabel}: ${Number(tuning.info_threshold).toFixed(3)}` : null,
-    tuning.coverage_weight !== undefined ? `${balanceWeightLabel}: ${Number(tuning.coverage_weight).toFixed(3)}` : null,
-  ].filter(Boolean).join(" | ");
+  elements.adaptiveQuestionPrompt.textContent = questionPrompt(question, currentAdaptiveLanguage());
+  const sectionLabel = question.language === currentAdaptiveLanguage() && question.section_label
+    ? question.section_label
+    : adaptiveSectionLabel(question.section, currentAdaptiveLanguage());
+  const remainingLabel = adaptiveText("remaining");
+  const irtInfoLabel = adaptiveText("irtInfo");
+  const difficultyLabel = adaptiveText("difficulty");
+  const selectionScoreLabel = adaptiveText("selectionScore");
+  const coverageBonusLabel = adaptiveText("coverageBonus");
+  const stopThresholdLabel = adaptiveText("stopThreshold");
+  const balanceWeightLabel = adaptiveText("balanceWeight");
+  renderAdaptiveMetaPills([
+    { label: adaptiveText("section"), value: sectionLabel },
+    { label: irtInfoLabel, value: (question.irt?.information || 0).toFixed(3) },
+    { label: difficultyLabel, value: (question.irt?.difficulty || 0).toFixed(2) },
+    { label: selectionScoreLabel, value: (adaptiveMeta.selection_score ?? question.irt?.information ?? 0).toFixed(3) },
+    { label: coverageBonusLabel, value: (adaptiveMeta.coverage_bonus ?? 1).toFixed(2) },
+    { label: remainingLabel, value: String(progressMeta.remaining_count ?? 0) },
+    ...(tuning.info_threshold !== undefined ? [{ label: stopThresholdLabel, value: Number(tuning.info_threshold).toFixed(3) }] : []),
+    ...(tuning.coverage_weight !== undefined ? [{ label: balanceWeightLabel, value: Number(tuning.coverage_weight).toFixed(3) }] : []),
+  ]);
   elements.adaptiveNextBtn.disabled = false;
   elements.adaptiveStartBtn.disabled = true;
   elements.adaptiveResetBtn.disabled = false;
@@ -3310,6 +4112,7 @@ function renderAdaptiveQuestion() {
 
 function resetAdaptiveState() {
   state.adaptiveResponses = {};
+  state.adaptiveSelectedAnswer = "";
   state.adaptiveCurrentQuestion = null;
   state.adaptiveProgress = null;
   state.adaptiveCompleted = false;
@@ -3320,10 +4123,7 @@ function resetAdaptiveState() {
   if (elements.adaptiveForm) {
     elements.adaptiveForm.reset();
   }
-  if (elements.adaptiveAnswer) {
-    renderAdaptiveAnswerOptions();
-    elements.adaptiveAnswer.value = "";
-  }
+  renderAdaptiveAnswerOptions();
   renderAdaptiveStatus(t("adaptiveStatusIdle"));
   renderAdaptiveQuestion();
 }
@@ -3354,19 +4154,11 @@ function buildAdaptivePayload() {
 
 async function saveAdaptiveAssessmentToApi(payload) {
   if (!payload.profile.full_name || !payload.profile.village || !payload.profile.assessor) {
-    renderAdaptiveStatus(adaptiveLanguageCopy(
-      "Please complete the candidate profile before saving the adaptive assessment.",
-      "अनुकूली मूल्यांकन सहेजने से पहले उम्मीदवार प्रोफ़ाइल पूरी करें।",
-      "অ্যাডাপটিভ মূল্যায়ন সংরক্ষণের আগে প্রার্থী প্রোফাইল পূরণ করুন।",
-    ), "error");
+    renderAdaptiveStatus(adaptiveText("profileMissing"), "error");
     return null;
   }
   if (!payload.profile.consent_received) {
-    renderAdaptiveStatus(adaptiveLanguageCopy(
-      "Please confirm consent before saving the adaptive assessment.",
-      "अनुकूली मूल्यांकन सहेजने से पहले कृपया सहमति की पुष्टि करें।",
-      "অ্যাডাপটিভ মূল্যায়ন সংরক্ষণের আগে সম্মতি নিশ্চিত করুন।",
-    ), "error");
+    renderAdaptiveStatus(adaptiveText("consentMissing"), "error");
     return null;
   }
 
@@ -3378,20 +4170,7 @@ async function saveAdaptiveAssessmentToApi(payload) {
     state.adaptiveCurrentQuestion = null;
     state.adaptiveProgress = null;
     renderAdaptiveQuestion();
-    renderAdaptiveStatus(
-      adaptiveLanguageCopy(
-        offline
-          ? `Adaptive assessment saved offline as ${record.assessment_id}.`
-          : `Adaptive assessment saved as ${record.assessment_id}.`,
-        offline
-          ? `अनुकूली मूल्यांकन ऑफ़लाइन ${record.assessment_id} के रूप में सहेजा गया।`
-          : `अनुकूली मूल्यांकन ${record.assessment_id} के रूप में सहेजा गया।`,
-        offline
-          ? `অ্যাডাপটিভ মূল্যায়ন offline-এ ${record.assessment_id} হিসাবে সংরক্ষণ করা হয়েছে।`
-          : `অ্যাডাপটিভ মূল্যায়ন ${record.assessment_id} হিসাবে সংরক্ষণ করা হয়েছে।`,
-      ),
-      "success",
-    );
+    renderAdaptiveStatus(adaptiveText("completedPrompt", { id: record.assessment_id }), "success");
     setActiveResults([record], {
       focusLatest: true,
       bannerMessage: `${t("analyticsShowing")} ${record.assessment_id}.`,
@@ -3467,11 +4246,7 @@ async function fetchAdaptiveSession(responses) {
         const record = await saveAdaptiveAssessmentToApi(payload);
         return record;
       }
-      renderAdaptiveStatus(adaptiveLanguageCopy(
-        "Adaptive API unavailable. Using browser fallback selector.",
-        "Adaptive API अभी उपलब्ध नहीं है। ब्राउज़र fallback selector इस्तेमाल किया जा रहा है।",
-        "Adaptive API এখন উপলব্ধ নয়। Browser fallback selector ব্যবহার করা হচ্ছে।",
-      ), "neutral");
+      renderAdaptiveStatus(adaptiveText("fallbackNotice"), "neutral");
       return progress;
     } catch (fallbackError) {
       if (requestId !== state.adaptiveRequestId) {
@@ -3493,7 +4268,8 @@ async function startAdaptiveSession() {
   state.adaptiveResponses = {};
   state.adaptiveCompleted = false;
   state.adaptiveLastRecord = null;
-  elements.adaptiveAnswer.value = "";
+  state.adaptiveSelectedAnswer = "";
+  renderAdaptiveAnswerOptions();
   await fetchAdaptiveSession({});
 }
 
@@ -3502,19 +4278,17 @@ async function submitAdaptiveAnswer() {
     renderAdaptiveStatus(t("adaptiveQuestionHint"), "neutral");
     return;
   }
-  const answer = elements.adaptiveAnswer.value;
+  const selected = elements.adaptiveAnswerOptions?.querySelector('input[type="radio"]:checked');
+  const answer = selected?.value ?? "";
   if (answer === "") {
-    renderAdaptiveStatus(adaptiveLanguageCopy(
-      "Please choose an answer before continuing.",
-      "कृपया आगे बढ़ने से पहले एक उत्तर चुनें।",
-      "এগোনোর আগে একটি উত্তর নির্বাচন করুন।",
-    ), "error");
+    renderAdaptiveStatus(adaptiveText("answerRequired"), "error");
     return;
   }
 
   const updatedResponses = { ...state.adaptiveResponses, [state.adaptiveCurrentQuestion.id]: Number(answer) };
   state.adaptiveResponses = updatedResponses;
-  elements.adaptiveAnswer.value = "";
+  state.adaptiveSelectedAnswer = "";
+  renderAdaptiveAnswerOptions();
   await fetchAdaptiveSession(updatedResponses);
 }
 
@@ -3537,10 +4311,10 @@ async function saveAssessmentToApi(payload) {
     renderWorkspacePanels();
     setActiveResults([localRecord], {
       focusLatest: true,
-      bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} saved offline and queued for sync.`,
+      bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} ${t("savedOfflineQueuedShortLabel")}`,
       bannerTone: "success",
     });
-    setBanner(elements.workspaceStatus, "Assessment saved offline. It will sync automatically when the connection returns.", "success");
+    setBanner(elements.workspaceStatus, t("savedOfflineQueuedLabel"), "success");
     switchView("analyticsView");
     return;
   }
@@ -3577,7 +4351,7 @@ async function saveAssessmentToApi(payload) {
       bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} saved offline after the API became unavailable.`,
       bannerTone: "success",
     });
-    setBanner(elements.workspaceStatus, "Backend unavailable. The assessment was saved offline and queued for sync.", "success");
+    setBanner(elements.workspaceStatus, t("backendUnavailableSavedOfflineLabel"), "success");
     switchView("analyticsView");
   }
 }
@@ -3614,7 +4388,7 @@ async function fetchDraftPreview(payload, requestId) {
     console.error("Draft preview failed", error);
     state.draftRecord = buildAssessmentRecordFromAnalysis(payload, buildOfflineMultimodal(payload), "Offline Preview");
     state.draftPreviewLoading = false;
-    setBanner(elements.workspaceStatus, "Backend preview unavailable. Showing offline heuristic preview instead.", "neutral");
+    setBanner(elements.workspaceStatus, t("backendPreviewUnavailableLabel"), "neutral");
     renderWorkspacePanels();
   }
 }
@@ -3655,14 +4429,13 @@ async function loadDefaultResults() {
   if (offlineRecords.length) {
     setActiveResults(visibleUserRecords(offlineRecords), {
       focusLatest: true,
-      bannerMessage: `Loaded ${visibleUserRecords(offlineRecords).length} locally stored assessment records.`,
       bannerTone: "success",
     });
   }
   try {
-    await loadApiResults("backend API");
+    await loadApiResults(t("backendApiLabel"));
   } catch {
-    setBanner(elements.statusBanner, currentLanguage() === "Bengali" ? "ব্যাকএন্ড API থেকে রেকর্ড লোড করা যায়নি। প্রয়োজনে JSON ফাইল ম্যানুয়ালি আনুন।" : currentLanguage() === "Hindi" ? "बैकएंड API से रिकॉर्ड लोड नहीं हो सके। आवश्यकता हो तो JSON फाइल मैन्युअली आयात करें।" : "Could not load records from the backend API. Import a JSON file manually instead.", "error");
+    setBanner(elements.statusBanner, t("loadRecordsFromApiFailedLabel"), "error");
   }
 }
 
@@ -3670,14 +4443,16 @@ async function loadSampleResults() {
   try {
     const response = await fetch("/api/sample", { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    loadResults(visibleUserRecords(await response.json()), "the bundled sample dataset");
+    loadResults(visibleUserRecords(await response.json()), t("sampleDatasetLabel"));
+    return true;
   } catch {
     setBanner(elements.statusBanner, currentLanguage() === "Bengali" ? "স্যাম্পল ডেটাসেট লোড করা যায়নি।" : currentLanguage() === "Hindi" ? "सैंपल डाटासेट लोड नहीं हो सका।" : "Could not load the sample dataset.", "error");
+    return false;
   }
 }
 
 function loadBrowserResults() {
-  loadApiResults("backend API");
+  return loadApiResults(t("backendApiLabel"));
 }
 
 async function loadApiResults(sourceLabel, focusLatest = false) {
@@ -3692,21 +4467,23 @@ async function loadApiResults(sourceLabel, focusLatest = false) {
     }
     const merged = uniqueRecords([...visibleUserRecords(await loadOfflineRecords()), ...apiRecords]);
     loadResults(merged, sourceLabel, focusLatest);
+    return merged.length > 0;
   } catch (error) {
     console.error("API load failed", error);
     const localRecords = visibleUserRecords(await loadOfflineRecords());
     if (localRecords.length) {
-      loadResults(localRecords, "local offline storage", focusLatest);
-      setBanner(elements.statusBanner, "Backend unavailable. Loaded records from offline storage.", "neutral");
-      return;
+      loadResults(localRecords, t("localOfflineStorageLabel"), focusLatest);
+      setBanner(elements.statusBanner, t("offlineRecordsLoadedLabel"), "neutral");
+      return true;
     }
-    setBanner(elements.statusBanner, currentLanguage() === "Bengali" ? "ব্যাকএন্ড API থেকে রেকর্ড লোড করা যায়নি।" : currentLanguage() === "Hindi" ? "बैकएंड API से रिकॉर्ड लोड नहीं हो सके।" : "Could not load records from the backend API.", "error");
+    setBanner(elements.statusBanner, t("loadRecordsFromApiGenericErrorLabel"), "error");
+    return false;
   }
 }
 
 function exportFilteredResults() {
   if (!state.filteredResults.length) {
-    setBanner(elements.statusBanner, "There are no filtered records to export.", "error");
+    setBanner(elements.statusBanner, t("noFilteredExportLabel"), "error");
     return;
   }
   const blob = new Blob([JSON.stringify(state.filteredResults, null, 2)], { type: "application/json" });
@@ -3716,7 +4493,7 @@ function exportFilteredResults() {
   link.download = "dashboard-filtered-records.json";
   link.click();
   URL.revokeObjectURL(url);
-  setBanner(elements.statusBanner, `Exported ${state.filteredResults.length} filtered records.`, "success");
+  setBanner(elements.statusBanner, t("exportedFilteredLabel", { count: state.filteredResults.length }), "success");
 }
 
 function fetchRecordById() {
@@ -3757,7 +4534,7 @@ async function fetchRecordByIdFromApi(assessmentId) {
       state.selectedRecord = localRecord;
       switchView("recordsView");
       renderDashboard();
-      setBanner(elements.statusBanner, `Loaded ${assessmentId} from offline storage.`, "neutral");
+      setBanner(elements.statusBanner, t("loadedOfflineRecordLabel", { id: assessmentId }), "neutral");
       return;
     }
     setBanner(elements.statusBanner, t("fetchMissing"), "error");
@@ -3964,16 +4741,24 @@ window.addEventListener("online", async () => {
 window.addEventListener("offline", () => {
   state.networkOnline = false;
   updateOfflineStatus();
-  setBanner(elements.statusBanner, "Offline mode active. New assessments will be saved locally and synced later.", "neutral");
+  setBanner(elements.statusBanner, t("offlineModeActiveLabel"), "neutral");
 });
 
-buildQuestionnaire();
-wireQuestionnaireEvents();
-applyLanguage();
-resetAdaptiveState();
-updateCaptureUi();
-resetAssessmentForm();
-loadInitialBrowserRecords();
-updateOfflineStatus();
-updateDraftPreview();
-initializeOfflineFirst();
+async function bootstrapDashboard() {
+  buildQuestionnaire();
+  wireQuestionnaireEvents();
+  applyLanguage();
+  resetAdaptiveState();
+  updateCaptureUi();
+  resetAssessmentForm();
+  loadInitialBrowserRecords();
+  updateOfflineStatus();
+  updateDraftPreview();
+  const hasRecords = await loadApiResults(t("backendApiLabel"));
+  if (!hasRecords) {
+    await loadSampleResults();
+  }
+  await initializeOfflineFirst();
+}
+
+bootstrapDashboard();

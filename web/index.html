@@ -6,39 +6,39 @@
   <title>Rural Mental Health Dashboard</title>
   <meta name="theme-color" content="#9e4d29">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/web/styles.css">
+  <link rel="stylesheet" href="/web/styles.css?v=20260607">
 </head>
 <body>
   <div class="page-shell">
     <header class="hero panel">
       <div class="hero-copy">
-        <p class="eyebrow">Start Screening</p>
-        <h1>Rural Mental Health Screening</h1>
-        <p class="hero-text">
+        <p id="heroEyebrow" class="eyebrow">Start Screening</p>
+        <h1 id="heroTitle">Rural Mental Health Screening</h1>
+        <p id="heroText" class="hero-text">
           Begin one diagnostic screening session at a time, save the result, and view the current assessment without loading background records.
         </p>
         <div id="offlineStatus" class="offline-pill online">Online sync ready</div>
         <div class="hero-metrics" aria-label="At a glance">
           <article class="hero-metric-card">
             <span class="hero-metric-value">7</span>
-            <span class="hero-metric-label">risk domains tracked</span>
+            <span id="heroMetricRisk" class="hero-metric-label">risk domains tracked</span>
           </article>
           <article class="hero-metric-card">
             <span class="hero-metric-value">3</span>
-            <span class="hero-metric-label">modalities blended</span>
+            <span id="heroMetricModalities" class="hero-metric-label">modalities blended</span>
           </article>
           <article class="hero-metric-card">
             <span class="hero-metric-value">24/7</span>
-            <span class="hero-metric-label">offline capture support</span>
+            <span id="heroMetricOffline" class="hero-metric-label">offline capture support</span>
           </article>
         </div>
         <div class="language-switcher">
-          <label for="dashboardLanguage">Dashboard language</label>
+          <label id="dashboardLanguageLabel" for="dashboardLanguage">Dashboard language</label>
           <div class="language-switcher-row">
             <select id="dashboardLanguage">
-              <option>English</option>
-              <option>Hindi</option>
-              <option>Bengali</option>
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Bengali">Bengali</option>
             </select>
             <button id="applyLanguageBtn" class="ghost-btn small-btn" type="button">Apply Language</button>
           </div>
@@ -58,24 +58,24 @@
               </div>
             </div>
             <article class="signal-card signal-card-text">
-              <span class="signal-card-label">Narrative NLP</span>
-              <strong>Sentiment, stress, safety</strong>
-              <p>Live text screening signals update while the story is being entered.</p>
+              <span id="signalNarrativeLabel" class="signal-card-label">Narrative NLP</span>
+              <strong id="signalNarrativeStrong">Sentiment, stress, safety</strong>
+              <p id="signalNarrativeText">Live text screening signals update while the story is being entered.</p>
             </article>
             <article class="signal-card signal-card-audio">
-              <span class="signal-card-label">Speech cues</span>
-              <strong>Voice energy and pacing</strong>
-              <p>Audio markers strengthen the confidence band when a sample is present.</p>
+              <span id="signalSpeechLabel" class="signal-card-label">Speech cues</span>
+              <strong id="signalSpeechStrong">Voice energy and pacing</strong>
+              <p id="signalSpeechText">Audio markers strengthen the confidence band when a sample is present.</p>
             </article>
             <article class="signal-card signal-card-face">
-              <span class="signal-card-label">Face snapshot</span>
-              <strong>Expression support</strong>
-              <p>Image-based cues enrich the multimodal picture for field workers.</p>
+              <span id="signalFaceLabel" class="signal-card-label">Face snapshot</span>
+              <strong id="signalFaceStrong">Expression support</strong>
+              <p id="signalFaceText">Image-based cues enrich the multimodal picture for field workers.</p>
             </article>
             <div class="signal-chart">
               <div class="signal-chart-header">
-                <span>Live risk pulse</span>
-                <span>updated</span>
+                <span id="signalPulseLabel">Live risk pulse</span>
+                <span id="signalPulseStatus">updated</span>
               </div>
               <div class="signal-bars">
                 <span class="signal-bar signal-bar-one"></span>
@@ -91,52 +91,52 @@
     </header>
 
     <section class="tab-bar panel reveal">
-      <button class="tab-btn active" data-view="workspaceView" type="button">Assessment Workspace</button>
-      <button class="tab-btn" data-view="adaptiveView" type="button">Adaptive Test</button>
-      <button class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
-      <button class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
+      <button id="workspaceTabBtn" class="tab-btn active" data-view="workspaceView" type="button">Assessment Workspace</button>
+      <button id="adaptiveTabBtn" class="tab-btn" data-view="adaptiveView" type="button">Adaptive Test</button>
+      <button id="analyticsTabBtn" class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
+      <button id="recordsTabBtn" class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
     </section>
 
     <section class="workspace panel reveal view-section" id="workspaceView">
       <div class="section-heading">
         <div>
-          <h2>Assessment Workspace</h2>
-          <p>Create a new screening record directly from the dashboard.</p>
+          <h2 id="workspaceTitle">Assessment Workspace</h2>
+          <p id="workspaceText">Create a new screening record directly from the dashboard.</p>
         </div>
       </div>
 
       <section class="intake-strip">
         <article class="intake-card intake-card-strong">
-          <p class="intake-kicker">Intake Flow</p>
-          <h3>Complete one screening from start to finish</h3>
-          <p>Enter the person’s details, capture their responses, review the live preview, and save one finalized assessment for analysis.</p>
+          <p id="intakeFlowTitle" class="intake-kicker">Intake Flow</p>
+          <h3 id="intakeFlowHeading">Complete one screening from start to finish</h3>
+          <p id="intakeFlowText">Enter the person's details, capture their responses, review the live preview, and save one finalized assessment for analysis.</p>
         </article>
         <article class="intake-card">
-          <p class="intake-step">Step 1</p>
-          <h3>Capture profile and consent</h3>
-          <p>Start with identity, village, assessor, language, and consent so the screening record is complete.</p>
+          <p id="step1Title" class="intake-step">Step 1</p>
+          <h3 id="step1Heading">Capture profile and consent</h3>
+          <p id="step1Text">Start with identity, village, assessor, language, and consent so the screening record is complete.</p>
         </article>
         <article class="intake-card">
-          <p class="intake-step">Step 2</p>
-          <h3>Collect symptoms and narrative</h3>
-          <p>Use the questionnaire, written response, and optional speech or face inputs to build a stronger assessment.</p>
+          <p id="step2Title" class="intake-step">Step 2</p>
+          <h3 id="step2Heading">Collect symptoms and narrative</h3>
+          <p id="step2Text">Use the questionnaire, written response, and optional speech or face inputs to build a stronger assessment.</p>
         </article>
         <article class="intake-card">
-          <p class="intake-step">Step 3</p>
-          <h3>Provide supporting inputs</h3>
-          <p>Add either a written response or a speech recording. For the image input, you can capture a live photo or upload an image file.</p>
+          <p id="step3Title" class="intake-step">Step 3</p>
+          <h3 id="step3Heading">Provide supporting inputs</h3>
+          <p id="step3Text">Add either a written response or a speech recording. For the image input, you can capture a live photo or upload an image file.</p>
         </article>
         <article class="intake-card">
-          <p class="intake-step">Step 4</p>
-          <h3>Review and save for analysis</h3>
-          <p>Once saved, the result moves into Analytics Hub and Records and Reports for visualization and follow-up.</p>
+          <p id="step4Title" class="intake-step">Step 4</p>
+          <h3 id="step4Heading">Review and save for analysis</h3>
+          <p id="step4Text">Once saved, the result moves into Analytics Hub and Records and Reports for visualization and follow-up.</p>
         </article>
       </section>
 
       <form id="assessmentForm" class="assessment-form">
         <div class="form-grid">
           <div class="form-card">
-            <h3>Candidate Profile</h3>
+            <h3 id="workspaceProfileTitle">Candidate Profile</h3>
             <label>Full name <input id="fullName" type="text" placeholder="Enter full name"></label>
             <label>Age <input id="age" type="number" min="10" max="100" value="25"></label>
             <label>Gender
@@ -152,24 +152,24 @@
             <label>Assessor name <input id="assessor" type="text" placeholder="Health worker or counselor"></label>
             <label>Preferred language
               <select id="language">
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Bengali</option>
-                <option>Other</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Bengali">Bengali</option>
+                <option value="Other">Other</option>
               </select>
             </label>
             <label class="checkbox-row"><input id="consent" type="checkbox"> Consent received for screening</label>
           </div>
 
           <div class="form-card">
-            <h3>Free Text and Upload Metadata</h3>
-            <label>Describe how the person has been feeling
+            <h3 id="freeTextTitle">Free Text and Upload Metadata</h3>
+            <label id="narrativeLabel">Describe how the person has been feeling
               <textarea id="textNarrative" rows="9" placeholder="Example: I have been feeling tired, disconnected, anxious, and unable to sleep well."></textarea>
             </label>
             <div class="capture-card">
               <div class="capture-head">
-                <strong>Guided Speech Recording</strong>
-                <span class="capture-topic">Topic: Describe your last few days, your sleep, stress, and how connected you feel to people around you.</span>
+                <strong id="guidedSpeechTitle">Guided Speech Recording</strong>
+                <span id="guidedSpeechTopic" class="capture-topic">Topic: Describe your last few days, your sleep, stress, and how connected you feel to people around you.</span>
               </div>
               <div class="capture-actions">
                 <button id="startRecordingBtn" class="ghost-btn small-btn" type="button">Start Recording</button>
@@ -178,13 +178,13 @@
               </div>
               <p id="recordingStatus" class="capture-status">No speech recording captured yet.</p>
             </div>
-            <label>Voice sample
+            <label id="audioFileLabel">Voice sample
               <input id="audioFile" type="file" accept=".wav,.mp3,.m4a">
             </label>
             <div class="capture-card">
               <div class="capture-head">
-                <strong>Live Face Capture</strong>
-                <span class="capture-topic">Capture one clear front-facing photo from the webcam for live facial-cue analysis.</span>
+                <strong id="liveFaceTitle">Live Face Capture</strong>
+                <span id="liveFaceTopic" class="capture-topic">Capture one clear front-facing photo from the webcam for live facial-cue analysis.</span>
               </div>
               <div class="capture-actions">
                 <button id="startCameraBtn" class="ghost-btn small-btn" type="button">Open Camera</button>
@@ -199,7 +199,7 @@
               </div>
               <p id="cameraStatus" class="capture-status">No live photo captured yet.</p>
             </div>
-            <label>Face image
+            <label id="imageFileLabel">Face image
               <input id="imageFile" type="file" accept=".png,.jpg,.jpeg">
             </label>
           </div>
@@ -207,8 +207,8 @@
 
         <div class="form-card questionnaire-card">
           <div class="section-heading inline-heading">
-            <h3>Questionnaire</h3>
-            <p>Rate how often each symptom appeared in the last two weeks.</p>
+            <h3 id="questionnaireTitle">Questionnaire</h3>
+            <p id="questionnaireSubtitle">Rate how often each symptom appeared in the last two weeks.</p>
           </div>
           <div id="questionnaireContainer" class="questionnaire-grid"></div>
         </div>
@@ -224,22 +224,22 @@
       <div class="detail-grid compact-grid">
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Live Prediction Preview</h2>
-            <p>Combined questionnaire and NLP preview before save</p>
+            <h2 id="workspacePredictionTitle">Live Prediction Preview</h2>
+            <p id="workspacePredictionText">Combined questionnaire and NLP preview before save</p>
           </div>
           <div id="workspacePrediction" class="empty-state">Start filling the assessment to generate a live prediction preview.</div>
         </article>
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Live NLP Insights</h2>
-            <p>Sentiment, emotions, and safety indicators from the narrative text</p>
+            <h2 id="workspaceNlpTitle">Live NLP Insights</h2>
+            <p id="workspaceNlpText">Sentiment, emotions, and safety indicators from the narrative text</p>
           </div>
           <div id="workspaceNlp" class="empty-state">NLP signals will appear here while the narrative is being entered.</div>
         </article>
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Intake Readiness</h2>
-            <p>Checks whether the record is ready to save and analyze</p>
+            <h2 id="workspaceReadinessTitle">Intake Readiness</h2>
+            <p id="workspaceReadinessText">Checks whether the record is ready to save and analyze</p>
           </div>
           <div id="workspaceReadiness" class="empty-state">Fill in candidate details, consent, questionnaire, and narrative to see readiness feedback.</div>
         </article>
@@ -248,16 +248,34 @@
 
     <section class="panel reveal view-section is-hidden" id="adaptiveView">
       <div class="section-heading">
-        <h2>Adaptive Test</h2>
-        <p>Ask one question at a time using the backend IRT selector and reuse the workspace uploads.</p>
+        <h2 id="adaptiveSectionTitle">Adaptive Test</h2>
+        <p id="adaptiveSectionText">Ask one question at a time using the backend IRT selector and reuse the workspace uploads.</p>
       </div>
+
+      <section class="adaptive-intro analytics-intro analytics-intro-compact">
+        <article class="info-card">
+          <p id="adaptiveIntroFlowTitle" class="intake-kicker">Adaptive Flow</p>
+          <h3 id="adaptiveIntroFlowHeading">One question at a time</h3>
+          <p id="adaptiveIntroFlowText">The backend selects the next most informative item and keeps the session aligned with the current language.</p>
+        </article>
+        <article class="info-card">
+          <p id="adaptiveIntroLanguageTitle" class="intake-kicker">Language Sync</p>
+          <h3 id="adaptiveIntroLanguageHeading">Language-aware prompts</h3>
+          <p id="adaptiveIntroLanguageText">Prompts, response options, and session guidance automatically follow the selected dashboard language.</p>
+        </article>
+        <article class="info-card">
+          <p id="adaptiveIntroSharedTitle" class="intake-kicker">Shared Inputs</p>
+          <h3 id="adaptiveIntroSharedHeading">Reuse workspace inputs</h3>
+          <p id="adaptiveIntroSharedText">Reuse the candidate profile and narrative inputs from the main screening workspace without re-entering them.</p>
+        </article>
+      </section>
 
       <div id="adaptiveStatus" class="status-banner">Start an adaptive session to fetch the first backend-selected question.</div>
 
       <form id="adaptiveForm" class="assessment-form">
         <div class="form-grid">
           <div class="form-card">
-            <h3>Candidate Profile</h3>
+            <h3 id="adaptiveProfileTitle">Candidate Profile</h3>
             <label>Full name <input id="adaptiveFullName" type="text" placeholder="Enter full name"></label>
             <label>Age <input id="adaptiveAge" type="number" min="10" max="100" value="25"></label>
             <label>Gender
@@ -272,28 +290,26 @@
             <label>Assessor name <input id="adaptiveAssessor" type="text" placeholder="Health worker or counselor"></label>
             <label>Preferred language
               <select id="adaptiveLanguage">
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Bengali</option>
-                <option>Other</option>
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Bengali">Bengali</option>
+                <option value="Other">Other</option>
               </select>
             </label>
             <label class="checkbox-row"><input id="adaptiveConsent" type="checkbox"> Consent received for screening</label>
           </div>
 
           <div class="form-card">
-            <h3>Adaptive Question</h3>
-            <p id="adaptiveQuestionPrompt" class="detail-muted">Start the session to fetch the first question.</p>
-            <p id="adaptiveQuestionMeta" class="capture-status">No adaptive session started yet.</p>
-            <label>Select one answer
-              <select id="adaptiveAnswer">
-                <option>Choose one</option>
-                <option>Not at all</option>
-                <option>Several days</option>
-                <option>More than half the days</option>
-                <option>Nearly every day</option>
-              </select>
-            </label>
+            <h3 id="adaptiveQuestionTitle">Adaptive Question</h3>
+            <p id="adaptiveQuestionPrompt" class="detail-muted">Start a session to load the first adaptive question.</p>
+            <div id="adaptiveQuestionMeta" class="adaptive-meta-grid">No adaptive session has started yet.</div>
+            <div class="adaptive-answer-shell">
+              <div class="adaptive-answer-head">
+                <span id="adaptiveAnswerLabel">Choose your answer</span>
+                <p id="adaptiveAnswerHint" class="detail-muted">Choose the option that best matches the person's experience.</p>
+              </div>
+              <div id="adaptiveAnswerOptions" class="adaptive-mcq-grid" role="radiogroup" aria-labelledby="adaptiveAnswerLabel"></div>
+            </div>
             <div class="action-row">
               <button id="adaptiveStartBtn" class="primary-btn" type="button">Start Session</button>
               <button id="adaptiveNextBtn" class="ghost-btn" type="button">Submit Answer</button>
@@ -304,8 +320,8 @@
 
         <div class="form-card questionnaire-card">
           <div class="section-heading inline-heading">
-            <h3>Workspace Narrative</h3>
-            <p>Use this text note alongside the files already uploaded in the main screening workspace.</p>
+            <h3 id="adaptiveNarrativeTitle">Workspace Narrative</h3>
+            <p id="adaptiveNarrativeText">Use this text note alongside the files already uploaded in the main screening workspace.</p>
           </div>
           <label>Describe how the person has been feeling
             <textarea id="adaptiveTextNarrative" rows="7" placeholder="Example: I have been feeling tired, disconnected, anxious, and unable to sleep well."></textarea>
@@ -316,8 +332,8 @@
 
     <section class="panel reveal view-section is-hidden" id="analyticsView">
       <div class="section-heading">
-        <h2>Analytics Hub</h2>
-        <p>Detailed component-wise analysis for the current assessment.</p>
+        <h2 id="analyticsTitle">Analytics Hub</h2>
+        <p id="analyticsText">Detailed component-wise analysis for the current assessment.</p>
       </div>
 
       <div id="analysisStatusBanner" class="status-banner">Complete and save an assessment to open detailed analysis here.</div>
@@ -325,26 +341,26 @@
       <section class="analytics-intro analytics-intro-compact">
         <article class="info-card">
           <p class="intake-kicker">Current Result</p>
-          <h3>One assessment in focus</h3>
-          <p>Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.</p>
+          <h3 id="analyticsIntroCurrent">One assessment in focus</h3>
+          <p id="analyticsIntroCurrentText">Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.</p>
         </article>
         <article class="info-card">
           <p class="intake-kicker">Model Insights</p>
-          <p>Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.</p>
+          <p id="analyticsIntroModelText">Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.</p>
         </article>
         <article class="info-card">
           <p class="intake-kicker">Prediction Scope</p>
-          <p>Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.</p>
+          <p id="analyticsIntroScopeText">Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.</p>
         </article>
       </section>
 
       <section class="overview-grid overview-grid-compact reveal">
         <article class="metric-card panel">
-          <p class="metric-label">Assessment ID</p>
+          <p id="analysisAssessmentIdLabel" class="metric-label">Assessment ID</p>
           <p id="analysisAssessmentId" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Overall Confidence</p>
+          <p id="analysisConfidenceLabel" class="metric-label">Overall Confidence</p>
           <p id="analysisConfidence" class="metric-value">0%</p>
         </article>
         <article class="metric-card panel">
@@ -364,7 +380,7 @@
           <p id="analysisTrajectory" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Overall Risk</p>
+          <p id="analysisOverallRiskLabel" class="metric-label">Overall Risk</p>
           <p id="analysisOverallRisk" class="metric-value metric-small">No data</p>
         </article>
       </section>
@@ -372,15 +388,15 @@
       <section class="analytics-grid analytics-grid-primary reveal">
         <article class="panel">
           <div class="section-heading">
-            <h2>Domain Analysis</h2>
-            <p>Questionnaire versus combined AI score for each prediction domain</p>
+            <h2 id="domainAnalysisTitle">Domain Analysis</h2>
+            <p id="domainAnalysisText">Questionnaire versus combined AI score for each prediction domain</p>
           </div>
           <div id="riskDistribution" class="chart-stack empty-state">No assessment analysis available yet.</div>
         </article>
         <article class="panel">
           <div class="section-heading">
-            <h2>Component Contribution</h2>
-            <p>How text, audio, and image influenced the final assessment</p>
+            <h2 id="componentContributionTitle">Component Contribution</h2>
+            <p id="componentContributionText">How text, audio, and image influenced the final assessment</p>
           </div>
           <div id="submissionTrend" class="chart-stack empty-state">No component breakdown available yet.</div>
         </article>
@@ -389,15 +405,15 @@
       <section class="analytics-grid analytics-grid-secondary reveal">
         <article class="panel">
           <div class="section-heading">
-            <h2>Model Statistics</h2>
-            <p>Deep learning and NLP model details used in this assessment</p>
+            <h2 id="modelStatisticsTitle">Model Statistics</h2>
+            <p id="modelStatisticsText">Deep learning and NLP model details used in this assessment</p>
           </div>
           <div id="villageSummary" class="tile-grid empty-state">No model statistics available yet.</div>
         </article>
         <article class="panel">
           <div class="section-heading">
-            <h2>NLP and Safety Signals</h2>
-            <p>Sentiment, emotion, self-harm language, and narrative interpretation</p>
+            <h2 id="nlpSafetyTitle">NLP and Safety Signals</h2>
+            <p id="nlpSafetyText">Sentiment, emotion, self-harm language, and narrative interpretation</p>
           </div>
           <div id="assessorSummary" class="tile-grid empty-state">No NLP signal summary available yet.</div>
         </article>
@@ -406,15 +422,15 @@
       <section class="analytics-grid analytics-grid-secondary reveal">
         <article class="panel">
           <div class="section-heading">
-            <h2>Modality Quality</h2>
-            <p>Availability, confidence, and processing quality for each input stream</p>
+            <h2 id="modalityQualityTitle">Modality Quality</h2>
+            <p id="modalityQualityText">Availability, confidence, and processing quality for each input stream</p>
           </div>
           <div id="riskHotspots" class="chart-stack empty-state">No modality quality information available yet.</div>
         </article>
         <article class="panel">
           <div class="section-heading">
-            <h2>Recommendation and Follow-up</h2>
-            <p>End-user explanation, follow-up note, and screening disclaimer</p>
+            <h2 id="recommendationTitle">Recommendation and Follow-up</h2>
+            <p id="recommendationText">End-user explanation, follow-up note, and screening disclaimer</p>
           </div>
           <div id="nlpTrends" class="chart-stack empty-state">No recommendation details available yet.</div>
         </article>
@@ -423,15 +439,15 @@
       <section class="analytics-grid analytics-grid-secondary reveal">
         <article class="panel">
           <div class="section-heading">
-            <h2>Longitudinal Trajectory</h2>
-            <p>Trend modeling across repeated screenings for the same person</p>
+            <h2 id="trajectoryModelTitle">Longitudinal Trajectory</h2>
+            <p id="trajectoryModelText">Trend modeling across repeated screenings for the same person</p>
           </div>
           <div id="trajectoryModel" class="chart-stack empty-state">No longitudinal trajectory available yet.</div>
         </article>
         <article class="panel">
           <div class="section-heading">
-            <h2>Trend Summary</h2>
-            <p>Change since baseline, recent change, and domain movement</p>
+            <h2 id="trajectorySummaryTitle">Trend Summary</h2>
+            <p id="trajectorySummaryText">Change since baseline, recent change, and domain movement</p>
           </div>
           <div id="trajectorySummary" class="chart-stack empty-state">No trend summary available yet.</div>
         </article>
@@ -440,8 +456,8 @@
 
     <section class="panel reveal view-section is-hidden" id="recordsView">
       <div class="section-heading">
-        <h2>Records and Reports</h2>
-        <p>Fetch records, inspect individual predictions, and export a PDF report.</p>
+        <h2 id="recordsSectionTitle">Records and Reports</h2>
+        <p id="recordsSectionText">Fetch records, inspect individual predictions, and export a PDF report.</p>
       </div>
 
       <div id="statusBanner" class="status-banner">Fetch a saved assessment by ID when you want to review or download an older report.</div>
@@ -454,20 +470,20 @@
 
       <section class="table-section panel inner-panel">
         <div class="section-heading">
-          <h2>Assessment Explorer</h2>
-          <p>Click any row to inspect a single record in detail.</p>
+          <h2 id="recordsExplorerTitle">Assessment Explorer</h2>
+          <p id="recordsExplorerText">Click any row to inspect a single record in detail.</p>
         </div>
         <div class="table-wrap">
           <table class="results-table">
             <thead>
               <tr>
-                <th>Assessment ID</th>
-                <th>Name</th>
-                <th>Village</th>
-                <th>Assessor</th>
-                <th>Submitted</th>
-                <th>Risk</th>
-                <th>Confidence</th>
+                <th id="recordsTableAssessmentIdHeader">Assessment ID</th>
+                <th id="recordsTableNameHeader">Name</th>
+                <th id="recordsTableVillageHeader">Village</th>
+                <th id="recordsTableAssessorHeader">Assessor</th>
+                <th id="recordsTableSubmittedHeader">Submitted</th>
+                <th id="recordsTableRiskHeader">Risk</th>
+                <th id="recordsTableConfidenceHeader">Confidence</th>
               </tr>
             </thead>
             <tbody id="resultsTableBody">
@@ -485,15 +501,15 @@
       <section class="detail-grid reveal">
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Assessment Detail</h2>
-            <p>Candidate profile and risk summary</p>
+            <h2 id="assessmentDetailTitle">Assessment Detail</h2>
+            <p id="assessmentDetailText">Candidate profile and risk summary</p>
           </div>
           <div id="selectedAssessment" class="empty-state">No assessment selected.</div>
         </article>
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Score Comparison</h2>
-            <p>Questionnaire versus dashboard prediction</p>
+            <h2 id="scoreComparisonTitle">Score Comparison</h2>
+            <p id="scoreComparisonText">Questionnaire versus dashboard prediction</p>
           </div>
           <div id="scoreComparison" class="empty-state">No assessment selected.</div>
         </article>
@@ -502,15 +518,15 @@
       <section class="detail-grid reveal">
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Modality Breakdown</h2>
-            <p>Text, audio metadata, and image metadata</p>
+            <h2 id="modalityBreakdownTitle">Modality Breakdown</h2>
+            <p id="modalityBreakdownText">Text, audio metadata, and image metadata</p>
           </div>
           <div id="modalityBreakdown" class="empty-state">No assessment selected.</div>
         </article>
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Feature Snapshot</h2>
-            <p>NLP and record features for the selected assessment</p>
+            <h2 id="featureSnapshotTitle">Feature Snapshot</h2>
+            <p id="featureSnapshotText">NLP and record features for the selected assessment</p>
           </div>
           <div id="featureSnapshot" class="empty-state">No assessment selected.</div>
         </article>
@@ -519,15 +535,15 @@
       <section class="detail-grid reveal">
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Patient History</h2>
-            <p>Prior screenings and overall risk movement over time</p>
+            <h2 id="patientHistoryTitle">Patient History</h2>
+            <p id="patientHistoryText">Prior screenings and overall risk movement over time</p>
           </div>
           <div id="patientHistory" class="empty-state">No assessment selected.</div>
         </article>
         <article class="panel detail-panel">
           <div class="section-heading">
-            <h2>Domain Drift</h2>
-            <p>Which risk domains are worsening, improving, or staying stable</p>
+            <h2 id="domainTrajectoryTitle">Domain Drift</h2>
+            <p id="domainTrajectoryText">Which risk domains are worsening, improving, or staying stable</p>
           </div>
           <div id="domainTrajectory" class="empty-state">No assessment selected.</div>
         </article>
@@ -535,6 +551,6 @@
     </section>
   </div>
 
-  <script src="/web/app.js"></script>
+  <script src="/web/app.js?v=20260607"></script>
 </body>
 </html>

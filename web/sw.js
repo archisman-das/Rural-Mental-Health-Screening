@@ -1,4 +1,4 @@
-const CACHE_NAME = "mh-dashboard-pwa-v1";
+const CACHE_NAME = "mh-dashboard-pwa-v2";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
@@ -47,13 +47,11 @@ self.addEventListener("fetch", (event) => {
 
   if (url.pathname.startsWith("/web/") || url.pathname === "/manifest.webmanifest") {
     event.respondWith(
-      caches.match(request).then((cached) => (
-        cached || fetch(request).then((response) => {
+      fetch(request).then((response) => {
           const cloned = response.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(request, cloned));
           return response;
-        })
-      ))
+        }).catch(() => caches.match(request))
     );
     return;
   }

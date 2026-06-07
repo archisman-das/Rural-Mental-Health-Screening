@@ -303,6 +303,12 @@ RESPONSE_OPTION_TRANSLATIONS = {
     },
 }
 
+ADAPTIVE_CHOOSE_ONE_TRANSLATIONS = {
+    "English": "Choose one",
+    "Hindi": "\u090f\u0915 \u091a\u0941\u0928\u0947\u0902",
+    "Bengali": "\u098f\u0995\u099f\u09bf \u09a8\u09bf\u09b0\u09cd\u09ac\u09be\u099a\u09a8 \u0995\u09b0\u09c1\u09a8",
+}
+
 ADAPTIVE_SECTION_TRANSLATIONS = {
     "Depression": {"Hindi": "डिप्रेशन", "Bengali": "বিষণ্নতা"},
     "Anxiety": {"Hindi": "एंग्जायटी", "Bengali": "উদ্বেগ"},
@@ -697,6 +703,10 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
     theta = estimate_questionnaire_theta(answered)
     tuning = _adaptive_tuning()
     normalized_language = _normalize_language(language)
+    response_options = [
+        {"label": label, "value": value}
+        for label, value in get_response_options(normalized_language).items()
+    ]
     answered_counts = {domain: 0 for domain in PREDICTION_DOMAINS}
     for question in QUESTION_BANK:
         if question["id"] in answered_ids:
@@ -750,6 +760,8 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
         "selected_information": round(selected_information, 6),
         "tuning": tuning,
         "remaining_questions": scored_questions,
+        "response_options": response_options,
+        "choose_one_label": ADAPTIVE_CHOOSE_ONE_TRANSLATIONS.get(normalized_language, ADAPTIVE_CHOOSE_ONE_TRANSLATIONS["English"]),
         "language": normalized_language,
     }
 

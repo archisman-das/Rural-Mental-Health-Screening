@@ -11,7 +11,7 @@ SRC_PATH = str(ROOT / "src")
 if SRC_PATH not in sys.path:
     sys.path.append(SRC_PATH)
 
-from mental_health_screening import get_adaptive_question_bank, get_adaptive_tuning
+from mental_health_screening import get_adaptive_question_bank, get_adaptive_tuning, get_response_options
 from mental_health_screening.constants import PREDICTION_DOMAINS, PREDICTION_LABELS
 from mental_health_screening.predict import screen
 from mental_health_screening.report import create_assessment_pdf_bytes
@@ -587,7 +587,19 @@ def api_preview_assessment():
 
 @app.get("/api/adaptive/config")
 def api_adaptive_config():
-    return jsonify(get_adaptive_tuning())
+    language = request.args.get("language")
+    tuning = get_adaptive_tuning()
+    response_options = [
+        {"label": label, "value": value}
+        for label, value in get_response_options(language).items()
+    ]
+    return jsonify(
+        {
+            "tuning": tuning,
+            "response_options": response_options,
+            "choose_one_label": get_adaptive_question_bank({}, language).get("choose_one_label", "Choose one"),
+        }
+    )
 
 
 @app.post("/api/adaptive/next")

@@ -22,6 +22,16 @@ def get_model_bundle_path(modality: str) -> Path:
     return ensure_model_dir() / f"{modality}_bundle.pkl"
 
 
+def _json_safe(value):
+    if isinstance(value, Path):
+        return str(value)
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return value
+
+
 def save_model_bundle(modality: str, bundle: dict) -> Path:
     path = get_model_bundle_path(modality)
     with path.open("wb") as handle:
@@ -116,7 +126,7 @@ def bundle_summary(modality: str) -> dict | None:
             "macro_f1": float(metrics.get("macro_f1", 0.0)),
             "label_accuracy": float(metrics.get("label_accuracy", 0.0)),
         }
-    return summary
+    return _json_safe(summary)
 
 
 def summarize_all_bundles() -> dict[str, dict]:

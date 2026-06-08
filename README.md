@@ -41,7 +41,12 @@ The `comorbidity` bundle now performs joint multi-label prediction so the model 
 
 The text pipeline supports:
 
-- DistilBERT / BERT text representations when transformer models are available locally
+- Language-native transformer encoders when available locally:
+  - English: DistilBERT / BERT
+  - Hindi: MuRIL or IndicBERT
+  - Bengali: IndicBERT or MuRIL
+- Validated PHQ-9 instrument translations for Hindi and Bengali
+- Culturally adapted distress idioms and safety phrases for English, Hindi, and Bengali
 - Emotion detection
 - Sentiment analysis
 - Self-harm keyword detection
@@ -164,6 +169,10 @@ Open `http://127.0.0.1:8000/` in your browser.
 ## Notes
 
 This repo includes heuristic fallbacks and trained bundles from real manifests. At runtime, `predict.py` uses trained domain models when they exist and falls back to heuristics for unlabeled or untrained domains.
+You can also run `python tools/evaluate_saved_assessments.py --input data/screening_results.json` to get a proxy precision/recall and calibration report on saved assessments.
+For a one-command workflow, run `python tools/run_quality_check.py --input data/screening_results.json --output data/assessment_quality_report.json`.
+On Windows, you can also double-click `tools\run_quality_check.bat` or run `tools\run_quality_check.ps1` directly.
+Inside the dashboard, the Analytics Hub now includes a `Run Quality Check` button that pulls the same saved-assessment report into the page.
 
 ## Training
 

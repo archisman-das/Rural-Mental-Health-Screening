@@ -25,8 +25,15 @@ REPORT_TRANSLATIONS = {
         "candidate_profile": "Candidate Profile",
         "questionnaire_summary": "Questionnaire Risk Summary",
         "multimodal_summary": "Multimodal Screening Summary",
+        "sdoh_summary": "SDOH and agrarian distress",
+        "risk_score": "Risk score",
+        "detected": "Detected",
+        "not_detected": "Not detected",
+        "matches": "Matches",
+        "no_sdoh_data": "No agrarian distress cues were available in the exported record.",
         "recommendation": "Recommendation",
         "disclaimer": "Disclaimer",
+        "validated_instrument": "Validated instrument",
         "questionnaire_suffix": "Questionnaire",
         "multimodal_suffix": "Multimodal",
         "comorbidity_signal": "Comorbidity signal",
@@ -40,8 +47,15 @@ REPORT_TRANSLATIONS = {
         "candidate_profile": "उम्मीदवार प्रोफ़ाइल",
         "questionnaire_summary": "प्रश्नावली जोखिम सारांश",
         "multimodal_summary": "मल्टीमॉडल स्क्रीनिंग सारांश",
+        "sdoh_summary": "SDOH और कृषि संकट",
+        "risk_score": "जोखिम स्कोर",
+        "detected": "पाया गया",
+        "not_detected": "नहीं पाया गया",
+        "matches": "मिलान",
+        "no_sdoh_data": "निर्यातित रिकॉर्ड में कृषि संकट के कोई संकेत उपलब्ध नहीं थे।",
         "recommendation": "सिफारिश",
         "disclaimer": "अस्वीकरण",
+        "validated_instrument": "मान्यीकृत प्रश्नावली",
         "questionnaire_suffix": "प्रश्नावली",
         "multimodal_suffix": "मल्टीमॉडल",
         "comorbidity_signal": "कॉमॉर्बिडिटी संकेत",
@@ -55,12 +69,100 @@ REPORT_TRANSLATIONS = {
         "candidate_profile": "প্রার্থীর প্রোফাইল",
         "questionnaire_summary": "প্রশ্নমালার ঝুঁকি সংক্ষিপ্তসার",
         "multimodal_summary": "মাল্টিমোডাল স্ক্রিনিং সংক্ষিপ্তসার",
+        "sdoh_summary": "SDOH ও কৃষিজ সংকট",
+        "risk_score": "ঝুঁকি স্কোর",
+        "detected": "সনাক্ত হয়েছে",
+        "not_detected": "সনাক্ত হয়নি",
+        "matches": "মিল",
+        "no_sdoh_data": "নির्यातিত রেকর্ডে কৃষিজ সংকটের কোনো সংকেত পাওয়া যায়নি।",
         "recommendation": "পরামর্শ",
         "disclaimer": "সতর্কীকরণ",
+        "validated_instrument": "মান্যতাপ্রাপ্ত প্রশ্নমালা",
         "questionnaire_suffix": "প্রশ্নমালা",
         "multimodal_suffix": "মাল্টিমোডাল",
         "comorbidity_signal": "কমোরবিডিটি সংকেত",
         "comorbidity_confidence": "কমোরবিডিটি আত্মবিশ্বাস",
+        "unknown": "অজানা",
+    },
+}
+
+QUALITY_CHECK_TRANSLATIONS = {
+    "english": {
+        "title": "Saved Assessment Quality Check",
+        "generated_at": "Generated at",
+        "summary": "Summary",
+        "records": "Records",
+        "examples": "Examples",
+        "accuracy": "Accuracy",
+        "macro_f1": "Macro F1",
+        "brier_score": "Brier score",
+        "roc_auc": "ROC AUC",
+        "quality_gate": "Quality gate",
+        "thresholds": "Thresholds",
+        "min_accuracy": "Minimum accuracy",
+        "min_macro_f1": "Minimum macro F1",
+        "max_brier_score": "Maximum Brier score",
+        "mismatches": "Top mismatches",
+        "assessment_id": "Assessment ID",
+        "domain": "Domain",
+        "questionnaire": "Questionnaire",
+        "dashboard": "Dashboard",
+        "confidence": "Confidence",
+        "score_gap": "Score gap",
+        "pass": "PASS",
+        "fail": "FAIL",
+        "unknown": "Unknown",
+    },
+    "hindi": {
+        "title": "सहेजे गए आकलनों की गुणवत्ता जाँच",
+        "generated_at": "जनरेट किया गया",
+        "summary": "सारांश",
+        "records": "रिकॉर्ड",
+        "examples": "उदाहरण",
+        "accuracy": "सटीकता",
+        "macro_f1": "मैक्रो F1",
+        "brier_score": "ब्रियर स्कोर",
+        "roc_auc": "ROC AUC",
+        "quality_gate": "क्वालिटी गेट",
+        "thresholds": "सीमाएँ",
+        "min_accuracy": "न्यूनतम सटीकता",
+        "min_macro_f1": "न्यूनतम मैक्रो F1",
+        "max_brier_score": "अधिकतम ब्रियर स्कोर",
+        "mismatches": "शीर्ष असंगतियाँ",
+        "assessment_id": "आकलन आईडी",
+        "domain": "डोमेन",
+        "questionnaire": "प्रश्नावली",
+        "dashboard": "डैशबोर्ड",
+        "confidence": "विश्वास",
+        "score_gap": "स्कोर अंतर",
+        "pass": "पास",
+        "fail": "फेल",
+        "unknown": "अज्ञात",
+    },
+    "bengali": {
+        "title": "সংরক্ষিত মূল্যায়নের মান যাচাই",
+        "generated_at": "তৈরি হয়েছে",
+        "summary": "সারাংশ",
+        "records": "রেকর্ড",
+        "examples": "উদাহরণ",
+        "accuracy": "নির্ভুলতা",
+        "macro_f1": "ম্যাক্রো F1",
+        "brier_score": "ব্রায়ার স্কোর",
+        "roc_auc": "ROC AUC",
+        "quality_gate": "গুণগত মানের গেট",
+        "thresholds": "সীমা",
+        "min_accuracy": "ন্যূনতম নির্ভুলতা",
+        "min_macro_f1": "ন্যূনতম ম্যাক্রো F1",
+        "max_brier_score": "সর্বোচ্চ ব্রায়ার স্কোর",
+        "mismatches": "প্রধান অমিল",
+        "assessment_id": "মূল্যায়ন আইডি",
+        "domain": "ডোমেইন",
+        "questionnaire": "প্রশ্নমালা",
+        "dashboard": "ড্যাশবোর্ড",
+        "confidence": "আত্মবিশ্বাস",
+        "score_gap": "স্কোর পার্থক্য",
+        "pass": "PASS",
+        "fail": "FAIL",
         "unknown": "অজানা",
     },
 }
@@ -100,6 +202,29 @@ RISK_LABELS = {
     "hindi": {"low": "कम", "moderate": "मध्यम", "high": "उच्च", "unknown": "अज्ञात"},
     "bengali": {"low": "কম", "moderate": "মাঝারি", "high": "উচ্চ", "unknown": "অজানা"},
 }
+
+
+def audit_translation_coverage() -> dict:
+    def _compare(table: dict) -> dict:
+        source = table.get("english", {})
+        source_keys = set(source.keys())
+        result = {}
+        for locale, entries in table.items():
+            if locale == "english":
+                continue
+            entry_keys = set(entries.keys())
+            missing = sorted(source_keys - entry_keys)
+            extra = sorted(entry_keys - source_keys)
+            if missing or extra:
+                result[locale] = {"missing": missing, "extra": extra}
+        return result
+
+    return {
+        "report": _compare(REPORT_TRANSLATIONS),
+        "quality_check": _compare(QUALITY_CHECK_TRANSLATIONS),
+        "profile": _compare(PROFILE_LABELS),
+        "risk": _compare(RISK_LABELS),
+    }
 
 UNICODE_FONT_CANDIDATES = {
     "hindi": [
@@ -166,6 +291,63 @@ def _domain_label(language: str, domain: str) -> str:
     return PREDICTION_LABELS[domain]
 
 
+def _sdoh_label(language: str, key: str) -> str:
+    lang = _normalize_language(language)
+    if lang == "hindi":
+        mapping = {
+            "agrarian_distress": "कृषि संकट",
+            "crop_failure": "फसल खराबी",
+            "debt_distress": "कर्ज दबाव",
+            "food_security": "खाद्य सुरक्षा",
+        }
+        return mapping.get(key, key.replace("_", " ").title())
+    if lang == "bengali":
+        mapping = {
+            "agrarian_distress": "কৃষিজ সংকট",
+            "crop_failure": "ফসলহানি",
+            "debt_distress": "দেনার চাপ",
+            "food_security": "খাদ্য নিরাপত্তা",
+        }
+        return mapping.get(key, key.replace("_", " ").title())
+    mapping = {
+        "agrarian_distress": "Agrarian Distress",
+        "crop_failure": "Crop Failure",
+        "debt_distress": "Debt Pressure",
+        "food_security": "Food Security",
+    }
+    return mapping.get(key, key.replace("_", " ").title())
+
+
+def _sdoh_summary_lines(record: dict, language: str) -> list[str]:
+    multimodal = record.get("multimodal") or {}
+    text_result = multimodal.get("text") or {}
+    features = text_result.get("features") or {}
+    if not isinstance(features, dict):
+        features = {}
+
+    risk_score = features.get("agrarian_distress_risk_score")
+    if risk_score is None:
+        return [_report_text(language, "no_sdoh_data")]
+
+    lines = []
+    lines.append(f"{_report_text(language, 'risk_score')}: {float(risk_score):.2f}")
+    for key in ("agrarian_distress", "crop_failure", "debt_distress", "food_security"):
+        detected = bool(features.get(f"{key}_detected"))
+        matches = features.get(f"{key}_matches") or []
+        line = f"{_sdoh_label(language, key)}: {_report_text(language, 'detected') if detected else _report_text(language, 'not_detected')}"
+        if matches:
+            line += f" ({_report_text(language, 'matches')}: {', '.join(matches)})"
+        lines.append(line)
+    return lines
+
+
+def _is_demo_record(record: dict) -> bool:
+    assessment_id = str((record or {}).get("assessment_id") or "").upper()
+    profile = (record or {}).get("profile") or {}
+    record_origin = str((record or {}).get("record_origin") or profile.get("record_origin") or "").strip().lower()
+    return assessment_id.startswith("MHS-DEMO") or record_origin == "demo"
+
+
 def _unicode_font_name(language: str) -> str | None:
     lang = _normalize_language(language)
     if lang == "english" or pdfmetrics is None or TTFont is None:
@@ -190,7 +372,123 @@ def _write_line(pdf, text: str, x: float, y: float, width: float, font_name: str
     return y
 
 
+def _quality_text(language: str, key: str) -> str:
+    lang = _normalize_language(language)
+    return QUALITY_CHECK_TRANSLATIONS.get(lang, QUALITY_CHECK_TRANSLATIONS["english"]).get(
+        key,
+        QUALITY_CHECK_TRANSLATIONS["english"].get(key, key),
+    )
+
+
+def _new_page_if_needed(pdf, y: float, margin: float, width: float, body_font: str, heading_font: str) -> float:
+    if y > margin + 30:
+        return y
+    pdf.showPage()
+    pdf.setFont(heading_font, 18)
+    return A4[1] - 50
+
+
+def create_quality_check_pdf_bytes(report: dict, language: str = "english") -> bytes:
+    if canvas is None or A4 is None or simpleSplit is None:
+        raise ImportError("reportlab is required to generate quality check PDFs.")
+
+    lang = _normalize_language(language)
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    margin = 40
+    y = height - 50
+    body_font = _unicode_font_name(lang) or "Helvetica"
+    heading_font = body_font
+
+    overall = report.get("overall") or {}
+    thresholds = report.get("quality_thresholds") or {}
+    mismatch_rows = list(report.get("top_mismatches") or [])[:5]
+    gate_pass = (
+        overall.get("accuracy") is not None
+        and overall.get("macro_f1") is not None
+        and overall.get("brier_score") is not None
+        and float(overall.get("accuracy") or 0.0) >= float(thresholds.get("min_accuracy", 0.0) or 0.0)
+        and float(overall.get("macro_f1") or 0.0) >= float(thresholds.get("min_macro_f1", 0.0) or 0.0)
+        and float(overall.get("brier_score") or 0.0) <= float(thresholds.get("max_brier_score", 999.0) or 999.0)
+    )
+
+    pdf.setTitle(_quality_text(lang, "title"))
+    y = _write_line(pdf, _quality_text(lang, "title"), margin, y, width - (2 * margin), heading_font, 18)
+    y -= 6
+    y = _write_line(
+        pdf,
+        f"{_quality_text(lang, 'generated_at')}: {report.get('generated_at') or report.get('source') or _quality_text(lang, 'unknown')}",
+        margin,
+        y,
+        width - (2 * margin),
+        body_font,
+        11,
+    )
+    y -= 8
+
+    pdf.setFont(heading_font, 13)
+    pdf.drawString(margin, y, _quality_text(lang, "summary"))
+    y -= 20
+    summary_lines = [
+        f"{_quality_text(lang, 'records')}: {report.get('record_count', 0)}",
+        f"{_quality_text(lang, 'examples')}: {report.get('example_count', 0)}",
+        f"{_quality_text(lang, 'accuracy')}: {float(overall.get('accuracy', 0.0)):.3f}" if overall.get("accuracy") is not None else f"{_quality_text(lang, 'accuracy')}: {_quality_text(lang, 'unknown')}",
+        f"{_quality_text(lang, 'macro_f1')}: {float(overall.get('macro_f1', 0.0)):.3f}" if overall.get("macro_f1") is not None else f"{_quality_text(lang, 'macro_f1')}: {_quality_text(lang, 'unknown')}",
+        f"{_quality_text(lang, 'brier_score')}: {float(overall.get('brier_score', 0.0)):.3f}" if overall.get("brier_score") is not None else f"{_quality_text(lang, 'brier_score')}: {_quality_text(lang, 'unknown')}",
+        f"{_quality_text(lang, 'roc_auc')}: {float(overall.get('roc_auc', 0.0)):.3f}" if overall.get("roc_auc") is not None else f"{_quality_text(lang, 'roc_auc')}: {_quality_text(lang, 'unknown')}",
+        f"{_quality_text(lang, 'quality_gate')}: {_quality_text(lang, 'pass') if gate_pass else _quality_text(lang, 'fail')}",
+    ]
+    for line in summary_lines:
+        y = _write_line(pdf, line, margin, y, width - (2 * margin), body_font, 11)
+        y = _new_page_if_needed(pdf, y, margin, width, body_font, heading_font)
+
+    y -= 4
+    pdf.setFont(heading_font, 13)
+    pdf.drawString(margin, y, _quality_text(lang, "thresholds"))
+    y -= 20
+    threshold_lines = [
+        f"{_quality_text(lang, 'min_accuracy')}: {float(thresholds.get('min_accuracy', 0.0) or 0.0):.3f}",
+        f"{_quality_text(lang, 'min_macro_f1')}: {float(thresholds.get('min_macro_f1', 0.0) or 0.0):.3f}",
+        f"{_quality_text(lang, 'max_brier_score')}: {float(thresholds.get('max_brier_score', 0.0) or 0.0):.3f}",
+    ]
+    for line in threshold_lines:
+        y = _write_line(pdf, line, margin, y, width - (2 * margin), body_font, 11)
+        y = _new_page_if_needed(pdf, y, margin, width, body_font, heading_font)
+
+    y -= 4
+    pdf.setFont(heading_font, 13)
+    pdf.drawString(margin, y, _quality_text(lang, "mismatches"))
+    y -= 20
+    if not mismatch_rows:
+        y = _write_line(pdf, _quality_text(lang, "unknown"), margin, y, width - (2 * margin), body_font, 11)
+    else:
+        for item in mismatch_rows:
+            domain = item.get("domain") or _quality_text(lang, "unknown")
+            label = item.get("assessment_id") or _quality_text(lang, "unknown")
+            question_label = item.get("questionnaire_label") or _quality_text(lang, "unknown")
+            predicted_label = item.get("predicted_label") or _quality_text(lang, "unknown")
+            confidence = float(item.get("confidence", 0.0) or 0.0)
+            score_gap = float(item.get("score_gap", 0.0) or 0.0)
+            mismatch_text = (
+                f"{_quality_text(lang, 'assessment_id')}: {label} | "
+                f"{_quality_text(lang, 'domain')}: {domain} | "
+                f"{_quality_text(lang, 'questionnaire')}: {question_label} -> "
+                f"{_quality_text(lang, 'dashboard')}: {predicted_label} | "
+                f"{_quality_text(lang, 'confidence')}: {confidence:.3f} | "
+                f"{_quality_text(lang, 'score_gap')}: {score_gap:.3f}"
+            )
+            y = _write_line(pdf, mismatch_text, margin, y, width - (2 * margin), body_font, 10)
+            y = _new_page_if_needed(pdf, y, margin, width, body_font, heading_font)
+
+    pdf.showPage()
+    pdf.save()
+    return buffer.getvalue()
+
+
 def create_assessment_pdf_bytes(record: dict) -> bytes:
+    if _is_demo_record(record):
+        raise ValueError("Demo records are excluded from assessment reports.")
     language = _normalize_language(record.get("profile", {}).get("language", "english"))
     if canvas is None or A4 is None or simpleSplit is None:
         lines = [
@@ -200,6 +498,9 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
         ]
         for key, value in record["profile"].items():
             lines.append(f"{_profile_label(language, key)}: {value}")
+        validated_instrument = (record.get("questionnaire") or {}).get("validated_instrument") or {}
+        if isinstance(validated_instrument, dict) and validated_instrument.get("label"):
+            lines.append(f"{_report_text(language, 'validated_instrument')}: {validated_instrument.get('localized_label') or validated_instrument.get('label')}")
         for domain in PREDICTION_DOMAINS:
             lines.append(
                 f"{_domain_label(language, domain)} {_report_text(language, 'questionnaire_suffix')}: "
@@ -210,6 +511,8 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
                 f"{_domain_label(language, domain)} {_report_text(language, 'multimodal_suffix')}: "
                 f"{_risk_label(language, record['multimodal']['overall'].get(domain, 'unknown'))}"
             )
+        lines.append(_report_text(language, "sdoh_summary"))
+        lines.extend(_sdoh_summary_lines(record, language))
         comorbidity = record.get("multimodal", {}).get("comorbidity") or {}
         top_pairs = comorbidity.get("top_pairs") or []
         if top_pairs:
@@ -275,7 +578,7 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
     body_font = _unicode_font_name(language) or "Helvetica"
     heading_font = body_font
 
-    pdf.setTitle(f"Assessment Report {record['assessment_id']}")
+    pdf.setTitle(f"{_report_text(language, 'title')} {record['assessment_id']}")
     y = _write_line(pdf, _report_text(language, "title"), margin, y, width - (2 * margin), heading_font, 18)
     y -= 6
     y = _write_line(pdf, f"{_report_text(language, 'assessment_id')}: {record['assessment_id']}", margin, y, width - (2 * margin), body_font, 11)
@@ -287,6 +590,17 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
     y -= 20
     for key, value in record["profile"].items():
         y = _write_line(pdf, f"{_profile_label(language, key)}: {value}", margin, y, width - (2 * margin), body_font, 11)
+    validated_instrument = (record.get("questionnaire") or {}).get("validated_instrument") or {}
+    if isinstance(validated_instrument, dict) and validated_instrument.get("label"):
+        y = _write_line(
+            pdf,
+            f"{_report_text(language, 'validated_instrument')}: {validated_instrument.get('localized_label') or validated_instrument.get('label')}",
+            margin,
+            y,
+            width - (2 * margin),
+            body_font,
+            11,
+        )
     y -= 8
 
     pdf.setFont(heading_font, 13)
@@ -307,6 +621,14 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
         risk = _risk_label(language, record["multimodal"]["overall"].get(domain, "unknown"))
         score = record["multimodal"]["overall"]["scores"].get(domain, 0.0)
         y = _write_line(pdf, f"{label}: {risk} ({score:.2f})", margin, y, width - (2 * margin), body_font, 11)
+
+    y -= 8
+    pdf.setFont(heading_font, 13)
+    pdf.drawString(margin, y, _report_text(language, "sdoh_summary"))
+    y -= 20
+    for line in _sdoh_summary_lines(record, language):
+        y = _write_line(pdf, line, margin, y, width - (2 * margin), body_font, 11)
+        y = _new_page_if_needed(pdf, y, margin, width, body_font, heading_font)
 
     y -= 8
     comorbidity = record.get("multimodal", {}).get("comorbidity") or {}

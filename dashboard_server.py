@@ -1,8 +1,10 @@
 import json
 import os
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
+from datetime import datetime, timezone
 
 from flask import Flask, Response, jsonify, request, send_from_directory
 
@@ -11,10 +13,10 @@ SRC_PATH = str(ROOT / "src")
 if SRC_PATH not in sys.path:
     sys.path.append(SRC_PATH)
 
-from mental_health_screening import get_adaptive_question_bank, get_adaptive_tuning, get_response_options
+from mental_health_screening import get_adaptive_question_bank, get_adaptive_tuning, get_response_options, get_validated_instrument, get_validated_instruments
 from mental_health_screening.constants import PREDICTION_DOMAINS, PREDICTION_LABELS
 from mental_health_screening.predict import screen
-from mental_health_screening.report import create_assessment_pdf_bytes
+from mental_health_screening.report import create_assessment_pdf_bytes, create_quality_check_pdf_bytes
 from mental_health_screening.model_store import summarize_all_bundles
 from mental_health_screening.storage import (
     build_assessment_trajectory,
@@ -27,7 +29,7 @@ from mental_health_screening.storage import (
     list_audit_logs,
     list_backup_runs,
 )
-from mental_health_screening.utils import average, normalize_score, risk_level
+from mental_health_screening.utils import average, confidence_weighted_score, normalize_score, risk_level
 
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/web")
@@ -61,6 +63,34 @@ def _normalize_language(value: str | None) -> str:
     return "English"
 
 
+def _validation_text(key: str, language: str = "English") -> str:
+    language = _normalize_language(language)
+    messages = {
+        "English": {
+            "full_name_required": "Candidate full name is required.",
+            "village_required": "Village or local area is required.",
+            "assessor_required": "Assessor name is required.",
+            "consent_required": "Consent is required before saving an assessment.",
+            "questionnaire_incomplete": "Questionnaire scores are incomplete.",
+        },
+        "Hindi": {
+            "full_name_required": "उम्मीदवार का पूरा नाम आवश्यक है।",
+            "village_required": "गाँव या स्थानीय क्षेत्र आवश्यक है।",
+            "assessor_required": "आकलनकर्ता का नाम आवश्यक है।",
+            "consent_required": "आकलन सहेजने से पहले सहमति आवश्यक है।",
+            "questionnaire_incomplete": "प्रश्नावली स्कोर अधूरे हैं।",
+        },
+        "Bengali": {
+            "full_name_required": "প্রার্থীর পূর্ণ নাম প্রয়োজন।",
+            "village_required": "গ্রাম বা স্থানীয় এলাকা প্রয়োজন।",
+            "assessor_required": "মূল্যায়নকারীর নাম প্রয়োজন।",
+            "consent_required": "মূল্যায়ন সংরক্ষণের আগে সম্মতি প্রয়োজন।",
+            "questionnaire_incomplete": "প্রশ্নমালার স্কোর অসম্পূর্ণ।",
+        },
+    }
+    return messages.get(language, messages["English"]).get(key, key)
+
+
 def _normalize_profile(profile: dict | None) -> dict:
     safe_profile = profile if isinstance(profile, dict) else {}
     age_value = safe_profile.get("age", 0)
@@ -86,9 +116,22 @@ def _normalize_profile(profile: dict | None) -> dict:
 def _normalize_questionnaire(questionnaire: dict | None) -> dict:
     if not isinstance(questionnaire, dict):
         return {}
+    validated_instrument = questionnaire.get("validated_instrument")
+    if isinstance(validated_instrument, dict):
+        validated_instrument = {
+            "id": _clean_text(validated_instrument.get("id"), 32),
+            "label": _clean_text(validated_instrument.get("label"), 120),
+            "language": _clean_text(validated_instrument.get("language"), 40),
+            "description": _clean_text(validated_instrument.get("description"), 250),
+            "localized_label": _clean_text(validated_instrument.get("localized_label"), 120),
+            "localized_description": _clean_text(validated_instrument.get("localized_description"), 250),
+        }
+    else:
+        validated_instrument = None
     safe_questionnaire = {
         "available": bool(questionnaire.get("available", True)),
         "notes": _clean_text(questionnaire.get("notes"), 500),
+        "validated_instrument": validated_instrument,
     }
     for domain in PREDICTION_DOMAINS:
         safe_questionnaire[f"{domain}_score"] = normalize_score(questionnaire.get(f"{domain}_score", 0.0))
@@ -99,52 +142,105 @@ def _normalize_questionnaire(questionnaire: dict | None) -> dict:
     return safe_questionnaire
 
 
-def _validate_assessment_payload(profile: dict, questionnaire: dict, require_consent: bool = True) -> dict | None:
+def _default_validated_instrument(language: str | None) -> dict | None:
+    instrument = get_validated_instrument(language)
+    if not isinstance(instrument, dict):
+        return None
+    return {
+        "id": _clean_text(instrument.get("id"), 32),
+        "label": _clean_text(instrument.get("label"), 120),
+        "language": _clean_text(instrument.get("language"), 40),
+        "description": _clean_text(instrument.get("description"), 250),
+        "localized_label": _clean_text(instrument.get("localized_label"), 120),
+        "localized_description": _clean_text(instrument.get("localized_description"), 250),
+    }
+
+
+def _validate_assessment_payload(profile: dict, questionnaire: dict, require_consent: bool = True, language: str = "English") -> dict | None:
     if not profile.get("full_name"):
-        return {"field": "full_name", "message": "Candidate full name is required."}
+        return {"field": "full_name", "message": _validation_text("full_name_required", language)}
     if not profile.get("village"):
-        return {"field": "village", "message": "Village or local area is required."}
+        return {"field": "village", "message": _validation_text("village_required", language)}
     if not profile.get("assessor"):
-        return {"field": "assessor", "message": "Assessor name is required."}
+        return {"field": "assessor", "message": _validation_text("assessor_required", language)}
     if require_consent and not profile.get("consent_received"):
-        return {"field": "consent_received", "message": "Consent is required before saving an assessment."}
+        return {"field": "consent_received", "message": _validation_text("consent_required", language)}
     missing_scores = [
         domain for domain in PREDICTION_DOMAINS
         if f"{domain}_score" not in questionnaire
     ]
     if missing_scores:
-        return {"field": "questionnaire", "message": "Questionnaire scores are incomplete.", "missing_domains": missing_scores}
+        return {"field": "questionnaire", "message": _validation_text("questionnaire_incomplete", language), "missing_domains": missing_scores}
     return None
 
 
-def _modality_failure_note(modality: str, reason: str | None, result: dict | None = None) -> str:
+def _modality_failure_note(modality: str, reason: str | None, result: dict | None = None, language: str = "English") -> str:
+    language = _normalize_language(language)
+    text_map = {
+        "English": {
+            "audio_too_short": "Audio upload was received, but it was too short for analysis ({duration}s). Minimum required duration is {minimum}s.",
+            "librosa_not_installed": "Audio upload was received, but backend audio dependencies are not installed on this machine.",
+            "audio_invalid_duration": "Audio upload was received, but the clip duration could not be validated for analysis.",
+            "no_face_detected": "Image upload was received, but no detectable face was found, so facial-cue analysis was skipped.",
+            "vision_dependencies_not_installed": "Image upload was received, but backend vision dependencies are not installed on this machine.",
+            "image_unreadable": "Image upload was received, but the backend could not read it as a usable image.",
+            "passive_signals_missing": "Passive biomarkers were not provided, so zero-hardware analysis from camera or typing rhythm was skipped.",
+            "video_missing": "The phone-camera video signal was not provided, so rPPG-style analysis was skipped.",
+            "passive_vision_missing": "The phone-camera video was received, but backend vision dependencies are not installed on this machine.",
+            "fallback": "Dashboard captured {modality} upload metadata for {file_name}. The file reached the backend, but no usable {modality} inference result was produced from it.",
+        },
+        "Hindi": {
+            "audio_too_short": "ऑडियो अपलोड मिला, लेकिन वह विश्लेषण के लिए बहुत छोटा था ({duration}s)। आवश्यक न्यूनतम अवधि {minimum}s है।",
+            "librosa_not_installed": "ऑडियो अपलोड मिला, लेकिन इस मशीन पर बैकएंड ऑडियो निर्भरताएँ स्थापित नहीं हैं।",
+            "audio_invalid_duration": "ऑडियो अपलोड मिला, लेकिन विश्लेषण के लिए क्लिप अवधि की पुष्टि नहीं हो सकी।",
+            "no_face_detected": "इमेज अपलोड मिली, लेकिन कोई पहचानने योग्य चेहरा नहीं मिला, इसलिए चेहरे के संकेत विश्लेषण को छोड़ दिया गया।",
+            "vision_dependencies_not_installed": "इमेज अपलोड मिली, लेकिन इस मशीन पर बैकएंड विज़न निर्भरताएँ स्थापित नहीं हैं।",
+            "image_unreadable": "इमेज अपलोड मिली, लेकिन बैकएंड उसे उपयोग योग्य छवि के रूप में नहीं पढ़ सका।",
+            "passive_signals_missing": "निष्क्रिय संकेत उपलब्ध नहीं थे, इसलिए कैमरा या टाइपिंग रिद्म से शून्य-हार्डवेयर विश्लेषण छोड़ दिया गया।",
+            "video_missing": "फोन-कैमरा वीडियो संकेत उपलब्ध नहीं था, इसलिए rPPG-शैली विश्लेषण छोड़ दिया गया।",
+            "passive_vision_missing": "फोन-कैमरा वीडियो प्राप्त हुआ, लेकिन इस मशीन पर बैकएंड विज़न निर्भरताएँ स्थापित नहीं हैं।",
+            "fallback": "डैशबोर्ड ने {file_name} के लिए {modality} अपलोड मेटाडेटा प्राप्त किया। फ़ाइल बैकएंड तक पहुँची, लेकिन उससे कोई उपयोगी {modality} निष्कर्ष नहीं मिला।",
+        },
+        "Bengali": {
+            "audio_too_short": "অডিও আপলোড পাওয়া গেছে, কিন্তু বিশ্লেষণের জন্য সেটি খুব ছোট ({duration}s)। ন্যূনতম প্রয়োজনীয় দৈর্ঘ্য {minimum}s।",
+            "librosa_not_installed": "অডিও আপলোড পাওয়া গেছে, কিন্তু এই মেশিনে ব্যাকএন্ড অডিও নির্ভরতা ইনস্টল করা নেই।",
+            "audio_invalid_duration": "অডিও আপলোড পাওয়া গেছে, কিন্তু বিশ্লেষণের জন্য ক্লিপের দৈর্ঘ্য যাচাই করা যায়নি।",
+            "no_face_detected": "ইমেজ আপলোড পাওয়া গেছে, কিন্তু কোনো শনাক্তযোগ্য মুখ পাওয়া যায়নি, তাই মুখ-সংকেত বিশ্লেষণ এড়িয়ে যাওয়া হয়েছে।",
+            "vision_dependencies_not_installed": "ইমেজ আপলোড পাওয়া গেছে, কিন্তু এই মেশিনে ব্যাকএন্ড ভিশন নির্ভরতা ইনস্টল করা নেই।",
+            "image_unreadable": "ইমেজ আপলোড পাওয়া গেছে, কিন্তু ব্যাকএন্ড সেটি ব্যবহারযোগ্য ছবি হিসেবে পড়তে পারেনি।",
+            "passive_signals_missing": "প্যাসিভ বায়োমার্কার দেওয়া হয়নি, তাই ক্যামেরা বা টাইপিং রিদম থেকে হার্ডওয়্যারবিহীন বিশ্লেষণ এড়িয়ে যাওয়া হয়েছে।",
+            "video_missing": "ফোন-ক্যামেরার ভিডিও সংকেত দেওয়া হয়নি, তাই rPPG-ধরনের বিশ্লেষণ এড়িয়ে যাওয়া হয়েছে।",
+            "passive_vision_missing": "ফোন-ক্যামেরার ভিডিও পাওয়া গেছে, কিন্তু এই মেশিনে ব্যাকএন্ড ভিশন নির্ভরতা ইনস্টল করা নেই।",
+            "fallback": "ড্যাশবোর্ড {file_name}-এর জন্য {modality} আপলোড মেটাডেটা পেয়েছে। ফাইলটি ব্যাকএন্ডে পৌঁছেছে, কিন্তু কোনো ব্যবহারযোগ্য {modality} ফলাফল তৈরি হয়নি।",
+        },
+    }.get(language, {})
     if modality == "audio" and reason == "audio_too_short":
         duration = round(float((result or {}).get("duration", 0.0)), 2)
         minimum = round(float((result or {}).get("minimum_duration", 2.5)), 2)
-        return f"Audio upload was received, but it was too short for analysis ({duration}s). Minimum required duration is {minimum}s."
+        return text_map["audio_too_short"].format(duration=duration, minimum=minimum)
     if modality == "audio" and reason == "librosa_not_installed":
-        return "Audio upload was received, but backend audio dependencies are not installed on this machine."
+        return text_map["librosa_not_installed"]
     if modality == "audio" and reason == "audio_invalid_duration":
-        return "Audio upload was received, but the clip duration could not be validated for analysis."
+        return text_map["audio_invalid_duration"]
     if modality == "image" and reason == "no_face_detected":
-        return "Image upload was received, but no detectable face was found, so facial-cue analysis was skipped."
+        return text_map["no_face_detected"]
     if modality == "image" and reason == "vision_dependencies_not_installed":
-        return "Image upload was received, but backend vision dependencies are not installed on this machine."
+        return text_map["vision_dependencies_not_installed"]
     if modality == "image" and reason == "image_unreadable":
-        return "Image upload was received, but the backend could not read it as a usable image."
+        return text_map["image_unreadable"]
     if modality == "passive_biomarkers" and reason == "passive_signals_missing":
-        return "Passive biomarkers were not provided, so zero-hardware analysis from camera or typing rhythm was skipped."
+        return text_map["passive_signals_missing"]
     if modality == "passive_biomarkers" and reason == "video_missing":
-        return "The phone-camera video signal was not provided, so rPPG-style analysis was skipped."
+        return text_map["video_missing"]
     if modality == "passive_biomarkers" and reason == "vision_dependencies_not_installed":
-        return "The phone-camera video was received, but backend vision dependencies are not installed on this machine."
-    return (
-        f"Dashboard captured {modality} upload metadata for {(result or {}).get('features', {}).get('file_name', 'the uploaded file')}. "
-        f"The file reached the backend, but no usable {modality} inference result was produced from it."
+        return text_map["passive_vision_missing"]
+    return text_map["fallback"].format(
+        modality=modality,
+        file_name=(result or {}).get("features", {}).get("file_name", "the uploaded file"),
     )
 
 
-def _metadata_modality(modality: str, metadata: dict | None, reason: str | None = None, source_result: dict | None = None) -> dict:
+def _metadata_modality(modality: str, metadata: dict | None, reason: str | None = None, source_result: dict | None = None, language: str = "English") -> dict:
     if not isinstance(metadata, dict) or not metadata:
         return {"available": False}
 
@@ -152,7 +248,7 @@ def _metadata_modality(modality: str, metadata: dict | None, reason: str | None 
         "available": False,
         "modality": modality,
         "confidence": 0.2,
-        "notes": _modality_failure_note(modality, reason, source_result),
+        "notes": _modality_failure_note(modality, reason, source_result, language=language),
         "features": {
             "upload_received": True,
             "file_name": metadata.get("file_name", "unknown"),
@@ -206,7 +302,7 @@ def _cleanup_temp_paths(*paths: str | None) -> None:
                 pass
 
 
-def _decorate_modality_result(result: dict, metadata: dict | None, modality: str) -> dict:
+def _decorate_modality_result(result: dict, metadata: dict | None, modality: str, language: str = "English") -> dict:
     if result.get("available"):
         features = dict(result.get("features") or {})
         if metadata:
@@ -216,7 +312,45 @@ def _decorate_modality_result(result: dict, metadata: dict | None, modality: str
             "modality": modality,
             "features": features,
         }
-    return _metadata_modality(modality, metadata, reason=result.get("reason"), source_result=result)
+    return _metadata_modality(modality, metadata, reason=result.get("reason"), source_result=result, language=language)
+
+
+def _run_quality_check_report(records: list[dict], mismatches: int = 10) -> dict:
+    tool_path = ROOT / "tools" / "run_quality_check.py"
+    if not tool_path.exists():
+        raise FileNotFoundError(f"Quality check tool not found: {tool_path}")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_dir_path = Path(temp_dir)
+        input_path = temp_dir_path / "quality_input.json"
+        output_path = temp_dir_path / "quality_report.json"
+        input_path.write_text(json.dumps(records, indent=2), encoding="utf-8")
+
+        command = [
+            sys.executable,
+            str(tool_path),
+            "--input",
+            str(input_path),
+            "--output",
+            str(output_path),
+            "--mismatches",
+            str(max(0, int(mismatches))),
+        ]
+        completed = subprocess.run(command, cwd=str(ROOT), capture_output=True, text=True)
+        if completed.returncode not in (0, 1):
+            raise RuntimeError(
+                "Quality check tool failed: "
+                f"{completed.stderr.strip() or completed.stdout.strip() or 'unknown error'}"
+            )
+        if not output_path.exists():
+            raise RuntimeError("Quality check tool did not produce a report.")
+
+        report = json.loads(output_path.read_text(encoding="utf-8"))
+        report["generated_at"] = datetime.now(timezone.utc).isoformat()
+        report["tool_stdout"] = completed.stdout.strip()
+        report["tool_stderr"] = completed.stderr.strip()
+        report["source"] = "live_database"
+        return report
 
 
 def _build_dashboard_recommendation(overall: dict, language: str = "english") -> str:
@@ -287,6 +421,17 @@ def _questionnaire_screening_agreement(questionnaire: dict, screening_scores: di
     return normalize_score(average(agreements)) if agreements else 0.0
 
 
+def _blend_questionnaire_with_screening(questionnaire_score: float, screening_score: float, screening_confidence: float) -> float:
+    questionnaire_score = normalize_score(questionnaire_score)
+    screening_score = normalize_score(screening_score)
+    screening_confidence = normalize_score(screening_confidence)
+    # Keep the questionnaire as the stronger prior, but let strong multimodal evidence nudge the score.
+    evidence_weight = 0.12 + (0.18 * screening_confidence)
+    evidence_weight = max(0.12, min(evidence_weight, 0.30))
+    questionnaire_weight = 1.0 - evidence_weight
+    return normalize_score((questionnaire_score * questionnaire_weight) + (screening_score * evidence_weight))
+
+
 def _dashboard_confidence(questionnaire: dict, screening_overall: dict, modalities: list[dict]) -> float:
     available_modalities = [modality for modality in modalities if modality.get("available")]
     if not available_modalities:
@@ -307,7 +452,7 @@ def _dashboard_confidence(questionnaire: dict, screening_overall: dict, modaliti
     )
 
 
-def _comorbidity_note(comorbidity: dict | None) -> str:
+def _comorbidity_note_basic(comorbidity: dict | None, language: str = "english") -> str:
     if not comorbidity:
         return ""
     top_pairs = comorbidity.get("top_pairs") or []
@@ -320,6 +465,11 @@ def _comorbidity_note(comorbidity: dict | None) -> str:
     if len(domains) != 2:
         return ""
     joined = " + ".join(PREDICTION_LABELS.get(domain, domain.title()) for domain in domains)
+    language = str(language or "english").strip().lower()
+    if language == "hindi":
+        return f"संयुक्त comorbidity संकेत: {joined} साथ-साथ बढ़ रहे हैं; एकीकृत follow-up पर विचार करें।"
+    if language == "bengali":
+        return f"সমন্বিত comorbidity সংকেত: {joined} একসঙ্গে বাড়ছে; সমন্বিত follow-up বিবেচনা করুন।"
     return f"Joint comorbidity signal: {joined} are trending together; consider an integrated follow-up."
 
 
@@ -344,12 +494,13 @@ def _build_dashboard_multimodal(
         language=language,
     )
     text_result = screening.get("text") or {"available": False}
-    audio_result = _decorate_modality_result(screening.get("audio") or {"available": False}, audio_metadata, "audio")
-    image_result = _decorate_modality_result(screening.get("image") or {"available": False}, image_metadata, "image")
+    audio_result = _decorate_modality_result(screening.get("audio") or {"available": False}, audio_metadata, "audio", language=language)
+    image_result = _decorate_modality_result(screening.get("image") or {"available": False}, image_metadata, "image", language=language)
     passive_result = _decorate_modality_result(
         screening.get("passive") or {"available": False},
         passive_metadata,
         "passive_biomarkers",
+        language=language,
     )
     comorbidity = screening.get("comorbidity") or {}
     screening_overall = screening.get("overall") or {"confidence": 0.0, "scores": {}}
@@ -361,20 +512,31 @@ def _build_dashboard_multimodal(
         screening_score = normalize_score(screening_overall.get("scores", {}).get(domain, questionnaire_score))
         has_screening_signal = any(
             modality.get("available")
-            for modality in (text_result, audio_result, image_result)
+            for modality in (text_result, audio_result, image_result, passive_result)
         )
-        combined_score = normalize_score(average([questionnaire_score, screening_score])) if has_screening_signal else questionnaire_score
+        if has_screening_signal:
+            screening_confidence = normalize_score(screening_overall.get("confidence", 0.0))
+            weighted_screening = confidence_weighted_score(
+                screening_score,
+                screening_confidence,
+                neutral=questionnaire_score,
+                minimum_weight=0.35,
+            )
+            combined_score = _blend_questionnaire_with_screening(questionnaire_score, weighted_screening, screening_confidence)
+        else:
+            combined_score = questionnaire_score
         overall_scores[domain] = combined_score
         overall_levels[domain] = risk_level(combined_score)
 
     overall_confidence = _dashboard_confidence(
         questionnaire=questionnaire,
         screening_overall=screening_overall,
-        modalities=[text_result, audio_result, image_result],
+        modalities=[text_result, audio_result, image_result, passive_result],
     )
     overall = {
         **overall_levels,
         "confidence": normalize_score(overall_confidence),
+        "evidence_strength": normalize_score(overall_confidence),
         "scores": overall_scores,
     }
     model_stats = summarize_all_bundles()
@@ -397,7 +559,11 @@ def _build_dashboard_multimodal(
         "recommendation": recommendation,
         "disclaimer": screening.get(
             "disclaimer",
-            "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment.",
+            {
+                "English": "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment.",
+                "Hindi": "यह डैशबोर्ड केवल प्रारंभिक स्क्रीनिंग सारांश प्रदान करता है। यह निदान, आपातकालीन सहायता, या चिकित्सकीय निर्णय का स्थान नहीं लेता।",
+                "Bengali": "এই ড্যাশবোর্ডটি শুধুমাত্র প্রাথমিক স্ক্রিনিং সারাংশ দেয়। এটি নির্ণয়, জরুরি সহায়তা বা চিকিৎসকের বিচারের বিকল্প নয়।",
+            }.get(_normalize_language(language), "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment."),
         ),
     }
 
@@ -513,11 +679,13 @@ def api_create_assessment():
     profile = payload["profile"]
     questionnaire = payload["questionnaire"]
     multimodal = payload["multimodal"]
+    if not questionnaire.get("validated_instrument"):
+        questionnaire["validated_instrument"] = _default_validated_instrument(profile.get("language"))
 
     if not isinstance(profile, dict) or not isinstance(questionnaire, dict):
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error("Invalid payload. Expected profile and questionnaire objects.", 400)
-    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=True)
+    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=True, language=profile.get("language", "English"))
     if validation_error:
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error(validation_error["message"], 400, validation_error)
@@ -558,11 +726,13 @@ def api_preview_assessment():
     payload = _extract_request_payload()
     questionnaire = payload["questionnaire"] or {}
     profile = payload["profile"] or {}
+    if not questionnaire.get("validated_instrument"):
+        questionnaire["validated_instrument"] = _default_validated_instrument(profile.get("language"))
 
     if not isinstance(questionnaire, dict):
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error("Invalid payload. Expected questionnaire object.", 400)
-    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=False)
+    validation_error = _validate_assessment_payload(profile, questionnaire, require_consent=False, language=profile.get("language", "English"))
     if validation_error and validation_error.get("field") == "questionnaire":
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
         return _json_error(validation_error["message"], 400, validation_error)
@@ -600,6 +770,12 @@ def api_adaptive_config():
             "choose_one_label": get_adaptive_question_bank({}, language).get("choose_one_label", "Choose one"),
         }
     )
+
+
+@app.get("/api/validated-instruments")
+def api_validated_instruments():
+    language = request.args.get("language")
+    return jsonify({"instruments": get_validated_instruments(language)})
 
 
 @app.post("/api/adaptive/next")
@@ -648,6 +824,8 @@ def api_assessment_pdf(assessment_id: str):
     record = fetch_assessment_record(assessment_id, actor="dashboard_pdf", source_ip=request.remote_addr)
     if record is None:
         return _json_error("Assessment not found.", 404)
+    if str(record.get("assessment_id") or "").upper().startswith("MHS-DEMO") or str(record.get("record_origin") or record.get("profile", {}).get("record_origin") or "").lower() == "demo":
+        return _json_error("Demo records are excluded from assessment reports.", 403)
 
     pdf_bytes = create_assessment_pdf_bytes(record)
     return Response(
@@ -694,6 +872,34 @@ def api_model_stats():
     return jsonify(summarize_all_bundles())
 
 
+@app.get("/api/quality-check")
+def api_quality_check():
+    try:
+        records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check", source_ip=request.remote_addr)
+        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10))
+        return jsonify(report)
+    except Exception as exc:
+        return _json_error("Quality check could not be completed.", 500, {"error": str(exc)})
+
+
+@app.get("/api/quality-check/report.pdf")
+def api_quality_check_pdf():
+    try:
+        language = request.args.get("language", "english")
+        records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check_pdf", source_ip=request.remote_addr)
+        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10))
+        pdf_bytes = create_quality_check_pdf_bytes(report, language=language)
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={
+                "Content-Disposition": 'attachment; filename="quality_check_report.pdf"',
+            },
+        )
+    except Exception as exc:
+        return _json_error("Quality check PDF could not be generated.", 500, {"error": str(exc)})
+
+
 @app.get("/api/sample")
 def api_sample_dataset():
     sample_path = ROOT / "web" / "sample-results.json"
@@ -715,4 +921,43 @@ def internal_error(_error):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000, debug=False)
+    port = int(os.environ.get("PORT", "8000"))
+    simulate_save_flag = ROOT / "tools" / "simulate_save.flag"
+    if os.environ.get("SIMULATE_SAVE") == "1" or simulate_save_flag.exists():
+        app.config["TESTING"] = True
+        app.config["PROPAGATE_EXCEPTIONS"] = True
+        payload = {
+            "profile": {
+                "full_name": "Demo User",
+                "age": 34,
+                "gender": "Female",
+                "village": "Demo Village",
+                "phone": "1234567890",
+                "assessor": "CHW",
+                "language": "English",
+                "consent_received": True,
+                "record_origin": "test",
+            },
+            "questionnaire": {
+                "available": True,
+                "notes": "",
+                "depression_score": 1,
+                "anxiety_score": 1,
+                "stress_score": 1,
+                "sleep_disorder_score": 1,
+                "burnout_score": 1,
+                "loneliness_score": 1,
+                "substance_abuse_score": 1,
+            },
+            "text_input": "Feeling okay",
+        }
+        with app.test_client() as client:
+            response = client.post("/api/assessments", json=payload)
+            print(response.status_code)
+            print(response.get_data(as_text=True))
+        try:
+            simulate_save_flag.unlink()
+        except OSError:
+            pass
+        raise SystemExit(0)
+    app.run(host="127.0.0.1", port=port, debug=False)

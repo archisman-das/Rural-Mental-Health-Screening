@@ -45,6 +45,27 @@ LANGUAGE_TEXT_RULES = {
             "lonely", "empty", "afraid", "panic", "overwhelmed", "helpless", "worthless",
         },
         "positive_words": {"better", "hopeful", "calm", "good", "safe", "supported", "strong", "improving"},
+        "distress_phrases": {
+            "i cannot take this anymore",
+            "i can't take this anymore",
+            "my chest feels heavy",
+            "i feel worn out inside",
+            "i feel like i am falling apart",
+            "nothing feels right anymore",
+            "i am barely holding on",
+            "i am not myself lately",
+        },
+        "distress_phrases": {
+            "à¤…à¤¬ à¤”à¤° à¤¸à¤¹à¤¨ à¤¨à¤¹à¥€à¤‚ à¤¹à¥‹ à¤°à¤¹à¤¾",
+            "à¤®à¤¨ à¤¬à¤¹à¥à¤¤ à¤­à¤¾à¤°à¥€ à¤¹à¥ˆ",
+            "à¤¦à¤¿à¤² à¤­à¤¾à¤°à¥€ à¤²à¤— à¤°à¤¹à¤¾ à¤¹à¥ˆ",
+            "à¤¸à¤¬ à¤•à¥à¤› à¤¬à¤¿à¤–à¤° à¤¸à¤¾ à¤°à¤¹à¤¾ à¤¹à¥ˆ",
+            "à¤®à¥ˆà¤‚ à¤Ÿà¥‚à¤Ÿ à¤—à¤¯à¤¾ à¤¹à¥‚à¤",
+            "à¤®à¥ˆà¤‚ à¤Ÿà¥‚à¤Ÿ à¤—à¤ˆ à¤¹à¥‚à¤",
+            "à¤…à¤¬ à¤•à¥à¤› à¤­à¥€ à¤…à¤šà¥à¤›à¤¾ à¤¨à¤¹à¥€à¤‚ à¤²à¤— à¤°à¤¹à¤¾",
+            "à¤®à¥ˆà¤‚ à¤–à¥à¤¦ à¤•à¥‹ à¤ªà¤¹à¤²à¥‡ à¤œà¥ˆà¤¸à¤¾ à¤¨à¤¹à¥€à¤‚ à¤®à¤¹à¤¸à¥‚à¤¸ à¤•à¤° à¤°à¤¹à¤¾ à¤¹à¥‚à¤",
+            "à¤®à¥ˆà¤‚ à¤–à¥à¤¦ à¤•à¥‹ à¤ªà¤¹à¤²à¥‡ à¤œà¥ˆà¤¸à¥€ à¤¨à¤¹à¥€à¤‚ à¤®à¤¹à¤¸à¥‚à¤¸ à¤•à¤° à¤°à¤¹à¥€ à¤¹à¥‚à¤",
+        },
         "self_harm_keywords": {
             "kill myself", "end my life", "don't want to live", "do not want to live", "suicide",
             "self harm", "harm myself", "hurt myself", "want to die", "better off dead", "no reason to live",
@@ -64,6 +85,16 @@ LANGUAGE_TEXT_RULES = {
             "डर", "खाली", "बेबस", "बेकार", "परेशान",
         },
         "positive_words": {"बेहतर", "उम्मीद", "शांत", "अच्छा", "सुरक्षित", "समर्थन", "मजबूत", "सुधार"},
+        "distress_phrases": {
+            "à¦†à¦° à¦¸à¦¹à§à¦¯ à¦•à¦°à¦¤à§‡ à¦ªà¦¾à¦°à¦›à¦¿ à¦¨à¦¾",
+            "à¦®à¦¨à§‡ à¦–à§à¦¬ à¦­à¦¾à¦°à§€ à¦²à¦¾à¦—à¦›à§‡",
+            "à¦¬à¦•à§à¦¸à¦Ÿà¦¾ à¦­à¦¾à¦°à§€ à¦²à¦¾à¦—à¦›à§‡",
+            "à¦¸à¦¬à¦•à¦¿à¦›à§ à¦­à§‡à¦à§‡ à¦ªà¦¡à¦¼à¦›à§‡ à¦®à¦¨à§‡ à¦¹à¦›à§‡",
+            "à¦†à¦®à¦¿ à¦†à¦° à¦†à¦—à§‡à¦° à¦®à¦¤à§‹ à¦¨à¦‡",
+            "à¦®à¦¨à¦Ÿà¦¾ à¦à¦•à¦¬à¦¾à¦°à§‡ à¦­à¦¾à¦² à¦¨à¦¯à¦¼",
+            "à¦à¦–à¦¨ à¦•à¦¿à¦›à§à¦‡ à¦†à¦° à¦ à¦¿à¦• à¦²à¦¾à¦—à¦›à§‡ à¦¨à¦¾",
+            "à¦†à¦®à¦¿ à¦–à§à¦¬à¦‡ à¦­à§‡à¦à§‡ à¦ªà¦¡à¦¼à§‡à¦›à¦¿",
+        },
         "self_harm_keywords": {
             "मर जाना चाहता", "मर जाना चाहती", "जीने का मन नहीं", "जीना नहीं चाहता", "जीना नहीं चाहती",
             "आत्महत्या", "खुद को नुकसान", "खुद को मार", "मरना चाहता", "मरना चाहती",
@@ -98,7 +129,82 @@ LANGUAGE_TEXT_RULES = {
     },
 }
 
-TRANSFORMER_ENCODER_CANDIDATES = {
+AGRARIAN_DISTRESS_PHRASES = {
+    "english": {
+        "crop_failure_phrases": {
+            "crop failed",
+            "crop failure",
+            "lost the crop",
+            "bad harvest",
+            "harvest failed",
+            "crop loss",
+        },
+        "debt_phrases": {
+            "in debt",
+            "loan burden",
+            "cannot repay",
+            "debt pressure",
+            "moneylender",
+            "loan due",
+        },
+        "food_security_phrases": {
+            "food insecurity",
+            "no food",
+            "running out of food",
+            "skip meals",
+            "not enough food",
+            "hunger at home",
+        },
+    },
+    "hindi": {
+        "crop_failure_phrases": {
+            "फसल खराब",
+            "फसल नष्ट",
+            "फसल बर्बाद",
+            "फसल चौपट",
+            "फसल डूब गई",
+        },
+        "debt_phrases": {
+            "कर्ज",
+            "ऋण",
+            "उधार",
+            "कर्ज का बोझ",
+            "कर्ज चुकाना",
+        },
+        "food_security_phrases": {
+            "भोजन नहीं",
+            "खाना नहीं",
+            "अन्न नहीं",
+            "भूखा",
+            "राशन नहीं",
+        },
+    },
+    "bengali": {
+        "crop_failure_phrases": {
+            "ফসল নষ্ট",
+            "ফসলের ক্ষতি",
+            "ফসল হারিয়েছি",
+            "ফসল উঠে যায়নি",
+            "ফসল নষ্ট হয়ে গেছে",
+        },
+        "debt_phrases": {
+            "ঋণ",
+            "কর্জ",
+            "ধার",
+            "ঋণের বোঝা",
+            "কর্জ শোধ",
+        },
+        "food_security_phrases": {
+            "খাবার নেই",
+            "খাদ্য নেই",
+            "খেতে পারছি না",
+            "খিদে",
+            "অন্ন নেই",
+        },
+    },
+}
+
+LANGUAGE_NATIVE_TRANSFORMER_CANDIDATES = {
     "english": (
         "distilbert-base-uncased",
         "bert-base-uncased",
@@ -108,9 +214,15 @@ TRANSFORMER_ENCODER_CANDIDATES = {
         "ai4bharat/IndicBERTv2-MLM-only",
     ),
     "bengali": (
-        "google/muril-base-cased",
         "ai4bharat/IndicBERTv2-MLM-only",
+        "google/muril-base-cased",
     ),
+}
+
+LANGUAGE_NATIVE_TRANSFORMER_FAMILIES = {
+    "english": "english-bert",
+    "hindi": "indic-muril",
+    "bengali": "indic-bert",
 }
 
 SENTIMENT_MODEL_CANDIDATES = (
@@ -421,6 +533,7 @@ def _empty_transformer_features(reason: str | None = None) -> dict:
         "transformer_available": False,
         "transformer_model": None,
         "transformer_family": None,
+        "transformer_preferred_family": None,
         "transformer_language": None,
         "transformer_reason": reason,
         "embedding_mean": 0.0,
@@ -442,15 +555,24 @@ def _transformer_family(model_name: str) -> str:
     return "transformer"
 
 
+def _transformer_candidates_for_language(language: str) -> tuple[str, ...]:
+    normalized_language = _normalize_language(language)
+    return LANGUAGE_NATIVE_TRANSFORMER_CANDIDATES.get(
+        normalized_language,
+        LANGUAGE_NATIVE_TRANSFORMER_CANDIDATES["english"],
+    )
+
+
 @lru_cache(maxsize=4)
 def _load_transformer_encoder(language: str = "english"):
     if AutoTokenizer is None or AutoModel is None or torch is None:
         return None
 
     normalized_language = _normalize_language(language)
-    candidates = TRANSFORMER_ENCODER_CANDIDATES.get(
+    candidates = _transformer_candidates_for_language(normalized_language)
+    preferred_family = LANGUAGE_NATIVE_TRANSFORMER_FAMILIES.get(
         normalized_language,
-        TRANSFORMER_ENCODER_CANDIDATES["english"],
+        LANGUAGE_NATIVE_TRANSFORMER_FAMILIES["english"],
     )
     for model_name in candidates:
         try:
@@ -460,6 +582,7 @@ def _load_transformer_encoder(language: str = "english"):
             return {
                 "model_name": model_name,
                 "model_family": _transformer_family(model_name),
+                "preferred_family": preferred_family,
                 "language": normalized_language,
                 "tokenizer": tokenizer,
                 "model": model,
@@ -517,7 +640,7 @@ def _transformer_text_features(text: str, language: str = "english") -> dict:
     bundle = _load_transformer_encoder(normalized_language)
     if bundle is None:
         if normalized_language in {"hindi", "bengali"}:
-            return _empty_transformer_features("multilingual_model_not_available_locally")
+            return _empty_transformer_features(f"{normalized_language}_native_model_not_available_locally")
         return _empty_transformer_features("english_model_not_available_locally")
 
     try:
@@ -536,6 +659,7 @@ def _transformer_text_features(text: str, language: str = "english") -> dict:
             "transformer_available": True,
             "transformer_model": bundle["model_name"],
             "transformer_family": bundle["model_family"],
+            "transformer_preferred_family": bundle.get("preferred_family"),
             "transformer_language": bundle["language"],
             "transformer_reason": None,
             "embedding_mean": float(pooled.mean().item()),
@@ -617,6 +741,45 @@ def _self_harm_features(text: str, language: str = "english") -> dict:
     }
 
 
+def _distress_phrase_features(text: str, language: str = "english") -> dict:
+    lowered = text.lower()
+    language_rules = LANGUAGE_TEXT_RULES[_normalize_language(language)]
+    matches = [phrase for phrase in language_rules.get("distress_phrases", set()) if phrase in lowered]
+    severity = min(1.0, len(matches) / 2.0) if matches else 0.0
+    return {
+        "distress_phrase_detected": bool(matches),
+        "distress_phrase_matches": matches,
+        "distress_phrase_risk_score": severity,
+    }
+
+
+def _agrarian_distress_features(text: str, language: str = "english") -> dict:
+    lowered = text.lower()
+    language_rules = AGRARIAN_DISTRESS_PHRASES[_normalize_language(language)]
+    crop_matches = [phrase for phrase in language_rules.get("crop_failure_phrases", set()) if phrase in lowered]
+    debt_matches = [phrase for phrase in language_rules.get("debt_phrases", set()) if phrase in lowered]
+    food_matches = [phrase for phrase in language_rules.get("food_security_phrases", set()) if phrase in lowered]
+    all_matches = crop_matches + debt_matches + food_matches
+    crop_score = min(1.0, len(crop_matches) / 2.0) if crop_matches else 0.0
+    debt_score = min(1.0, len(debt_matches) / 2.0) if debt_matches else 0.0
+    food_score = min(1.0, len(food_matches) / 2.0) if food_matches else 0.0
+    severity = min(1.0, (crop_score + debt_score + food_score) / 3.0)
+    return {
+        "agrarian_distress_detected": bool(all_matches),
+        "agrarian_distress_matches": all_matches,
+        "agrarian_distress_risk_score": severity,
+        "crop_failure_detected": bool(crop_matches),
+        "crop_failure_matches": crop_matches,
+        "crop_failure_risk_score": crop_score,
+        "debt_distress_detected": bool(debt_matches),
+        "debt_distress_matches": debt_matches,
+        "debt_distress_risk_score": debt_score,
+        "food_security_detected": bool(food_matches),
+        "food_security_matches": food_matches,
+        "food_security_risk_score": food_score,
+    }
+
+
 def extract_text_features(
     text: str,
     language: str = "english",
@@ -638,7 +801,15 @@ def extract_text_features(
     lowered_words = [word.strip(".,!?;:()[]{}\"'").lower() for word in words]
     negative = sum(1 for w in lowered_words if w in language_rules["negative_words"])
     positive = sum(1 for w in lowered_words if w in language_rules["positive_words"])
-    heuristic_compound = np.clip((positive - negative) / max(1, len(lowered_words)), -1.0, 1.0)
+    distress_phrase_features = _distress_phrase_features(text, language=normalized_language)
+    agrarian_distress_features = _agrarian_distress_features(text, language=normalized_language)
+    distress_phrase_bonus = len(distress_phrase_features["distress_phrase_matches"]) * 2
+    agrarian_distress_bonus = len(agrarian_distress_features["agrarian_distress_matches"])
+    heuristic_compound = np.clip(
+        (positive - negative - distress_phrase_bonus - agrarian_distress_bonus) / max(1, len(lowered_words)),
+        -1.0,
+        1.0,
+    )
     question_count = text.count("?")
     exclamation_count = text.count("!")
     unique_ratio = len(set(lowered_words)) / max(1, len(lowered_words))
@@ -668,13 +839,19 @@ def extract_text_features(
         "sentiment_model": sentiment_features["sentiment_model"],
         "negative_word_count": negative,
         "positive_word_count": positive,
+        "distress_phrase_count": len(distress_phrase_features["distress_phrase_matches"]),
+        "distress_phrase_matches": distress_phrase_features["distress_phrase_matches"],
+        "distress_phrase_detected": distress_phrase_features["distress_phrase_detected"],
+        "distress_phrase_risk_score": distress_phrase_features["distress_phrase_risk_score"],
+        **agrarian_distress_features,
         "question_ratio": question_count / max(1, len(words)),
         "exclamation_ratio": exclamation_count / max(1, len(words)),
-        "emotion_intensity": abs(sentiment_features["sentiment_compound"]),
+        "emotion_intensity": min(1.0, abs(sentiment_features["sentiment_compound"]) + distress_phrase_features["distress_phrase_risk_score"]),
         "lexical_diversity": unique_ratio,
         "transformer_available": transformer_features["transformer_available"],
         "transformer_model": transformer_features["transformer_model"],
         "transformer_family": transformer_features["transformer_family"],
+        "transformer_preferred_family": transformer_features["transformer_preferred_family"],
         "transformer_language": transformer_features["transformer_language"],
         "transformer_reason": transformer_features["transformer_reason"],
         "transformer_embedding_mean": transformer_features["embedding_mean"],

@@ -202,7 +202,7 @@ def _trajectory_direction(slope: float) -> str:
 
 def _trajectory_status_label(status: str) -> str:
     return {
-        "insufficient_history": "Need more screenings",
+        "insufficient_history": "Baseline established",
         "escalating": "Escalating risk",
         "worsening": "Worsening trend",
         "improving": "Improving trend",
@@ -298,7 +298,7 @@ def _build_trajectory_summary(history: list[dict], patient_key: str) -> dict:
         status = "stable"
 
     if status == "insufficient_history":
-        summary = "Only one screening is available. Capture at least one follow-up to start trend modeling."
+        summary = "This is the first screening for this person, so the baseline is now established. Add a follow-up visit to start trend modeling."
     elif status == "volatile":
         summary = "Risk is fluctuating across visits. The person may need closer follow-up because the pattern is unstable."
     elif status in {"worsening", "escalating"}:

@@ -262,6 +262,219 @@ QUESTION_BANK = [
     },
 ]
 
+VALIDATED_INSTRUMENTS = {
+    "phq9": {
+        "language": "English",
+        "label": "PHQ-9",
+        "description": "Patient Health Questionnaire-9, original English version",
+        "items": {
+            "p1": "Little interest or pleasure in doing things.",
+            "p2": "Feeling down, depressed, or hopeless.",
+            "p3": "Trouble falling or staying asleep, or sleeping too much.",
+            "p4": "Feeling tired or having little energy.",
+            "p5": "Poor appetite or overeating.",
+            "p6": "Feeling bad about yourself or that you are a failure or have let yourself or your family down.",
+            "p7": "Trouble concentrating on things, such as reading the newspaper or watching television.",
+            "p8": "Moving or speaking so slowly that other people could have noticed, or the opposite being so fidgety or restless that you have been moving around a lot more than usual.",
+            "p9": "Thoughts that you would be better off dead or of hurting yourself in some way.",
+        },
+    },
+    "phq9-h": {
+        "language": "Hindi",
+        "label": "PHQ-9-H",
+        "description": "रोगी स्वास्थ्य प्रश्नावली-9, हिंदी अनुवाद",
+        "items": {
+            "p1": "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना।",
+            "p2": "उदास, निराश, या मन बहुत नीचे महसूस होना।",
+            "p3": "नींद आने, नींद बनी रहने, या बहुत ज़्यादा सोने में परेशानी होना।",
+            "p4": "थका हुआ महसूस होना या ऊर्जा बहुत कम होना।",
+            "p5": "भूख कम लगना या बहुत ज़्यादा खाना।",
+            "p6": "खुद के बारे में बुरा महसूस होना, असफल लगना, या परिवार को निराश करना।",
+            "p7": "पढ़ने, सुनने, या बातचीत पर ध्यान लगाने में परेशानी होना।",
+            "p8": "बहुत धीरे चलना या बोलना, या इसके उलट बहुत बेचैन/अस्थिर महसूस होना।",
+            "p9": "ऐसा लगना कि मर जाना बेहतर होगा, या किसी तरह खुद को नुकसान पहुँचाने के विचार आना।",
+        },
+    },
+    "phq9-b": {
+        "language": "Bengali",
+        "label": "PHQ-9-B",
+        "description": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-9, বাংলা অনুবাদ",
+        "items": {
+            "p1": "কাজকর্মে আগ্রহ বা আনন্দ কমে যাওয়া।",
+            "p2": "উদাস, বিষণ্ণ, বা খুব নিরাশ লাগা।",
+            "p3": "ঘুমাতে, ঘুম ধরে রাখতে, বা খুব বেশি ঘুমাতে সমস্যা হওয়া।",
+            "p4": "ক্লান্ত লাগা বা শক্তি খুব কম অনুভব করা।",
+            "p5": "ক্ষুধা কমে যাওয়া বা অতিরিক্ত খাওয়া।",
+            "p6": "নিজের সম্পর্কে খারাপ লাগা, ব্যর্থ মনে হওয়া, বা পরিবারকে হতাশ করা বলে মনে হওয়া।",
+            "p7": "পড়া, শুনা, বা কথাবার্তায় মনোযোগ দিতে অসুবিধা হওয়া।",
+            "p8": "খুব ধীরে হাঁটা বা কথা বলা, অথবা এর উল্টো খুব অস্থির বা চঞ্চল লাগা।",
+            "p9": "মনে হওয়া যে মরে গেলেই ভালো, বা কোনোভাবে নিজেকে আঘাত করার চিন্তা আসা।",
+        },
+    },
+    "phq2": {
+        "language": "English",
+        "label": "PHQ-2",
+        "description": "Patient Health Questionnaire-2, original English version",
+        "items": {
+            "p1": "Little interest or pleasure in doing things.",
+            "p2": "Feeling down, depressed, or hopeless.",
+        },
+    },
+    "phq2-hi": {
+        "language": "Hindi",
+        "label": "PHQ-2-H",
+        "description": "रोगी स्वास्थ्य प्रश्नावली-2, हिंदी अनुवाद",
+        "items": {
+            "p1": "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना।",
+            "p2": "उदास, निराश, या मन बहुत नीचे महसूस होना।",
+        },
+    },
+    "phq2-bn": {
+        "language": "Bengali",
+        "label": "PHQ-2-B",
+        "description": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2, বাংলা অনুবাদ",
+        "items": {
+            "p1": "কাজকর্মে কম আগ্রহ বা আনন্দ অনুভব করা।",
+            "p2": "উদাস, বিষণ্ণ, বা খুব নিরাশ লাগা।",
+        },
+    },
+    "phq4": {
+        "language": "English",
+        "label": "PHQ-4",
+        "description": "Patient Health Questionnaire-4, original English version",
+        "items": {
+            "p1": "Little interest or pleasure in doing things.",
+            "p2": "Feeling down, depressed, or hopeless.",
+            "g1": "Feeling nervous, anxious, or on edge.",
+            "g2": "Not being able to stop or control worrying.",
+        },
+    },
+    "phq4-hi": {
+        "language": "Hindi",
+        "label": "PHQ-4-H",
+        "description": "रोगी स्वास्थ्य प्रश्नावली-4, हिंदी अनुवाद",
+        "items": {
+            "p1": "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना।",
+            "p2": "उदास, निराश, या मन बहुत नीचे महसूस होना।",
+            "g1": "घबराहट, चिंता या बेचैनी महसूस होना।",
+            "g2": "चिंता को रोक या नियंत्रित न कर पाना।",
+        },
+    },
+    "phq4-bn": {
+        "language": "Bengali",
+        "label": "PHQ-4-B",
+        "description": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4, বাংলা অনুবাদ",
+        "items": {
+            "p1": "কাজকর্মে কম আগ্রহ বা আনন্দ অনুভব করা।",
+            "p2": "উদাস, বিষণ্ণ, বা খুব নিরাশ লাগা।",
+            "g1": "নার্ভাস, উদ্বিগ্ন বা অস্থির লাগা।",
+            "g2": "চিন্তা থামাতে বা নিয়ন্ত্রণ করতে না পারা।",
+        },
+    },
+    "sdoh_agri": {
+        "language": "English",
+        "label": "SDOH-Agrarian Distress",
+        "description": "Culturally adapted screening for crop loss, debt, food insecurity, and migration pressure",
+        "items": {
+            "s1": "In the last two weeks, how often have you worried that the crop may fail or the harvest may be lost?",
+            "s2": "In the last two weeks, how often have you worried about debt, loans, or repayment pressure?",
+            "s3": "In the last two weeks, how often have you worried that there may not be enough food at home?",
+            "s4": "In the last two weeks, how often have you felt forced to leave farming or look for outside work because of stress?",
+        },
+    },
+    "sdoh_agri-hi": {
+        "language": "Hindi",
+        "label": "SDOH-कृषि तनाव",
+        "description": "फसल, कर्ज, भोजन की कमी, और पलायन दबाव के लिए सांस्कृतिक रूप से अनुकूलित स्क्रीनिंग",
+        "items": {
+            "s1": "पिछले दो हफ्तों में, फसल खराब होने या उपज खोने की चिंता कितनी बार हुई?",
+            "s2": "पिछले दो हफ्तों में, कर्ज, उधार, या चुकाने के दबाव की चिंता कितनी बार हुई?",
+            "s3": "पिछले दो हफ्तों में, घर में पर्याप्त भोजन न होने की चिंता कितनी बार हुई?",
+            "s4": "पिछले दो हफ्तों में, खेती के तनाव के कारण बाहर काम ढूँढने या गाँव छोड़ने का दबाव कितनी बार महसूस हुआ?",
+        },
+    },
+    "sdoh_agri-bn": {
+        "language": "Bengali",
+        "label": "SDOH-কৃষি চাপ",
+        "description": "ফসলহানি, দেনা, খাদ্যসঙ্কট, ও কাজের জন্য স্থানান্তরের চাপ নিয়ে সাংস্কৃতিকভাবে অভিযোজিত স্ক্রিনিং",
+        "items": {
+            "s1": "গত দুই সপ্তাহে, ফসল নষ্ট হয়ে যেতে পারে বা ফলন হারাতে পারেন এমন দুশ্চিন্তা কতবার করেছেন?",
+            "s2": "গত দুই সপ্তাহে, দেনা, ঋণ, বা শোধ করার চাপ নিয়ে কতবার দুশ্চিন্তা করেছেন?",
+            "s3": "গত দুই সপ্তাহে, বাড়িতে পর্যাপ্ত খাবার না থাকার দুশ্চিন্তা কতবার করেছেন?",
+            "s4": "গত দুই সপ্তাহে, চাষের চাপের কারণে কৃষিকাজ ছেড়ে বাইরে কাজ খুঁজতে বা স্থানান্তরিত হতে বাধ্য মনে হয়েছে কতবার?",
+        },
+    },
+    "gad7": {
+        "language": "English",
+        "label": "GAD-7",
+        "description": "Generalized Anxiety Disorder-7, original English version",
+        "items": {
+            "g1": "Feeling nervous, anxious, or on edge.",
+            "g2": "Not being able to stop or control worrying.",
+            "g3": "Worrying too much about different things.",
+            "g4": "Trouble relaxing.",
+            "g5": "Being so restless that it is hard to sit still.",
+            "g6": "Becoming easily annoyed or irritable.",
+            "g7": "Feeling afraid as if something awful might happen.",
+        },
+    },
+    "gad7-hi": {
+        "language": "Hindi",
+        "label": "GAD-7-H",
+        "description": "सामान्यीकृत चिंता विकार-7, हिंदी अनुवाद",
+        "items": {
+            "g1": "घबराहट, चिंता या बेचैनी महसूस होना।",
+            "g2": "चिंता को रोक या नियंत्रित न कर पाना।",
+            "g3": "अलग-अलग बातों को लेकर बहुत ज़्यादा चिंता करना।",
+            "g4": "आराम करने में परेशानी होना।",
+            "g5": "इतना बेचैन होना कि स्थिर बैठना मुश्किल लगे।",
+            "g6": "जल्दी चिढ़ जाना या आसानी से चिड़चिड़ा हो जाना।",
+            "g7": "ऐसा डर लगना जैसे कुछ बहुत बुरा होने वाला है।",
+        },
+    },
+    "gad7-bn": {
+        "language": "Bengali",
+        "label": "GAD-7-B",
+        "description": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, বাংলা অনুবাদ",
+        "items": {
+            "g1": "নার্ভাস, উদ্বিগ্ন বা অস্থির লাগা।",
+            "g2": "চিন্তা থামাতে বা নিয়ন্ত্রণ করতে না পারা।",
+            "g3": "বিভিন্ন বিষয়ে খুব বেশি চিন্তা করা।",
+            "g4": "আরাম করতে অসুবিধা হওয়া।",
+            "g5": "এতটাই অস্থির লাগা যে স্থির হয়ে বসে থাকা কঠিন।",
+            "g6": "সহজে বিরক্ত বা খিটখিটে হয়ে যাওয়া।",
+            "g7": "কোনো ভয়াবহ কিছু ঘটতে পারে এমন ভয় লাগা।",
+        },
+    },
+    "gad2": {
+        "language": "English",
+        "label": "GAD-2",
+        "description": "Generalized Anxiety Disorder-2, original English version",
+        "items": {
+            "g1": "Feeling nervous, anxious, or on edge.",
+            "g2": "Not being able to stop or control worrying.",
+        },
+    },
+    "gad2-hi": {
+        "language": "Hindi",
+        "label": "GAD-2-H",
+        "description": "सामान्यीकृत चिंता विकार-2, हिंदी अनुवाद",
+        "items": {
+            "g1": "घबराहट, चिंता या बेचैनी महसूस होना।",
+            "g2": "चिंता को रोक या नियंत्रित न कर पाना।",
+        },
+    },
+    "gad2-bn": {
+        "language": "Bengali",
+        "label": "GAD-2-B",
+        "description": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, বাংলা অনুবাদ",
+        "items": {
+            "g1": "নার্ভাস, উদ্বিগ্ন বা অস্থির লাগা।",
+            "g2": "চিন্তা থামাতে বা নিয়ন্ত্রণ করতে না পারা।",
+        },
+    },
+}
+
 RESPONSE_OPTIONS = {
     "Not at all": 0,
     "Several days": 1,
@@ -433,6 +646,247 @@ def get_response_options(language: str | None = None) -> dict[str, int]:
     normalized_language = _normalize_language(language)
     translations = RESPONSE_OPTION_TRANSLATIONS.get(normalized_language, RESPONSE_OPTION_TRANSLATIONS["English"])
     return {translations[label]: value for label, value in RESPONSE_OPTIONS.items()}
+
+
+def get_validated_instruments(language: str | None = None) -> list[dict]:
+    normalized_language = _normalize_language(language)
+    localized_labels = {
+        "phq9": {
+            "English": "PHQ-9",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯ (বাংলা)",
+        },
+        "gad7": {
+            "English": "GAD-7",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (हिंदी)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (বাংলা)",
+        },
+        "gad7-hi": {
+            "English": "Generalized Anxiety Disorder-7 (Hindi)",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (हिंदी)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (হিন্দি)",
+        },
+        "gad7-bn": {
+            "English": "Generalized Anxiety Disorder-7 (Bengali)",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (बंगाली)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (বাংলা)",
+        },
+        "gad7": {
+            "English": "Generalized Anxiety Disorder-7, original English version",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, মূল ইংরেজি সংস্করণ",
+        },
+        "gad7-hi": {
+            "English": "Generalized Anxiety Disorder-7, Hindi translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, हिंदी अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, হিন্দি অনুবাদ",
+        },
+        "gad7-bn": {
+            "English": "Generalized Anxiety Disorder-7, Bengali translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, बंगाली अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, বাংলা অনুবाद",
+        },
+        "gad7": {
+            "English": "GAD-7",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (हिंदी)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (বাংলা)",
+        },
+        "gad7-hi": {
+            "English": "Generalized Anxiety Disorder-7 (Hindi)",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (हिंदी)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (হিন্দি)",
+        },
+        "gad7-bn": {
+            "English": "Generalized Anxiety Disorder-7 (Bengali)",
+            "Hindi": "सामान्यीकृत चिंता विकार-7 (बंगाली)",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7 (বাংলা)",
+        },
+        "phq9-h": {
+            "English": "Patient Health Questionnaire-9 (Hindi)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯ (হিন্দি)",
+        },
+        "phq9-b": {
+            "English": "Patient Health Questionnaire-9 (Bengali)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9 (बंगाली)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯ (বাংলা)",
+        },
+        "phq2": {
+            "English": "PHQ-2",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2 (বাংলা)",
+        },
+        "phq2-hi": {
+            "English": "Patient Health Questionnaire-2 (Hindi)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2 (হিন্দি)",
+        },
+        "phq2-bn": {
+            "English": "Patient Health Questionnaire-2 (Bengali)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2 (बंगाली)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2 (বাংলা)",
+        },
+        "phq4": {
+            "English": "PHQ-4",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4 (বাংলা)",
+        },
+        "phq4-hi": {
+            "English": "Patient Health Questionnaire-4 (Hindi)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4 (हिंदी)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4 (হিন্দি)",
+        },
+        "phq4-bn": {
+            "English": "Patient Health Questionnaire-4 (Bengali)",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4 (बंगाली)",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4 (বাংলা)",
+        },
+        "sdoh_agri": {
+            "English": "SDOH-Agrarian Distress",
+            "Hindi": "SDOH-कृषि तनाव",
+            "Bengali": "SDOH-কৃষি চাপ",
+        },
+        "sdoh_agri-hi": {
+            "English": "Culturally adapted social and agrarian distress screening (Hindi)",
+            "Hindi": "सांस्कृतिक रूप से अनुकूलित सामाजिक और कृषि तनाव स्क्रीनिंग (हिंदी)",
+            "Bengali": "সাংস্কৃতিকভাবে অভিযোজিত সামাজিক ও কৃষি-সম্পর্কিত চাপের স্ক্রিনিং (হিন্দি)",
+        },
+        "sdoh_agri-bn": {
+            "English": "Culturally adapted social and agrarian distress screening (Bengali)",
+            "Hindi": "सांस्कृतिक रूप से अनुकूलित सामाजिक और कृषि तनाव स्क्रीनिंग (बंगाली)",
+            "Bengali": "সাংস্কৃতিকভাবে অভিযোজিত সামাজিক ও কৃষি-সম্পর্কিত চাপের স্ক্রিনিং (বাংলা)",
+        },
+    }
+    description_text = {
+        "phq9": {
+            "English": "Patient Health Questionnaire-9, original English version",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯, মূল ইংরেজি সংস্করণ",
+        },
+        "phq9-h": {
+            "English": "Patient Health Questionnaire-9, Hindi translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9, हिंदी अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯, হিন্দি অনুবাদ",
+        },
+        "phq9-b": {
+            "English": "Patient Health Questionnaire-9, Bengali translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-9, बंगाली अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-৯, বাংলা অনুবাদ",
+        },
+        "phq2": {
+            "English": "Patient Health Questionnaire-2, original English version",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2, মূল ইংরেজি সংস্করণ",
+        },
+        "phq2-hi": {
+            "English": "Patient Health Questionnaire-2, Hindi translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2, हिंदी अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2, হিন্দি অনুবাদ",
+        },
+        "phq2-bn": {
+            "English": "Patient Health Questionnaire-2, Bengali translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-2, बंगाली अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-2, বাংলা অনুবাদ",
+        },
+        "phq4": {
+            "English": "Patient Health Questionnaire-4, original English version",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4, মূল ইংরেজি সংস্করণ",
+        },
+        "phq4-hi": {
+            "English": "Patient Health Questionnaire-4, Hindi translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4, हिंदी अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4, হিন্দি অনুবাদ",
+        },
+        "phq4-bn": {
+            "English": "Patient Health Questionnaire-4, Bengali translation",
+            "Hindi": "रोगी स्वास्थ्य प्रश्नावली-4, बंगाली अनुवाद",
+            "Bengali": "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4, বাংলা অনুবাদ",
+        },
+        "sdoh_agri": {
+            "English": "Culturally adapted social and agrarian distress screening module",
+            "Hindi": "सांस्कृतिक रूप से अनुकूलित सामाजिक और कृषि तनाव स्क्रीनिंग मॉड्यूल",
+            "Bengali": "সাংস্কৃতিকভাবে অভিযোজিত সামাজিক ও কৃষি-সম্পর্কিত চাপের স্ক্রিনিং মডিউল",
+        },
+        "sdoh_agri-hi": {
+            "English": "Culturally adapted social and agrarian distress screening module, Hindi translation",
+            "Hindi": "सांस्कृतिक रूप से अनुकूलित सामाजिक और कृषि तनाव स्क्रीनिंग मॉड्यूल, हिंदी अनुवाद",
+            "Bengali": "সাংস্কৃতিকভাবে অভিযোজিত সামাজিক ও কৃষি-সম্পর্কিত চাপের স্ক্রিনিং মডিউল, হিন্দি অনুবাদ",
+        },
+        "sdoh_agri-bn": {
+            "English": "Culturally adapted social and agrarian distress screening module, Bengali translation",
+            "Hindi": "सांस्कृतिक रूप से अनुकूलित सामाजिक और कृषि तनाव स्क्रीनिंग मॉड्यूल, बंगाली अनुवाद",
+            "Bengali": "সাংস্কৃতিকভাবে অভিযোজিত সামাজিক ও কৃষি-সম্পর্কিত চাপের স্ক্রিনিং মডিউল, বাংলা অনুবাদ",
+        },
+        "gad7": {
+            "English": "Generalized Anxiety Disorder-7, original English version",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, মূল ইংরেজি সংস্করণ",
+        },
+        "gad7-hi": {
+            "English": "Generalized Anxiety Disorder-7, Hindi translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, हिंदी अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, হিন্দি অনুবাদ",
+        },
+        "gad7-bn": {
+            "English": "Generalized Anxiety Disorder-7, Bengali translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-7, बंगाली अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-7, বাংলা অনুবাদ",
+        },
+        "gad2": {
+            "English": "Generalized Anxiety Disorder-2, original English version",
+            "Hindi": "सामान्यीकृत चिंता विकार-2, मूल अंग्रेज़ी संस्करण",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, মূল ইংরেজি সংস্করণ",
+        },
+        "gad2-hi": {
+            "English": "Generalized Anxiety Disorder-2, Hindi translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-2, हिंदी अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, হিন্দি অনুবাদ",
+        },
+        "gad2-bn": {
+            "English": "Generalized Anxiety Disorder-2, Bengali translation",
+            "Hindi": "सामान्यीकृत चिंता विकार-2, बंगाली अनुवाद",
+            "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, বাংলা অনুবাদ",
+        },
+    }
+    instruments = []
+    for instrument_id, instrument in VALIDATED_INSTRUMENTS.items():
+        items = [
+            {
+                "id": item_id,
+                "prompt": prompt,
+                "prompt_en": prompt,
+            }
+            for item_id, prompt in instrument["items"].items()
+        ]
+        instruments.append(
+            {
+                "id": instrument_id,
+                "label": instrument["label"],
+                "language": instrument["language"],
+                "description": description_text.get(instrument_id, {}).get(normalized_language, instrument["description"]),
+                "localized_label": localized_labels.get(instrument_id, {}).get(normalized_language, instrument["label"]),
+                "localized_description": description_text.get(instrument_id, {}).get(normalized_language, instrument["description"]),
+                "items": items,
+                "response_options": [
+                    {"label": label, "value": value}
+                    for label, value in get_response_options(normalized_language).items()
+                ],
+            }
+        )
+    return instruments
+
+
+def get_validated_instrument(language: str | None = None) -> dict | None:
+    normalized_language = _normalize_language(language)
+    target_id = {
+        "English": "phq9",
+        "Hindi": "phq9-h",
+        "Bengali": "phq9-b",
+    }.get(normalized_language)
+    if target_id is None:
+        return None
+    return next((instrument for instrument in get_validated_instruments(normalized_language) if instrument["id"] == target_id), None)
 
 
 @lru_cache(maxsize=1)

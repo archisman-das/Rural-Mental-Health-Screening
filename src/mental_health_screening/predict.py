@@ -4,7 +4,7 @@ from .constants import PREDICTION_DOMAINS, PREDICTION_LABELS
 from .feature_extract import extract_text_features, extract_audio_features, extract_image_features, extract_passive_biomarkers
 from .model_features import audio_feature_vector, text_feature_vector
 from .model_store import load_model_bundle
-from .utils import average, normalize_score, risk_level
+from .utils import average, confidence_weighted_score, normalize_score, risk_level
 
 try:
     import shap
@@ -449,12 +449,29 @@ def score_text_features(features: dict) -> dict:
         notes=(
             "Text screening used trained per-domain classifiers supervised with DAIC-WOZ PHQ-derived targets "
             "and backend language features such as sentiment, emotion, safety-language cues, and multilingual "
-            "transformer context from English BERT-family models or MuRIL/Indic-BERT for Hindi and Bengali."
+            "transformer context from English BERT-family models or language-native MuRIL/Indic-BERT for Hindi and Bengali, "
+            "including culturally adapted distress idioms per language."
         ),
         feature_snapshot={
             "word_count": features["word_count"],
             "negative_word_count": features["negative_word_count"],
             "positive_word_count": features["positive_word_count"],
+            "distress_phrase_count": features.get("distress_phrase_count", 0),
+            "distress_phrase_matches": features.get("distress_phrase_matches", []),
+            "distress_phrase_detected": features.get("distress_phrase_detected", False),
+            "distress_phrase_risk_score": round(features.get("distress_phrase_risk_score", 0.0), 3),
+            "agrarian_distress_detected": features.get("agrarian_distress_detected", False),
+            "agrarian_distress_matches": features.get("agrarian_distress_matches", []),
+            "agrarian_distress_risk_score": round(features.get("agrarian_distress_risk_score", 0.0), 3),
+            "crop_failure_detected": features.get("crop_failure_detected", False),
+            "crop_failure_matches": features.get("crop_failure_matches", []),
+            "crop_failure_risk_score": round(features.get("crop_failure_risk_score", 0.0), 3),
+            "debt_distress_detected": features.get("debt_distress_detected", False),
+            "debt_distress_matches": features.get("debt_distress_matches", []),
+            "debt_distress_risk_score": round(features.get("debt_distress_risk_score", 0.0), 3),
+            "food_security_detected": features.get("food_security_detected", False),
+            "food_security_matches": features.get("food_security_matches", []),
+            "food_security_risk_score": round(features.get("food_security_risk_score", 0.0), 3),
             "sentiment_compound": round(features["sentiment_compound"], 3),
             "sentiment_label": features["sentiment_label"],
             "sentiment_model": features["sentiment_model"],
@@ -466,6 +483,7 @@ def score_text_features(features: dict) -> dict:
             "self_harm_risk_score": round(features["self_harm_risk_score"], 3),
             "transformer_model": features["transformer_model"] or "unavailable",
             "transformer_family": features.get("transformer_family") or "unavailable",
+            "transformer_preferred_family": features.get("transformer_preferred_family") or "unavailable",
             "transformer_language": features.get("transformer_language") or features.get("language", "english"),
             "transformer_reason": features.get("transformer_reason"),
         },
@@ -591,6 +609,7 @@ def aggregate_scores(results: list) -> dict:
         return {
             **{domain: "unknown" for domain in PREDICTION_DOMAINS},
             "confidence": 0.0,
+            "evidence_strength": 0.0,
             "scores": {domain: 0.0 for domain in PREDICTION_DOMAINS},
         }
 
@@ -618,6 +637,7 @@ def aggregate_scores(results: list) -> dict:
         sum(MODALITY_WEIGHTS.get(result["modality"], 0.33) for result in available)
         / sum(MODALITY_WEIGHTS.values())
     )
+    modality_count_score = normalize_score(len(available) / float(len(MODALITY_WEIGHTS)))
     weighted_confidence = sum(result["confidence"] * weight for result, weight in weighted_results) / total_weight
     agreement_confidence = _domain_score_agreement(
         [
@@ -629,20 +649,26 @@ def aggregate_scores(results: list) -> dict:
         ]
     )
     confidence = normalize_score(
-        0.55 * weighted_confidence
-        + 0.25 * coverage_score
+        0.45 * weighted_confidence
+        + 0.20 * coverage_score
+        + 0.15 * modality_count_score
         + 0.20 * agreement_confidence
+    )
+    evidence_strength = normalize_score(
+        0.85 * confidence + 0.15 * max(coverage_score, modality_count_score)
     )
 
     result = {
-        "confidence": normalize_score(confidence),
+        "confidence": evidence_strength,
+        "evidence_strength": evidence_strength,
         "scores": {
-            domain: normalize_score(score) if score is not None else 0.0
+            domain: confidence_weighted_score(score, evidence_strength) if score is not None else 0.0
             for domain, score in raw_scores.items()
         },
     }
     for domain, score in raw_scores.items():
-        result[domain] = "unknown" if score is None else risk_level(score)
+        adjusted_score = result["scores"].get(domain, 0.0)
+        result[domain] = "unknown" if score is None else risk_level(adjusted_score)
     return result
 
 
@@ -953,8 +979,8 @@ def screen(
     )
     if comorbidity.get("available"):
         overall["confidence"] = normalize_score(
-            0.84 * float(overall.get("confidence", 0.0) or 0.0)
-            + 0.16 * float(comorbidity.get("confidence", 0.0) or 0.0)
+            0.72 * float(overall.get("confidence", 0.0) or 0.0)
+            + 0.28 * float(comorbidity.get("confidence", 0.0) or 0.0)
         )
     recommendation = build_recommendation(overall, language=language)
     disclaimer = (

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rural Mental Health Dashboard</title>
+  <title id="appTitle">Rural Mental Health Dashboard</title>
   <meta name="theme-color" content="#9e4d29">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/web/styles.css?v=20260607">
@@ -18,7 +18,7 @@
           Begin one diagnostic screening session at a time, save the result, and view the current assessment without loading background records.
         </p>
         <div id="offlineStatus" class="offline-pill online">Online sync ready</div>
-        <div class="hero-metrics" aria-label="At a glance">
+        <div id="heroMetrics" class="hero-metrics" aria-label="At a glance">
           <article class="hero-metric-card">
             <span class="hero-metric-value">7</span>
             <span id="heroMetricRisk" class="hero-metric-label">risk domains tracked</span>
@@ -54,7 +54,7 @@
               <div class="signal-ring signal-ring-one"></div>
               <div class="signal-ring signal-ring-two"></div>
               <div class="signal-center">
-                <img src="/web/assets/mental-health-icon.svg" alt="Mental health icon" class="hero-graphic-image">
+                <img id="heroGraphicImage" src="/web/assets/mental-health-icon.svg" alt="Mental health icon" class="hero-graphic-image">
               </div>
             </div>
             <article class="signal-card signal-card-text">
@@ -183,6 +183,16 @@
             </label>
             <div class="capture-card">
               <div class="capture-head">
+                <strong id="passiveVideoTitle">Passive Biomarkers</strong>
+                <span id="passiveVideoTopic" class="capture-topic">Upload a short front-camera video and type naturally to include passive biomarker analysis.</span>
+              </div>
+              <label id="passiveVideoLabel">Phone-camera video
+                <input id="passiveVideoFile" type="file" accept="video/*">
+              </label>
+              <p id="passiveVideoStatus" class="capture-status">No passive biomarker input captured yet.</p>
+            </div>
+            <div class="capture-card">
+              <div class="capture-head">
                 <strong id="liveFaceTitle">Live Face Capture</strong>
                 <span id="liveFaceTopic" class="capture-topic">Capture one clear front-facing photo from the webcam for live facial-cue analysis.</span>
               </div>
@@ -211,6 +221,15 @@
             <p id="questionnaireSubtitle">Rate how often each symptom appeared in the last two weeks.</p>
           </div>
           <div id="questionnaireContainer" class="questionnaire-grid"></div>
+          <div class="section-heading inline-heading">
+            <h4 id="validatedInstrumentsTitle">Validated instruments</h4>
+            <p id="validatedInstrumentsText">Tap a validated instrument button to open the full screening details.</p>
+          </div>
+          <div class="action-row instrument-action-row">
+            <button id="validatedInstrumentInfoBtn" class="ghost-btn small-btn" type="button">About the validated instrument</button>
+          </div>
+          <div id="validatedInstrumentInfo" class="validated-instrument-info is-hidden" aria-live="polite"></div>
+          <div id="validatedInstrumentPanel" class="validated-instrument-panel empty-state">Loading validated instrument buttons...</div>
         </div>
 
         <div class="action-row">
@@ -338,19 +357,33 @@
 
       <div id="analysisStatusBanner" class="status-banner">Complete and save an assessment to open detailed analysis here.</div>
 
+      <div class="action-row analytics-controls">
+        <button id="runQualityCheckBtn" class="primary-btn" type="button">Run Quality Check</button>
+        <button id="exportQualityCheckBtn" class="ghost-btn" type="button" disabled>Export Report</button>
+        <button id="exportQualityCheckCsvBtn" class="ghost-btn" type="button" disabled>Export CSV</button>
+        <button id="exportQualityCheckPdfBtn" class="ghost-btn" type="button" disabled>Export PDF</button>
+        <p id="qualityCheckHelperText" class="detail-muted">Compare saved assessments against the dashboard result and surface mismatches.</p>
+      </div>
+      <div id="qualityCheckSummary" class="chart-stack empty-state">Run the quality check to review the latest saved assessments.</div>
+
       <section class="analytics-intro analytics-intro-compact">
         <article class="info-card">
           <p class="intake-kicker">Current Result</p>
           <h3 id="analyticsIntroCurrent">One assessment in focus</h3>
           <p id="analyticsIntroCurrentText">Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.</p>
         </article>
-        <article class="info-card">
-          <p class="intake-kicker">Model Insights</p>
+          <article class="info-card">
+          <p id="analyticsIntroModel" class="intake-kicker">Model Insights</p>
           <p id="analyticsIntroModelText">Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.</p>
         </article>
         <article class="info-card">
-          <p class="intake-kicker">Prediction Scope</p>
+          <p id="analyticsIntroScope" class="intake-kicker">Prediction Scope</p>
           <p id="analyticsIntroScopeText">Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.</p>
+        </article>
+        <article class="info-card">
+          <p class="intake-kicker" id="analyticsIntroInstrumentKicker">Validated instrument</p>
+          <h3 id="analyticsIntroInstrumentTitle">PHQ-9-H / PHQ-9-B</h3>
+          <p id="analyticsIntroInstrumentText">The saved record includes the localized validated instrument used during screening.</p>
         </article>
       </section>
 
@@ -364,19 +397,19 @@
           <p id="analysisConfidence" class="metric-value">0%</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Strongest Signal</p>
+          <p id="analysisStrongestDomainLabel" class="metric-label">Strongest Signal</p>
           <p id="analysisStrongestDomain" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Modalities Used</p>
+          <p id="analysisCoverageLabel" class="metric-label">Modalities Used</p>
           <p id="analysisCoverage" class="metric-value metric-small">0/3</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Submission Time</p>
+          <p id="analysisSubmissionTimeLabel" class="metric-label">Submission Time</p>
           <p id="analysisSubmissionTime" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
-          <p class="metric-label">Trajectory</p>
+          <p id="analysisTrajectoryLabel" class="metric-label">Trajectory</p>
           <p id="analysisTrajectory" class="metric-value metric-small">No data</p>
         </article>
         <article class="metric-card panel">
@@ -481,13 +514,14 @@
                 <th id="recordsTableNameHeader">Name</th>
                 <th id="recordsTableVillageHeader">Village</th>
                 <th id="recordsTableAssessorHeader">Assessor</th>
+                <th id="recordsTableInstrumentHeader">Validated instrument</th>
                 <th id="recordsTableSubmittedHeader">Submitted</th>
                 <th id="recordsTableRiskHeader">Risk</th>
                 <th id="recordsTableConfidenceHeader">Confidence</th>
               </tr>
             </thead>
             <tbody id="resultsTableBody">
-              <tr><td colspan="7" class="table-empty">No records loaded yet.</td></tr>
+              <tr><td colspan="8" class="table-empty">No records loaded yet.</td></tr>
             </tbody>
           </table>
         </div>

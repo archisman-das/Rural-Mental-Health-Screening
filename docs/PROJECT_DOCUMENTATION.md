@@ -383,6 +383,8 @@ The UI also maintains its own hidden-report state in browser storage so a report
 
 ## 11. Model and Bundle Metadata
 
+For a dedicated explanation of the deep learning model families themselves, see [`docs/DEEP_LEARNING_MODEL_GUIDE.md`](DEEP_LEARNING_MODEL_GUIDE.md).
+
 The project keeps track of:
 
 - trained bundle metadata,

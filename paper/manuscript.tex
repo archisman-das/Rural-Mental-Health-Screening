@@ -13,7 +13,7 @@
 \usepackage{setspace}
 \setstretch{1.08}
 
-\title{Rural Mental Health Screening AI: A Multilingual Multimodal Dashboard for Questionnaire Intake, NLP, and Offline-Ready Clinical Reporting}
+\title{Project Proposal: Rural Mental Health Screening AI}
 \author{Your Name(s) Here}
 \date{\today}
 
@@ -21,109 +21,352 @@
 \maketitle
 
 \begin{abstract}
-Rural mental health screening is often constrained by limited specialist access, fragmented documentation, and language barriers. We present a multilingual, multimodal screening dashboard that combines structured questionnaire scoring with narrative text analysis, optional audio and image inputs, passive biomarker support, adaptive screening, and PDF reporting. The system supports English, Hindi, and Bengali interfaces, integrates local offline fallback behavior, and stores assessments for longitudinal review. This paper describes the architecture, user workflow, model and feature pipeline, and deployment considerations for community and primary-care screening settings.
+Rural mental health screening is often constrained by limited specialist access, fragmented documentation, language barriers, and unstable connectivity. This proposal presents a multilingual, multimodal, offline-ready screening platform that combines questionnaire scoring, narrative NLP, optional audio and image inputs, passive biomarker support, adaptive screening, model statistics, and PDF reporting. The platform is designed for use by community health workers and primary-care teams in English, Hindi, and Bengali. This proposal describes the problem context, proposed architecture, implementation strategy, evaluation plan, ethics, risks, and expected deliverables. The existing repository already contains a working prototype, backend APIs, and support for research-oriented evaluation and reporting.
 \end{abstract}
 
-\noindent\textbf{Keywords:} mental health screening, multimodal AI, NLP, rural health, multilingual systems, digital health
+\noindent\textbf{Keywords:} mental health screening, rural health, multilingual systems, multimodal AI, offline-first design, digital health
 
-\section{Introduction}
-Rural screening workflows frequently depend on short consultations, limited specialist availability, and inconsistent documentation. Language diversity further complicates screening, follow-up, and patient explanation. This project addresses these constraints with a dashboard that combines questionnaire scoring, narrative NLP, optional audio and image capture, passive biomarker support, and report generation in a single workflow.
+\section{1. Introduction}
+Rural screening workflows frequently depend on short consultations, limited specialist availability, and inconsistent documentation. Language diversity further complicates screening, follow-up, and patient explanation. In many settings, a non-specialist worker needs to capture a structured screening result quickly, explain it clearly, and preserve the record for later review.
 
-\section{Related Work}
-Summarize prior work on validated screening questionnaires, multilingual clinical NLP, emotion-rich audio corpora, and rural digital health workflows \citep{kroenke2001phq9,kroenke2009phq4,who2016mhgap,chi2021muril,livingstone2018ravdess}.
+This project proposes an end-to-end mental health screening platform that combines structured questionnaire scoring with narrative text analysis, optional audio and image inputs, passive biomarker support, multilingual interaction, offline fallback behavior, and PDF reporting. The proposal is not only about model prediction. It is about the full screening workflow: capture, interpret, explain, store, review, and export.
 
-Summarize prior work on:
+\section{2. Problem Statement}
+The core problem is that existing screening tools often solve only one part of the workflow.
+
 \begin{itemize}[leftmargin=*]
-  \item validated screening questionnaires,
-  \item multimodal mental health prediction,
-  \item multilingual clinical NLP,
-  \item offline-first digital health tools.
+  \item Some tools only provide questionnaire scoring.
+  \item Some tools are not multilingual.
+  \item Some tools lack offline support.
+  \item Some tools do not provide understandable follow-up guidance.
+  \item Some tools do not support record retrieval or PDF export.
+  \item Some tools can score a session but cannot explain it to a community worker.
 \end{itemize}
 
-\section{System Overview}
-Describe the system modules:
+In rural settings, these limitations matter because screening is frequently carried out by personnel who need clear recommendations, low-friction interaction, and reliable record keeping.
+
+\section{3. Proposed Aim}
+The aim of this project is to build and evaluate a multilingual, multimodal, explainable, offline-ready mental health screening platform that can support community and primary-care screening workflows.
+
+\section{4. Objectives}
+\subsection{4.1 Primary Objectives}
 \begin{itemize}[leftmargin=*]
-  \item Assessment Workspace for profile intake and symptom capture,
-  \item Adaptive Test for one-question-at-a-time screening,
-  \item Analytics Hub for signal interpretation and model statistics,
-  \item Records and Reports for review, export, and history.
+  \item Support mental health screening in English, Hindi, and Bengali.
+  \item Combine questionnaire scoring with narrative NLP and optional multimodal evidence.
+  \item Provide clear recommendation text and screening disclaimers.
+  \item Save records for later review and reporting.
+  \item Preserve utility during temporary backend or network outages.
 \end{itemize}
 
-\subsection{Inputs}
-The system uses questionnaire responses, free-text narrative, optional audio and image uploads, typing rhythm, and optional passive video metadata. Inputs are normalized into a unified assessment record for scoring and reporting.
+\subsection{4.2 Secondary Objectives}
+\begin{itemize}[leftmargin=*]
+  \item Offer adaptive screening to reduce unnecessary burden.
+  \item Present model statistics and quality-check summaries.
+  \item Support trajectory and trend analysis across repeated assessments.
+  \item Prepare the repository for publication and future validation studies.
+  \item Provide ONNX exports for supported sklearn estimators while keeping the original pickle bundles.
+\end{itemize}
 
-\subsection{Outputs}
-Outputs include domain risk levels, recommendation text, screening disclaimer, modality quality summaries, trajectory summaries, and PDF reports.
+\section{5. Proposed System Overview}
+The current repository already implements the proposed system as a working dashboard and backend.
 
-\section{Methods}
-\subsection{Questionnaire Scoring}
-Describe the scoring rules, validated instruments, and language-specific questionnaire presentation, including PHQ-9 and PHQ-4 usage for screening \citep{kroenke2001phq9,kroenke2009phq4}.
+\subsection{5.1 Frontend}
+The frontend is implemented in:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{web/index.html}
+  \item \texttt{web/app.js}
+  \item \texttt{web/styles.css}
+\end{itemize}
 
-\subsection{Text and NLP Features}
-Describe the text pipeline, including sentiment, emotion, distress cues, safety language, and any transformer-backed features. If MuRIL or other multilingual encoders are used, cite the model source directly \citep{chi2021muril}.
+The frontend is responsible for:
+\begin{itemize}[leftmargin=*]
+  \item multilingual UI rendering,
+  \item profile and questionnaire capture,
+  \item narrative entry,
+  \item audio/image/passive input handling,
+  \item adaptive test flow,
+  \item analytics and records display,
+  \item report hiding and record deletion actions,
+  \item offline status presentation,
+  \item demo-record exclusion from the user view.
+\end{itemize}
 
-\subsection{Audio, Image, and Passive Signals}
-Describe the optional multimodal inputs, metadata handling, fallback heuristics, and confidence estimation. If emotion corpora such as RAVDESS are used for proxy training or validation, document that here \citep{livingstone2018ravdess}.
+\subsection{5.2 Backend}
+The backend is implemented in \texttt{dashboard\_server.py}. It serves the dashboard and exposes routes for:
+\begin{itemize}[leftmargin=*]
+  \item assessment creation,
+  \item preview generation,
+  \item adaptive screening,
+  \item validated instruments,
+  \item record retrieval,
+  \item record deletion,
+  \item PDF export,
+  \item trajectory summaries,
+  \item model statistics,
+  \item quality checks,
+  \item sample dataset access,
+  \item database metadata and backups.
+\end{itemize}
 
-\subsection{Multimodal Fusion}
-Explain how questionnaire and modality signals are combined into the final domain-level and overall outputs.
+\subsection{5.3 Core Python Package}
+The reusable logic lives in \texttt{src/mental\_health\_screening/}:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{assessment.py} for questionnaire definitions and scoring,
+  \item \texttt{feature\_extract.py} for text/audio/image feature extraction,
+  \item \texttt{predict.py} for inference, confidence, and risk aggregation,
+  \item \texttt{storage.py} for persistence and record operations,
+  \item \texttt{report.py} for PDF generation,
+  \item \texttt{training.py} for training and bundle creation,
+  \item \texttt{model\_store.py} for bundle metadata and summaries,
+  \item \texttt{utils.py} for shared helper functions.
+\end{itemize}
 
-\subsection{Offline-Ready Operation}
-Explain how the dashboard behaves when the backend is unavailable and how local records are queued for sync.
+\section{6. Functional Workflow}
+\subsection{6.1 Assessment Workflow}
+The user workflow is:
+\begin{enumerate}[leftmargin=*]
+  \item Select the language.
+  \item Fill in profile details.
+  \item Confirm consent.
+  \item Answer the questionnaire.
+  \item Enter the free-text narrative.
+  \item Optionally add audio, image, or passive inputs.
+  \item View the live preview.
+  \item Save the assessment.
+  \item Review the result in Analytics Hub.
+  \item Fetch, export, delete, or hide the record later.
+\end{enumerate}
 
-\section{Experimental Setup}
-Add dataset details, train/validation/test splits, evaluation metrics, and baselines.
+\subsection{6.2 Adaptive Test Workflow}
+The adaptive test asks one question at a time and chooses the next most informative item based on the current response state. This reduces unnecessary question burden and can be especially helpful in field settings where time is limited.
 
-\subsection{Evaluation Metrics}
-Report at minimum:
+\subsection{6.3 Recommendation Workflow}
+The recommendation panel generates a follow-up message based on the final risk profile. The text changes by risk level and language so that the end user receives an actionable summary rather than a raw score alone.
+
+\subsection{6.4 Records Workflow}
+The records panel supports:
+\begin{itemize}[leftmargin=*]
+  \item record lookup by assessment ID,
+  \item detailed record review,
+  \item PDF export,
+  \item record deletion,
+  \item report hiding from the visible panel.
+\end{itemize}
+
+Demo records are excluded from the user-facing list and from report export.
+
+\section{7. Multilingual Design}
+The dashboard supports English, Hindi, and Bengali throughout the user-facing workflow.
+
+The multilingual layer covers:
+\begin{itemize}[leftmargin=*]
+  \item labels and headings,
+  \item questionnaire text,
+  \item validated instruments,
+  \item recommendation text,
+  \item disclaimers,
+  \item status banners,
+  \item quality-check summaries,
+  \item offline notices.
+\end{itemize}
+
+This is important because a screening tool that cannot communicate in the user’s language often becomes unusable even if the underlying model is accurate.
+
+\section{8. Proposed Technical Approach}
+\subsection{8.1 Questionnaire Scoring}
+The questionnaire layer uses validated screening items and domain scoring to derive per-domain risk levels. The proposal includes PHQ-9 and PHQ-4 support in the validated-instrument layer \citep{kroenke2001phq9,kroenke2009phq4}.
+
+\subsection{8.2 Text and NLP}
+The text pipeline includes:
+\begin{itemize}[leftmargin=*]
+  \item sentiment analysis,
+  \item emotion detection,
+  \item emotion intensity estimation,
+  \item distress phrase detection,
+  \item self-harm keyword detection,
+  \item culturally adapted safety language,
+  \item transformer-backed text features when locally available.
+\end{itemize}
+
+If multilingual transformer models such as MuRIL are used, they are cited in the bibliography and treated as model dependencies rather than hidden implementation details \citep{chi2021muril}.
+
+\subsection{8.3 Audio, Image, and Passive Signals}
+Audio and image inputs are designed to contribute when usable media or metadata exists. Passive biomarkers can include typing rhythm or passive video-derived cues. The goal is not to overclaim precision, but to incorporate useful supplementary signals when present.
+
+Where proxy corpora are used in experimentation, the proposal documents them explicitly. For example, RAVDESS may be used as a proxy emotional-speech reference during experimentation \citep{livingstone2018ravdess}.
+
+\subsection{8.4 Multimodal Fusion}
+The system blends:
+\begin{itemize}[leftmargin=*]
+  \item questionnaire evidence,
+  \item text-based NLP evidence,
+  \item audio evidence,
+  \item image evidence,
+  \item passive biomarker evidence,
+  \item trained-bundle metadata and fallback heuristics.
+\end{itemize}
+
+The final output includes:
+\begin{itemize}[leftmargin=*]
+  \item domain risk labels,
+  \item overall confidence,
+  \item recommendation text,
+  \item disclaimer,
+  \item modality quality summaries,
+  \item trajectory and trend outputs.
+\end{itemize}
+
+\subsection{8.5 Offline-First Operation}
+The system is designed to remain usable when the backend is not reachable:
+\begin{itemize}[leftmargin=*]
+  \item preview can fall back to offline heuristics,
+  \item assessments can be queued locally,
+  \item sync can happen later,
+  \item the UI clearly labels the offline state.
+\end{itemize}
+
+\section{9. Data Sources and Evaluation Plan}
+\subsection{9.1 Data Sources}
+Possible sources for evaluation include:
+\begin{itemize}[leftmargin=*]
+  \item bundled sample records,
+  \item locally created assessments,
+  \item approved public datasets used in training,
+  \item future field-validation data collected under consent.
+\end{itemize}
+
+\subsection{9.2 Metrics}
+The evaluation should report:
 \begin{itemize}[leftmargin=*]
   \item accuracy,
   \item macro F1,
   \item calibration or Brier score,
-  \item ROC AUC where appropriate,
-  \item per-domain performance.
+  \item ROC AUC where applicable,
+  \item offline success rate,
+  \item adaptive-test completion rate,
+  \item record completeness,
+  \item user-facing clarity and usability.
 \end{itemize}
 
-\section{Results}
-Insert the final numbers, tables, and figures here.
-
-\begin{table}[h]
-\centering
-\caption{Main evaluation summary}
-\begin{tabular}{lccc}
-\toprule
-Model & Accuracy & Macro F1 & Notes \\
-\midrule
-Questionnaire only & -- & -- & Fill in \\
-Multimodal dashboard & -- & -- & Fill in \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Discussion}
-Discuss usability, multilingual support, operational benefits, limitations, and deployment risks.
-
-\section{Limitations}
-Be explicit about the current limits of the system, including dataset bias, proxy signals, and any offline heuristic behavior.
-
-\section{Research Proposals and Future Work}
-The current system opens several research directions:
+\subsection{9.3 Ablation Study}
+Ablation studies should compare:
 \begin{itemize}[leftmargin=*]
-  \item prospective validation with community health workers in rural clinics,
-  \item multilingual generalization analysis across English, Hindi, and Bengali,
-  \item modality ablation studies to quantify the value of text, audio, image, and passive signals,
-  \item offline-first reliability and sync behavior evaluation,
-  \item subgroup fairness and calibration auditing,
-  \item clinical utility assessment focused on time-to-screen and referral planning.
+  \item questionnaire only,
+  \item questionnaire + text,
+  \item questionnaire + text + audio,
+  \item questionnaire + text + image,
+  \item questionnaire + text + audio + image + passive,
+  \item online backend mode versus offline fallback mode.
 \end{itemize}
 
-The screening workflow is also aligned with community and non-specialist care pathways described in mhGAP guidance \citep{who2016mhgap}.
+\subsection{9.4 Error Analysis}
+The proposal should include analysis of:
+\begin{itemize}[leftmargin=*]
+  \item false positives,
+  \item false negatives,
+  \item language-specific failures,
+  \item modality-missing cases,
+  \item low-confidence cases,
+  \item offline-only results.
+\end{itemize}
 
-\section{Ethics and Data Availability}
-Explain consent handling, de-identification, reporting safeguards, and where the data or code can be accessed.
+\section{10. Ethics and Safety}
+This system is a screening support tool, not a diagnostic replacement.
 
-\section{Conclusion}
-Summarize the contribution and the main practical value for rural screening workflows.
+The proposal emphasizes:
+\begin{itemize}[leftmargin=*]
+  \item explicit consent,
+  \item privacy and record protection,
+  \item exclusion of demo data from clinical claims,
+  \item clear disclaimer text,
+  \item emergency escalation when needed,
+  \item respectful and understandable user communication.
+\end{itemize}
+
+\section{11. Risks and Mitigation}
+\subsection{11.1 Technical Risks}
+\begin{itemize}[leftmargin=*]
+  \item Missing or unavailable model bundles
+  \item Backend downtime
+  \item Connectivity failure
+  \item Partial or missing modality data
+  \item Conversion incompatibility
+\end{itemize}
+
+Mitigation includes fallback heuristics, local queueing, explicit status labels, and maintaining the original pickle bundles alongside ONNX exports.
+
+\subsection{11.2 Research Risks}
+\begin{itemize}[leftmargin=*]
+  \item dataset bias,
+  \item limited multilingual coverage,
+  \item overfitting to sample data,
+  \item proxy-data mismatch,
+  \item insufficient subgroup validation.
+\end{itemize}
+
+Mitigation includes subgroup analysis, calibration review, field validation, and transparent reporting of limitations.
+
+\section{12. Expected Deliverables}
+The project should deliver:
+\begin{itemize}[leftmargin=*]
+  \item a working screening dashboard,
+  \item multilingual UI support,
+  \item adaptive screening,
+  \item backend APIs,
+  \item PDF reporting,
+  \item model-statistics and quality-check views,
+  \item documentation,
+  \item research-paper support files,
+  \item ONNX exports for supported sklearn estimators,
+  \item reproducible evaluation scripts.
+\end{itemize}
+
+\section{13. Timeline}
+\subsection{Phase 1: System Stabilization}
+\begin{itemize}[leftmargin=*]
+  \item finalize dashboard behavior,
+  \item ensure demo visibility rules,
+  \item verify record export and hidden-report logic,
+  \item stabilize documentation.
+\end{itemize}
+
+\subsection{Phase 2: Evaluation Preparation}
+\begin{itemize}[leftmargin=*]
+  \item run quality checks,
+  \item prepare metrics and ablations,
+  \item document model-bundle and ONNX handling,
+  \item finalize sample figures and tables.
+\end{itemize}
+
+\subsection{Phase 3: Research Drafting}
+\begin{itemize}[leftmargin=*]
+  \item write introduction and related work,
+  \item document methodology,
+  \item prepare results and discussion structure,
+  \item finish references and ethics statement.
+\end{itemize}
+
+\subsection{Phase 4: Field Validation}
+\begin{itemize}[leftmargin=*]
+  \item collect real-world feedback,
+  \item measure usability and record completeness,
+  \item compare performance across languages,
+  \item refine the deployment plan.
+\end{itemize}
+
+\section{14. Publication Angle}
+The strongest publication angle is that this is not only a model but a complete screening system. The contribution includes:
+\begin{itemize}[leftmargin=*]
+  \item multilingual communication,
+  \item multimodal evidence handling,
+  \item explainable recommendations,
+  \item offline resilience,
+  \item record and reporting support,
+  \item research-ready evaluation structure.
+\end{itemize}
+
+\section{15. Conclusion}
+This proposal describes a practical, research-ready mental health screening platform for rural and primary-care settings. The system combines multilingual interaction, multimodal support, explainable recommendations, offline continuity, and robust reporting. It is already implemented in the repository and can be extended into a formal research study, field validation project, or publication submission.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

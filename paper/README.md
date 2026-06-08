@@ -11,6 +11,8 @@ This folder contains a starter publication bundle for the project.
 - `submission-checklist.md`: Pre-submission checklist.
 - `figures/README.md`: Placeholder for exported figures and tables.
 
+This folder is now set up as a full proposal-and-paper workspace rather than a short note folder. Use `manuscript.tex` as the formal proposal draft, `references.bib` for verified citations, and `research-proposals.md` for future-work ideas that can be expanded into a methods or discussion section.
+
 ## Suggested Workflow
 
 1. Fill in the manuscript sections with final experiment details.

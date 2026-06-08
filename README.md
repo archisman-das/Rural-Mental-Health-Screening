@@ -36,6 +36,10 @@ The `comorbidity` bundle now performs joint multi-label prediction so the model 
 - `src/mental_health_screening/report.py`: PDF report generation for saved assessments.
 - `src/mental_health_screening/training.py`: training CLI and model-bundle builder for text, audio, and image.
 - `src/mental_health_screening/utils.py`: shared utility helpers.
+- `docs/PROJECT_DOCUMENTATION.md`: detailed project documentation, architecture, API, and workflow guide.
+- `docs/ARCHITECTURE.md`: standalone architecture guide that explains the working system in detail.
+- `models/mental_health_screening/onnx/`: exported ONNX artifacts for the sklearn bundle estimators, kept alongside the original `.pkl` bundles.
+- `tools/export_model_bundles_to_onnx.py`: exporter that regenerates the ONNX artifacts from the saved pickle bundles.
 
 ## NLP Layer
 

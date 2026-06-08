@@ -1,0 +1,131 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{natbib}
+\usepackage{setspace}
+\setstretch{1.08}
+
+\title{Rural Mental Health Screening AI: A Multilingual Multimodal Dashboard for Questionnaire Intake, NLP, and Offline-Ready Clinical Reporting}
+\author{Your Name(s) Here}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Rural mental health screening is often constrained by limited specialist access, fragmented documentation, and language barriers. We present a multilingual, multimodal screening dashboard that combines structured questionnaire scoring with narrative text analysis, optional audio and image inputs, passive biomarker support, adaptive screening, and PDF reporting. The system supports English, Hindi, and Bengali interfaces, integrates local offline fallback behavior, and stores assessments for longitudinal review. This paper describes the architecture, user workflow, model and feature pipeline, and deployment considerations for community and primary-care screening settings.
+\end{abstract}
+
+\noindent\textbf{Keywords:} mental health screening, multimodal AI, NLP, rural health, multilingual systems, digital health
+
+\section{Introduction}
+Rural screening workflows frequently depend on short consultations, limited specialist availability, and inconsistent documentation. Language diversity further complicates screening, follow-up, and patient explanation. This project addresses these constraints with a dashboard that combines questionnaire scoring, narrative NLP, optional audio and image capture, passive biomarker support, and report generation in a single workflow.
+
+\section{Related Work}
+Summarize prior work on validated screening questionnaires, multilingual clinical NLP, emotion-rich audio corpora, and rural digital health workflows \citep{kroenke2001phq9,kroenke2009phq4,who2016mhgap,chi2021muril,livingstone2018ravdess}.
+
+Summarize prior work on:
+\begin{itemize}[leftmargin=*]
+  \item validated screening questionnaires,
+  \item multimodal mental health prediction,
+  \item multilingual clinical NLP,
+  \item offline-first digital health tools.
+\end{itemize}
+
+\section{System Overview}
+Describe the system modules:
+\begin{itemize}[leftmargin=*]
+  \item Assessment Workspace for profile intake and symptom capture,
+  \item Adaptive Test for one-question-at-a-time screening,
+  \item Analytics Hub for signal interpretation and model statistics,
+  \item Records and Reports for review, export, and history.
+\end{itemize}
+
+\subsection{Inputs}
+The system uses questionnaire responses, free-text narrative, optional audio and image uploads, typing rhythm, and optional passive video metadata. Inputs are normalized into a unified assessment record for scoring and reporting.
+
+\subsection{Outputs}
+Outputs include domain risk levels, recommendation text, screening disclaimer, modality quality summaries, trajectory summaries, and PDF reports.
+
+\section{Methods}
+\subsection{Questionnaire Scoring}
+Describe the scoring rules, validated instruments, and language-specific questionnaire presentation, including PHQ-9 and PHQ-4 usage for screening \citep{kroenke2001phq9,kroenke2009phq4}.
+
+\subsection{Text and NLP Features}
+Describe the text pipeline, including sentiment, emotion, distress cues, safety language, and any transformer-backed features. If MuRIL or other multilingual encoders are used, cite the model source directly \citep{chi2021muril}.
+
+\subsection{Audio, Image, and Passive Signals}
+Describe the optional multimodal inputs, metadata handling, fallback heuristics, and confidence estimation. If emotion corpora such as RAVDESS are used for proxy training or validation, document that here \citep{livingstone2018ravdess}.
+
+\subsection{Multimodal Fusion}
+Explain how questionnaire and modality signals are combined into the final domain-level and overall outputs.
+
+\subsection{Offline-Ready Operation}
+Explain how the dashboard behaves when the backend is unavailable and how local records are queued for sync.
+
+\section{Experimental Setup}
+Add dataset details, train/validation/test splits, evaluation metrics, and baselines.
+
+\subsection{Evaluation Metrics}
+Report at minimum:
+\begin{itemize}[leftmargin=*]
+  \item accuracy,
+  \item macro F1,
+  \item calibration or Brier score,
+  \item ROC AUC where appropriate,
+  \item per-domain performance.
+\end{itemize}
+
+\section{Results}
+Insert the final numbers, tables, and figures here.
+
+\begin{table}[h]
+\centering
+\caption{Main evaluation summary}
+\begin{tabular}{lccc}
+\toprule
+Model & Accuracy & Macro F1 & Notes \\
+\midrule
+Questionnaire only & -- & -- & Fill in \\
+Multimodal dashboard & -- & -- & Fill in \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+Discuss usability, multilingual support, operational benefits, limitations, and deployment risks.
+
+\section{Limitations}
+Be explicit about the current limits of the system, including dataset bias, proxy signals, and any offline heuristic behavior.
+
+\section{Research Proposals and Future Work}
+The current system opens several research directions:
+\begin{itemize}[leftmargin=*]
+  \item prospective validation with community health workers in rural clinics,
+  \item multilingual generalization analysis across English, Hindi, and Bengali,
+  \item modality ablation studies to quantify the value of text, audio, image, and passive signals,
+  \item offline-first reliability and sync behavior evaluation,
+  \item subgroup fairness and calibration auditing,
+  \item clinical utility assessment focused on time-to-screen and referral planning.
+\end{itemize}
+
+The screening workflow is also aligned with community and non-specialist care pathways described in mhGAP guidance \citep{who2016mhgap}.
+
+\section{Ethics and Data Availability}
+Explain consent handling, de-identification, reporting safeguards, and where the data or code can be accessed.
+
+\section{Conclusion}
+Summarize the contribution and the main practical value for rural screening workflows.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import pickle
 from functools import lru_cache
 from pathlib import Path
@@ -11,6 +12,7 @@ except ImportError:
 
 
 MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "mental_health_screening"
+ONNX_DIR = MODEL_DIR / "onnx"
 
 
 def ensure_model_dir() -> Path:
@@ -20,6 +22,15 @@ def ensure_model_dir() -> Path:
 
 def get_model_bundle_path(modality: str) -> Path:
     return ensure_model_dir() / f"{modality}_bundle.pkl"
+
+
+def get_onnx_bundle_dir() -> Path:
+    ONNX_DIR.mkdir(parents=True, exist_ok=True)
+    return ONNX_DIR
+
+
+def get_onnx_manifest_path() -> Path:
+    return get_onnx_bundle_dir() / "manifest.json"
 
 
 def _json_safe(value):
@@ -93,6 +104,13 @@ def bundle_summary(modality: str) -> dict | None:
         "skipped_domains": dict(bundle.get("skipped_domains", {}) or {}),
         "model_source": "trained_bundle",
     }
+    onnx_manifest_path = get_onnx_manifest_path()
+    if onnx_manifest_path.exists():
+        try:
+            manifest = json.loads(onnx_manifest_path.read_text(encoding="utf-8"))
+            summary["onnx_artifacts"] = manifest.get(modality, {})
+        except Exception:
+            summary["onnx_artifacts"] = {}
     if modality == "comorbidity" or str(bundle.get("model_type", "")).startswith("classifier_chain"):
         joint_prediction = dict(bundle.get("joint_prediction", {}) or {})
         if not joint_prediction:

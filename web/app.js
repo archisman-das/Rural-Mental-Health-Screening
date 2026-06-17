@@ -5649,6 +5649,7 @@ async function runQualityCheck() {
     }
     state.qualityCheckReport = await response.json();
     renderQualityCheckSummary();
+    await loadApiResults(t("backendApiLabel"), true);
     setBanner(elements.analysisStatusBanner, `${t("qualityCheckSummaryTitle")}: ${state.qualityCheckReport?.overall?.accuracy != null ? formatPercent(state.qualityCheckReport.overall.accuracy) : t("noDataLabel")}`, "success");
   } catch (error) {
     console.error("Quality check failed", error);

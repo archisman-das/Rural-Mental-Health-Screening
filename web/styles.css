@@ -1577,6 +1577,12 @@ body::before {
   width: fit-content;
 }
 
+#analyticsView #modelStatisticsTitle,
+#analyticsView #modelStatisticsText,
+#analyticsView #villageSummary {
+  display: none !important;
+}
+
 .hero-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

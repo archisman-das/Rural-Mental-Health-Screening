@@ -1,4 +1,8 @@
 {
+  "manifest_dir": "data\\manifests",
+  "ravdess_frames_dir": "data\\ravdess_frames",
+  "comorbidity_balanced_manifest": "tmp_datasets\\comorbidity_60k.csv",
+  "comorbidity_target_rows": 60000,
   "federated_manifest": "examples\\federated_manifest.example.csv",
   "federated_centre_column": "centre_id",
   "federated_output_dir": "examples\\federated_centres",

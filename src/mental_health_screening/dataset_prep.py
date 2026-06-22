@@ -219,6 +219,75 @@ def build_comorbidity_balanced_manifest(
     return _write_manifest(balanced_rows, output_path)
 
 
+def _allocate_bucket_targets(bucket_sizes: dict[int, int], target_rows: int) -> dict[int, int]:
+    total_rows = int(sum(bucket_sizes.values()))
+    if total_rows <= 0:
+        return {}
+    if target_rows <= 0:
+        raise ValueError("Target row count must be a positive integer.")
+
+    exact_targets = {bucket: (target_rows * size) / total_rows for bucket, size in bucket_sizes.items()}
+    allocated = {bucket: int(value) for bucket, value in exact_targets.items()}
+    remaining = target_rows - sum(allocated.values())
+    remainders = sorted(
+        ((exact_targets[bucket] - allocated[bucket], bucket) for bucket in bucket_sizes),
+        reverse=True,
+    )
+    for _, bucket in remainders[:remaining]:
+        allocated[bucket] += 1
+    return allocated
+
+
+def build_comorbidity_bootstrap_manifest(
+    source_manifest_paths: list[str | Path],
+    output_path: str | Path,
+    target_rows: int = 60000,
+    bucket_targets: dict[int, int] | None = None,
+    random_state: int = 42,
+) -> Path:
+    rows: list[dict] = []
+    fieldnames: list[str] | None = None
+    for manifest_path in source_manifest_paths:
+        with Path(manifest_path).open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if fieldnames is None:
+                fieldnames = list(reader.fieldnames or [])
+            rows.extend(list(reader))
+
+    if not rows or fieldnames is None:
+        raise ValueError("No source rows were found when building the bootstrapped comorbidity manifest.")
+
+    buckets: dict[int, list[dict]] = {bucket: [] for bucket in range(5)}
+    for row in rows:
+        bucket = _cardinality_bucket(row)
+        buckets.setdefault(bucket, []).append(row)
+
+    if bucket_targets:
+        target_counts = dict(bucket_targets)
+    else:
+        bucket_sizes = {bucket: len(bucket_rows) for bucket, bucket_rows in buckets.items() if bucket_rows}
+        target_counts = _allocate_bucket_targets(bucket_sizes, target_rows)
+
+    import random
+
+    rng = random.Random(random_state)
+    expanded_rows: list[dict] = []
+    bootstrap_index = 0
+    for bucket in sorted(target_counts):
+        source_rows = buckets.get(bucket, [])
+        if not source_rows:
+            continue
+        for _ in range(target_counts[bucket]):
+            sampled_row = dict(rng.choice(source_rows))
+            sample_id = str(sampled_row.get("sample_id") or f"sample_{bucket}_{bootstrap_index}")
+            sampled_row["sample_id"] = f"{sample_id}__boot{bootstrap_index:05d}"
+            expanded_rows.append(sampled_row)
+            bootstrap_index += 1
+
+    rng.shuffle(expanded_rows)
+    return _write_manifest(expanded_rows, output_path)
+
+
 def _parse_bucket_targets(raw_value: str | None) -> dict[int, int] | None:
     if raw_value is None:
         return None
@@ -591,6 +660,38 @@ def main() -> None:
         help="Random seed used when sampling each cardinality bucket.",
     )
 
+    expand_parser = subparsers.add_parser(
+        "comorbidity-expand",
+        help="Build a bootstrapped comorbidity manifest around a target row count.",
+    )
+    expand_parser.add_argument(
+        "source_manifests",
+        nargs="+",
+        help="One or more source manifests to merge before expanding.",
+    )
+    expand_parser.add_argument(
+        "--output-path",
+        required=True,
+        help="Where to write the expanded comorbidity manifest CSV.",
+    )
+    expand_parser.add_argument(
+        "--target-rows",
+        type=int,
+        default=60000,
+        help="Target row count for the expanded manifest.",
+    )
+    expand_parser.add_argument(
+        "--bucket-targets",
+        default=None,
+        help="Optional comma-separated bucket targets such as 0:12000,1:12000,2:12000,3:12000,4:12000.",
+    )
+    expand_parser.add_argument(
+        "--random-state",
+        type=int,
+        default=42,
+        help="Random seed used when bootstrapping rows.",
+    )
+
     args = parser.parse_args()
     if args.dataset == "meld":
         output_path = build_meld_manifest(args.dataset_root, args.output_path)
@@ -605,6 +706,14 @@ def main() -> None:
         output_path = build_comorbidity_balanced_manifest(
             source_manifest_paths=args.source_manifests,
             output_path=args.output_path,
+            bucket_targets=_parse_bucket_targets(args.bucket_targets),
+            random_state=args.random_state,
+        )
+    elif args.dataset == "comorbidity-expand":
+        output_path = build_comorbidity_bootstrap_manifest(
+            source_manifest_paths=args.source_manifests,
+            output_path=args.output_path,
+            target_rows=args.target_rows,
             bucket_targets=_parse_bucket_targets(args.bucket_targets),
             random_state=args.random_state,
         )

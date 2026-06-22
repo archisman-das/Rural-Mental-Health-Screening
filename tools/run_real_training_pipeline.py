@@ -12,8 +12,9 @@ DEFAULT_FRAMES_DIR = REPO_ROOT / "data" / "ravdess_frames"
 DEFAULT_FEDERATED_OUTPUT_DIR = DEFAULT_MANIFEST_DIR / "federated_centres"
 DEFAULT_VOICE_OUTPUT_DIR = REPO_ROOT / "models" / "mental_health_screening" / "voice"
 DEFAULT_SUMMARY_PATH = REPO_ROOT / "models" / "mental_health_screening" / "training_pipeline_summary.json"
-DEFAULT_COMORBIDITY_BALANCED_MANIFEST = DEFAULT_MANIFEST_DIR / "comorbidity_balanced.csv"
-DEFAULT_COMORBIDITY_BUCKET_TARGETS = "0:600,1:600,2:500,3:600,4:1400"
+DEFAULT_COMORBIDITY_BALANCED_MANIFEST = REPO_ROOT / "tmp_datasets" / "comorbidity_60k.csv"
+DEFAULT_COMORBIDITY_BUCKET_TARGETS = "0:12000,1:12000,2:12000,3:12000,4:12000"
+DEFAULT_COMORBIDITY_TARGET_ROWS = 60000
 
 
 @dataclass
@@ -192,6 +193,12 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated bucket targets for comorbidity balancing, for example 0:600,1:600,2:500,3:600,4:1400.",
     )
     parser.add_argument(
+        "--comorbidity-target-rows",
+        type=int,
+        default=DEFAULT_COMORBIDITY_TARGET_ROWS,
+        help="Target row count for the bootstrapped comorbidity manifest.",
+    )
+    parser.add_argument(
         "--dataset-root-mode",
         choices=["dataset", "manifest-parent"],
         default="dataset",
@@ -270,6 +277,7 @@ def apply_config_overrides(args: argparse.Namespace, config: dict) -> None:
         ("voice_random_state", 42),
         ("comorbidity_balanced_manifest", DEFAULT_COMORBIDITY_BALANCED_MANIFEST),
         ("comorbidity_bucket_targets", DEFAULT_COMORBIDITY_BUCKET_TARGETS),
+        ("comorbidity_target_rows", DEFAULT_COMORBIDITY_TARGET_ROWS),
     ):
         value = _resolve_config_value(args, config, field_name, default=default_value)
         if value is not None:
@@ -354,6 +362,7 @@ def build_commands(
     min_samples_per_domain: int,
     comorbidity_balanced_manifest: Path,
     comorbidity_bucket_targets: str,
+    comorbidity_target_rows: int,
     dataset_root_mode: str,
     skip_manifest_build: bool,
     skip_training: bool,
@@ -412,11 +421,13 @@ def build_commands(
                         sys.executable,
                         "-m",
                         "src.mental_health_screening.dataset_prep",
-                        "comorbidity-balance",
+                        "comorbidity-expand",
                         str(meld_manifest),
                         str(ravdess_manifest),
                         "--output-path",
                         str(comorbidity_manifest),
+                        "--target-rows",
+                        str(comorbidity_target_rows),
                         "--bucket-targets",
                         comorbidity_bucket_targets,
                     ],
@@ -624,6 +635,7 @@ def voice_training_command(
 def ensure_directories(args: argparse.Namespace) -> None:
     args.manifest_dir.mkdir(parents=True, exist_ok=True)
     args.ravdess_frames_dir.mkdir(parents=True, exist_ok=True)
+    args.comorbidity_balanced_manifest.parent.mkdir(parents=True, exist_ok=True)
     args.summary_path.parent.mkdir(parents=True, exist_ok=True)
 
 
@@ -685,6 +697,7 @@ def write_summary(
         "min_samples_per_domain": args.min_samples_per_domain,
         "comorbidity_balanced_manifest": str(args.comorbidity_balanced_manifest.resolve()),
         "comorbidity_bucket_targets": args.comorbidity_bucket_targets,
+        "comorbidity_target_rows": args.comorbidity_target_rows,
         "dataset_root_mode": args.dataset_root_mode,
         "skip_manifest_build": args.skip_manifest_build,
         "skip_training": args.skip_training,
@@ -735,6 +748,7 @@ def main() -> int:
         min_samples_per_domain=args.min_samples_per_domain,
         comorbidity_balanced_manifest=args.comorbidity_balanced_manifest,
         comorbidity_bucket_targets=args.comorbidity_bucket_targets,
+        comorbidity_target_rows=args.comorbidity_target_rows,
         dataset_root_mode=args.dataset_root_mode,
         skip_manifest_build=args.skip_manifest_build,
         skip_training=args.skip_training,

@@ -1,7 +1,7 @@
 import numpy as np
 
 from .constants import PREDICTION_DOMAINS, PREDICTION_LABELS
-from .feature_extract import extract_text_features, extract_audio_features, extract_image_features, extract_passive_biomarkers
+from .feature_extract import extract_text_features, extract_audio_features, extract_audio_sequence_features, extract_image_features, extract_passive_biomarkers
 from .model_features import audio_feature_vector, text_feature_vector
 from .model_store import load_model_bundle
 from .utils import average, confidence_weighted_score, normalize_score, risk_level
@@ -62,7 +62,22 @@ def _apply_confidence_calibrator(calibrator: dict | None, base_signal: float) ->
 
 
 def _predict_calibrated_domain(model, vector: list[float], calibrator: dict | None) -> tuple[float, float, dict]:
-    if getattr(model, "estimators_", None):
+    if hasattr(model, "predict_proba"):
+        raw_proba = np.asarray(model.predict_proba([vector]), dtype=float)[0]
+        raw_prediction = float(np.clip(raw_proba[-1], 0.0, 1.0))
+        if getattr(model, "estimators_", None):
+            tree_predictions = np.asarray(
+                [np.asarray(estimator.predict_proba([vector]), dtype=float)[0, -1] for estimator in model.estimators_],
+                dtype=float,
+            )
+            prediction_std = float(np.clip(tree_predictions.std(), 0.0, 1.0))
+        else:
+            prediction_std = 0.0
+        base_signal = _confidence_signal_from_std(
+            prediction_std=prediction_std,
+            scale=(calibrator or {}).get("uncertainty_scale"),
+        )
+    elif getattr(model, "estimators_", None):
         tree_predictions = np.asarray(
             [float(estimator.predict([vector])[0]) for estimator in model.estimators_],
             dtype=float,
@@ -416,6 +431,12 @@ def _trained_modality_result(
             "trained_domains": trained_domains,
             "missing_domains": [domain for domain in PREDICTION_DOMAINS if domain not in trained_domains],
             "domain_sample_counts": bundle.get("sample_counts", {}),
+            "model_families": dict(bundle.get("model_families", {}) or {}),
+            "model_selection": dict(bundle.get("model_selection", {}) or {}),
+            "model_macro_accuracy": round(float(bundle.get("metrics", {}).get("macro_accuracy", 0.0)), 3),
+            "model_macro_precision": round(float(bundle.get("metrics", {}).get("macro_precision", 0.0)), 3),
+            "model_macro_recall": round(float(bundle.get("metrics", {}).get("macro_recall", 0.0)), 3),
+            "model_macro_f1": round(float(bundle.get("metrics", {}).get("macro_f1", 0.0)), 3),
             "model_macro_r2": round(float(bundle.get("metrics", {}).get("macro_r2", 0.0)), 3),
             "calibration_quality": round(float(bundle.get("metrics", {}).get("calibration_quality", 0.0)), 3),
             "domain_confidences": {domain: round(value, 3) for domain, value in domain_confidences.items()},
@@ -432,6 +453,55 @@ def _trained_modality_result(
 def score_text_features(features: dict) -> dict:
     if not features.get("available"):
         return {"available": False}
+
+    from .model_store import load_model_bundle
+    import torch
+
+    transformer_bundle = load_model_bundle("text_transformer")
+    if transformer_bundle is not None and str(transformer_bundle.get("model_type")) == "text_transformer_multilabel":
+        raw_text = str(features.get("raw_text", "") or "").strip()
+        model = transformer_bundle.get("model")
+        tokenizer = transformer_bundle.get("tokenizer")
+        if raw_text and model is not None and tokenizer is not None:
+            model.eval()
+            encoded = tokenizer(
+                raw_text,
+                truncation=True,
+                padding=True,
+                max_length=128,
+                return_tensors="pt",
+            )
+            with torch.no_grad():
+                logits = model(encoded["input_ids"], encoded["attention_mask"])
+                probabilities = torch.sigmoid(logits).cpu().numpy()[0]
+            thresholds = dict(transformer_bundle.get("label_thresholds", {}) or {})
+            binary_predictions = {
+                domain: bool(probabilities[index] >= float(thresholds.get(domain, 0.5)))
+                for index, domain in enumerate(PREDICTION_DOMAINS)
+            }
+            predicted_domains = [domain for domain, is_positive in binary_predictions.items() if is_positive]
+            return {
+                **_modality_result(
+                    modality="text",
+                    domain_scores={domain: float(probabilities[index]) for index, domain in enumerate(PREDICTION_DOMAINS)},
+                    notes="Text screening used the transformer-finetuned multilabel classifier.",
+                    confidence=normalize_score(float(np.mean(probabilities)) if len(probabilities) else 0.0),
+                    feature_snapshot={
+                        "word_count": features.get("word_count", 0),
+                        "transformer_model": transformer_bundle.get("transformer", {}).get("model_name"),
+                        "transformer_family": transformer_bundle.get("transformer", {}).get("model_family"),
+                        "transformer_language": transformer_bundle.get("transformer", {}).get("language"),
+                        "transformer_available": True,
+                    },
+                    predicted_domains=predicted_domains,
+                    available=bool(predicted_domains),
+                ),
+                "model_type": "text_transformer_multilabel",
+                "binary_predictions": binary_predictions,
+                "label_thresholds": thresholds,
+                "transformer": dict(transformer_bundle.get("transformer", {}) or {}),
+                "metrics": dict(transformer_bundle.get("metrics", {}) or {}),
+            }
 
     confidence = _confidence_from_feature_count(min(features["word_count"], 40), 40)
     if features["transformer_available"]:
@@ -495,6 +565,67 @@ def score_text_features(features: dict) -> dict:
 def score_audio_features(features: dict) -> dict:
     if not features.get("available"):
         return {**features, "available": False}
+
+    from .model_store import load_model_bundle
+    import torch
+
+    audio_bundle = load_model_bundle("audio")
+    sequence_bundle = load_model_bundle("audio_sequence")
+    audio_path = str(features.get("audio_path", "") or "").strip()
+    sequence_macro_f1 = float((sequence_bundle or {}).get("metrics", {}).get("macro_f1", 0.0) or 0.0)
+    audio_macro_f1 = float((audio_bundle or {}).get("metrics", {}).get("macro_f1", 0.0) or 0.0)
+    if (
+        sequence_bundle is not None
+        and str(sequence_bundle.get("model_type")) == "audio_bilstm_multilabel"
+        and audio_path
+        and sequence_macro_f1 >= audio_macro_f1
+    ):
+        sequence_features = extract_audio_sequence_features(audio_path, max_frames=int((sequence_bundle.get("sequence_config", {}) or {}).get("max_frames", 160)))
+        model = sequence_bundle.get("model")
+        if sequence_features.get("available") and model is not None:
+            normalization = dict(sequence_bundle.get("sequence_normalization", {}) or {})
+            mean = np.asarray(normalization.get("mean", []), dtype=np.float32)
+            std = np.asarray(normalization.get("std", []), dtype=np.float32)
+            sequence_array = np.asarray(sequence_features["sequence_features"], dtype=np.float32)
+            if mean.size == sequence_array.shape[1] and std.size == sequence_array.shape[1]:
+                std = np.where(std < 1e-6, 1.0, std)
+                sequence_array = (sequence_array - mean) / std
+            model.eval()
+            sequence_tensor = torch.tensor(sequence_array, dtype=torch.float32).unsqueeze(0)
+            lengths = torch.tensor([sequence_tensor.shape[1]], dtype=torch.long)
+            with torch.no_grad():
+                logits = model(sequence_tensor, lengths)
+                probabilities = torch.sigmoid(logits).cpu().numpy()[0]
+            thresholds = dict(sequence_bundle.get("label_thresholds", {}) or {})
+            binary_predictions = {
+                domain: bool(probabilities[index] >= float(thresholds.get(domain, 0.5)))
+                for index, domain in enumerate(PREDICTION_DOMAINS)
+            }
+            predicted_domains = [domain for domain, is_positive in binary_predictions.items() if is_positive]
+            return {
+                **_modality_result(
+                    modality="audio",
+                    domain_scores={domain: float(probabilities[index]) for index, domain in enumerate(PREDICTION_DOMAINS)},
+                    notes="Audio screening used the chunk-sequence BiLSTM classifier.",
+                    confidence=normalize_score(float(np.mean(probabilities)) if len(probabilities) else 0.0),
+                    feature_snapshot={
+                        "audio_path": audio_path,
+                        "duration": round(float(sequence_features.get("duration", 0.0)), 2),
+                        "frame_count": int(sequence_features.get("frame_count", 0)),
+                        "feature_count": int(sequence_features.get("feature_count", 0)),
+                        "sequence_model": sequence_bundle.get("model_type"),
+                        "sequence_features": list(sequence_bundle.get("feature_names", [])),
+                        "sequence_available": True,
+                    },
+                    predicted_domains=predicted_domains,
+                    available=bool(predicted_domains),
+                ),
+                "model_type": "audio_bilstm_multilabel",
+                "binary_predictions": binary_predictions,
+                "label_thresholds": thresholds,
+                "sequence_config": dict(sequence_bundle.get("sequence_config", {}) or {}),
+                "metrics": dict(sequence_bundle.get("metrics", {}) or {}),
+            }
 
     duration_confidence = normalize_score(features["duration"] / 12.0)
     voiced_confidence = normalize_score(features["voiced_ratio"])

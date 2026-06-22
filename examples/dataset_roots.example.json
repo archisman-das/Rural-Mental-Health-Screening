@@ -1,4 +1,8 @@
 {
+  "manifest_dir": "data\\manifests",
+  "ravdess_frames_dir": "data\\ravdess_frames",
+  "comorbidity_balanced_manifest": "tmp_datasets\\comorbidity_60k.csv",
+  "comorbidity_target_rows": 60000,
   "daic_woz_root": "C:\\datasets\\DAIC-WOZ",
   "meld_root": "C:\\datasets\\MELD",
   "ravdess_root": "C:\\datasets\\RAVDESS"

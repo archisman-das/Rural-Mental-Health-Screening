@@ -12,6 +12,7 @@ except ImportError:
 
 
 MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "mental_health_screening"
+TMP_MODEL_DIR = Path(__file__).resolve().parents[2] / "tmp_datasets"
 ONNX_DIR = MODEL_DIR / "onnx"
 
 
@@ -21,6 +22,9 @@ def ensure_model_dir() -> Path:
 
 
 def get_model_bundle_path(modality: str) -> Path:
+    if modality in {"text_transformer", "audio_sequence"}:
+        TMP_MODEL_DIR.mkdir(parents=True, exist_ok=True)
+        return TMP_MODEL_DIR / f"{modality}_bundle.pkl"
     return ensure_model_dir() / f"{modality}_bundle.pkl"
 
 
@@ -77,6 +81,8 @@ def bundle_summary(modality: str) -> dict | None:
         "sample_counts": dict(bundle.get("sample_counts", {}) or {}),
         "train_counts": dict(bundle.get("train_counts", {}) or {}),
         "test_counts": dict(bundle.get("test_counts", {}) or {}),
+        "model_families": dict(bundle.get("model_families", {}) or {}),
+        "model_selection": dict(bundle.get("model_selection", {}) or {}),
         "manifest_path": bundle.get("manifest_path"),
         "dataset_root": bundle.get("dataset_root"),
         "source_datasets": list(bundle.get("source_datasets", [])),
@@ -111,7 +117,7 @@ def bundle_summary(modality: str) -> dict | None:
             summary["onnx_artifacts"] = manifest.get(modality, {})
         except Exception:
             summary["onnx_artifacts"] = {}
-    if modality == "comorbidity" or str(bundle.get("model_type", "")).startswith("classifier_chain"):
+    if modality in {"comorbidity", "text_transformer"} or str(bundle.get("model_type", "")).startswith("classifier_chain") or str(bundle.get("model_type", "")).startswith("text_transformer"):
         joint_prediction = dict(bundle.get("joint_prediction", {}) or {})
         if not joint_prediction:
             joint_prediction = {
@@ -138,6 +144,8 @@ def bundle_summary(modality: str) -> dict | None:
             }
         if bundle.get("joint_prediction", {}).get("threshold_tuning") or bundle.get("joint_prediction", {}).get("probability_calibration"):
             summary["joint_prediction"].setdefault("threshold_tuning", dict(bundle.get("joint_prediction", {}).get("threshold_tuning", {}) or {}))
+        if bundle.get("chain_model_families"):
+            summary["joint_prediction"]["chain_model_families"] = dict(bundle.get("chain_model_families", {}) or {})
         summary["metrics"] = {
             **summary["metrics"],
             "exact_match": float(metrics.get("exact_match", 0.0)),
@@ -149,7 +157,7 @@ def bundle_summary(modality: str) -> dict | None:
 
 def summarize_all_bundles() -> dict[str, dict]:
     summaries: dict[str, dict] = {}
-    for modality in ("text", "audio", "image", "comorbidity"):
+    for modality in ("text", "text_transformer", "audio", "audio_sequence", "image", "comorbidity"):
         summary = bundle_summary(modality)
         if summary is not None:
             summaries[modality] = summary

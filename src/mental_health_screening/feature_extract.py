@@ -27,6 +27,11 @@ except ImportError:
     librosa = None
 
 try:
+    import soundfile as sf
+except ImportError:
+    sf = None
+
+try:
     import cv2
 except ImportError:
     cv2 = None
@@ -832,6 +837,7 @@ def extract_text_features(
 
     features = {
         "available": True,
+        "raw_text": text,
         "word_count": len(words),
         "sentiment_compound": sentiment_features["sentiment_compound"],
         "sentiment_label": sentiment_features["sentiment_label"],
@@ -918,6 +924,7 @@ def extract_audio_features(audio_path: str, include_pitch_features: bool = True)
 
     return {
         "available": True,
+        "audio_path": audio_path,
         "duration": duration,
         "tempo": float(tempo),
         "zero_crossing_rate": zcr,
@@ -926,6 +933,147 @@ def extract_audio_features(audio_path: str, include_pitch_features: bool = True)
         "pitch_mean": pitch_mean,
         "pitch_std": pitch_std,
         "voiced_ratio": voiced_ratio,
+    }
+
+
+def extract_audio_sequence_features(
+    audio_path: str,
+    max_frames: int = 160,
+    n_mfcc: int = 16,
+    sr: int = 8000,
+) -> dict:
+    if not audio_path or not os.path.exists(audio_path):
+        return {"available": False}
+    if sf is None:
+        return {"available": False, "reason": "soundfile_not_installed"}
+
+    try:
+        signal, loaded_sr = sf.read(audio_path, dtype="float32", always_2d=False)
+    except Exception:
+        return {"available": False, "reason": "audio_unreadable"}
+
+    if signal is None or len(signal) == 0:
+        return {"available": False, "reason": "audio_invalid"}
+
+    if signal.ndim > 1:
+        signal = np.mean(signal, axis=1)
+    if loaded_sr and loaded_sr != sr and len(signal) > 1:
+        step = max(int(round(loaded_sr / sr)), 1)
+        signal = signal[::step]
+        loaded_sr = sr
+
+    duration = float(len(signal)) / float(loaded_sr or sr)
+    if duration < AUDIO_MIN_DURATION_SECONDS:
+        return {
+            "available": False,
+            "reason": "audio_too_short",
+            "duration": duration,
+            "minimum_duration": AUDIO_MIN_DURATION_SECONDS,
+        }
+
+    frame_count = int(min(max_frames, max(12, len(signal) // max(loaded_sr // 4, 1))))
+    chunks = np.array_split(signal, frame_count)
+    sequence_rows: list[list[float]] = []
+    for chunk in chunks:
+        if chunk.size == 0:
+            continue
+        absolute_chunk = np.abs(chunk)
+        chunk_length = max(int(chunk.size), 1)
+        chunk_mean = float(np.mean(chunk))
+        chunk_std = float(np.std(chunk))
+        chunk_max = float(np.max(chunk))
+        chunk_min = float(np.min(chunk))
+        chunk_energy = float(np.mean(absolute_chunk))
+        chunk_rms = float(np.sqrt(np.mean(np.square(chunk))))
+        if len(chunk) > 1:
+            chunk_zero_crossing = float(np.mean(np.abs(np.diff(np.sign(chunk))) > 0))
+        else:
+            chunk_zero_crossing = 0.0
+        chunk_abs_mean = float(np.mean(absolute_chunk))
+        if chunk_length > 1:
+            spectrum = np.abs(np.fft.rfft(chunk)) + 1e-8
+            freqs = np.fft.rfftfreq(chunk_length, d=1.0 / float(loaded_sr or sr))
+            spectral_total = float(np.sum(spectrum))
+            spectral_centroid = float(np.sum(freqs * spectrum) / spectral_total) if spectral_total > 0 else 0.0
+            spectral_bandwidth = float(np.sqrt(np.sum(((freqs - spectral_centroid) ** 2) * spectrum) / spectral_total)) if spectral_total > 0 else 0.0
+            spectral_flatness = float(np.exp(np.mean(np.log(spectrum))) / np.mean(spectrum)) if np.mean(spectrum) > 0 else 0.0
+        else:
+            spectral_centroid = 0.0
+            spectral_bandwidth = 0.0
+            spectral_flatness = 0.0
+        sequence_rows.append([
+            chunk_mean,
+            chunk_std,
+            chunk_max,
+            chunk_min,
+            chunk_energy,
+            chunk_rms,
+            chunk_zero_crossing,
+            chunk_abs_mean,
+            spectral_centroid,
+            spectral_bandwidth,
+            spectral_flatness,
+        ])
+
+    if not sequence_rows:
+        return {"available": False, "reason": "empty_sequence"}
+
+    sequence = np.asarray(sequence_rows, dtype=np.float32)
+    frame_count = int(len(sequence))
+    feature_count = int(sequence.shape[1]) if sequence.ndim == 2 else 0
+    return {
+        "available": True,
+        "audio_path": audio_path,
+        "duration": duration,
+        "frame_count": frame_count,
+        "feature_count": feature_count,
+        "sequence_features": sequence.astype(np.float32),
+        "feature_names": [
+            "chunk_mean",
+            "chunk_std",
+            "chunk_max",
+            "chunk_min",
+            "chunk_energy",
+            "chunk_rms",
+            "chunk_zero_crossing",
+            "chunk_abs_mean",
+            "chunk_spectral_centroid",
+            "chunk_spectral_bandwidth",
+            "chunk_spectral_flatness",
+        ],
+    }
+
+
+def extract_audio_summary_sequence_features(
+    audio_path: str,
+    max_frames: int = 160,
+    sr: int = 8000,
+) -> dict:
+    summary = extract_audio_features(audio_path, include_pitch_features=False)
+    if not summary.get("available"):
+        return {**summary, "available": False}
+
+    ordered_values = np.asarray(
+        [
+            float(summary.get("duration", 0.0)),
+            float(summary.get("zero_crossing_rate", 0.0)),
+            float(summary.get("rms", 0.0)),
+            float(summary.get("energy", 0.0)),
+            float(summary.get("voiced_ratio", 0.0)),
+        ],
+        dtype=np.float32,
+    )
+    sequence = ordered_values.reshape(-1, 1)
+    if len(sequence) > max_frames:
+        sequence = sequence[:max_frames]
+    return {
+        "available": True,
+        "audio_path": audio_path,
+        "duration": float(summary.get("duration", 0.0)),
+        "frame_count": int(len(sequence)),
+        "feature_count": int(sequence.shape[1]) if sequence.ndim == 2 else 0,
+        "sequence_features": sequence.astype(np.float32),
+        "feature_names": ["summary_scalar"],
     }
 
 

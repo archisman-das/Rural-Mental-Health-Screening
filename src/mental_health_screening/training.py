@@ -7,17 +7,24 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.base import clone
 from sklearn.dummy import DummyClassifier
-from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, precision_recall_curve, r2_score
+from sklearn.metrics import accuracy_score, f1_score, mean_squared_error, precision_recall_curve, precision_score, recall_score, r2_score
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDRegressor
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import resample
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader, Dataset
 
 from .constants import PREDICTION_DOMAINS
-from .feature_extract import extract_audio_features, extract_image_features, extract_text_features
+from .feature_extract import extract_audio_features, extract_audio_sequence_features, extract_image_features, extract_text_features
 from .model_features import audio_feature_vector, image_feature_vector, text_feature_vector
 from .model_store import save_model_bundle
 from .predict import COMORBIDITY_MODEL_NAME, COMORBIDITY_MODALITIES, score_audio_features, score_image_features, score_text_features
@@ -63,6 +70,760 @@ def _parse_target_value(value) -> float | None:
         return float(text)
     except ValueError:
         return None
+
+
+def _binary_targets(targets: np.ndarray | list[float], threshold: float = 0.5) -> np.ndarray:
+    values = np.asarray(targets, dtype=float)
+    return (values >= threshold).astype(int)
+
+
+def _balanced_resample_training_data(
+    features_x: np.ndarray,
+    targets_y: np.ndarray,
+    random_state: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    labels = np.asarray(targets_y, dtype=int)
+    if labels.size == 0:
+        return features_x, labels
+
+    unique_labels, counts = np.unique(labels, return_counts=True)
+    if len(unique_labels) < 2:
+        return features_x, labels
+
+    target_count = int(np.max(counts))
+    sampled_features: list[np.ndarray] = []
+    sampled_labels: list[np.ndarray] = []
+    for label in unique_labels:
+        label_mask = labels == label
+        label_features = features_x[label_mask]
+        label_targets = labels[label_mask]
+        if len(label_features) == 0:
+            continue
+        if len(label_features) < target_count:
+            label_features, label_targets = resample(
+                label_features,
+                label_targets,
+                replace=True,
+                n_samples=target_count,
+                random_state=random_state + int(label),
+            )
+        sampled_features.append(np.asarray(label_features, dtype=float))
+        sampled_labels.append(np.asarray(label_targets, dtype=int))
+
+    if not sampled_features:
+        return features_x, labels
+
+    balanced_x = np.vstack(sampled_features)
+    balanced_y = np.concatenate(sampled_labels)
+    rng = np.random.default_rng(random_state)
+    order = rng.permutation(len(balanced_x))
+    return balanced_x[order], balanced_y[order]
+
+
+def _binary_metric_score(metrics: dict[str, float]) -> float:
+    return (
+        0.55 * float(metrics.get("f1", 0.0))
+        + 0.25 * float(metrics.get("precision", 0.0))
+        + 0.15 * float(metrics.get("accuracy", 0.0))
+        + 0.05 * float(metrics.get("recall", 0.0))
+    )
+
+
+def _evaluate_binary_predictions(y_true: np.ndarray, probabilities: np.ndarray) -> dict[str, float]:
+    predicted_labels = (np.asarray(probabilities, dtype=float) >= 0.5).astype(int)
+    return {
+        "accuracy": float(accuracy_score(y_true, predicted_labels)),
+        "precision": float(precision_score(y_true, predicted_labels, zero_division=0)),
+        "recall": float(recall_score(y_true, predicted_labels, zero_division=0)),
+        "f1": float(f1_score(y_true, predicted_labels, zero_division=0)),
+        "mse": float(mean_squared_error(y_true, probabilities)),
+        "r2": float(r2_score(y_true, probabilities)),
+    }
+
+
+def _evaluate_multilabel_predictions(
+    labels_y: np.ndarray,
+    probabilities_y: np.ndarray,
+    thresholds: dict[str, float] | None = None,
+) -> tuple[dict[str, float], np.ndarray]:
+    thresholds = thresholds or {domain: 0.5 for domain in PREDICTION_DOMAINS}
+    predicted_labels = np.asarray(
+        [
+            [
+                int(probabilities_y[row_index, domain_index] >= float(thresholds.get(PREDICTION_DOMAINS[domain_index], 0.5)))
+                for domain_index in range(len(PREDICTION_DOMAINS))
+            ]
+            for row_index in range(len(probabilities_y))
+        ],
+        dtype=int,
+    )
+    metrics = {
+        "exact_match": float(np.mean(np.all(predicted_labels == labels_y, axis=1))) if len(labels_y) else 0.0,
+        "macro_f1": float(np.mean([
+            f1_score(labels_y[:, index], predicted_labels[:, index], zero_division=0)
+            for index in range(labels_y.shape[1])
+        ])) if labels_y.size else 0.0,
+        "label_accuracy": float(np.mean([
+            accuracy_score(labels_y[:, index], predicted_labels[:, index])
+            for index in range(labels_y.shape[1])
+        ])) if labels_y.size else 0.0,
+    }
+    return metrics, predicted_labels
+
+
+def _fit_mlp_binary_candidate(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    random_state: int,
+) -> Pipeline | DummyClassifier:
+    class_counts = np.bincount(y_train, minlength=2)
+    if int(class_counts.min()) < 2:
+        model: Pipeline | DummyClassifier = DummyClassifier(strategy="prior")
+        model.fit(x_train, y_train)
+        return model
+
+    balanced_x, balanced_y = _balanced_resample_training_data(x_train, y_train, random_state=random_state)
+    model = Pipeline(
+        steps=[
+            ("scaler", StandardScaler()),
+            (
+                "mlp",
+                MLPClassifier(
+                    hidden_layer_sizes=(64, 32),
+                    activation="relu",
+                    solver="adam",
+                    alpha=1e-4,
+                    batch_size="auto",
+                    learning_rate="adaptive",
+                    learning_rate_init=5e-4,
+                    max_iter=180,
+                    early_stopping=True,
+                    validation_fraction=0.15,
+                    n_iter_no_change=12,
+                    random_state=random_state,
+                ),
+            ),
+        ]
+    )
+    model.fit(balanced_x, balanced_y)
+    return model
+
+
+def _fit_rf_binary_candidate(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    random_state: int,
+) -> RandomForestClassifier | DummyClassifier:
+    class_counts = np.bincount(y_train, minlength=2)
+    if int(class_counts.min()) < 2:
+        model: RandomForestClassifier | DummyClassifier = DummyClassifier(strategy="prior")
+        model.fit(x_train, y_train)
+        return model
+
+    model = RandomForestClassifier(
+        n_estimators=400,
+        random_state=random_state,
+        class_weight="balanced_subsample",
+        min_samples_leaf=1,
+        max_features="sqrt",
+        n_jobs=-1,
+    )
+    model.fit(x_train, y_train)
+    return model
+
+
+def _fit_selected_binary_model(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    x_test: np.ndarray,
+    y_test: np.ndarray,
+    random_state: int,
+    allow_deep_candidate: bool = True,
+) -> tuple[RandomForestClassifier | DummyClassifier | Pipeline, dict, str, dict, np.ndarray]:
+    candidates: list[tuple[str, object]] = [
+        ("random_forest", _fit_rf_binary_candidate(x_train, y_train, random_state=random_state)),
+    ]
+    if allow_deep_candidate:
+        candidates.append(("mlp", _fit_mlp_binary_candidate(x_train, y_train, random_state=random_state)))
+
+    evaluated: list[tuple[str, object, dict, np.ndarray]] = []
+    for name, model in candidates:
+        probabilities, prediction_std = _forest_prediction_stats(model, x_test)
+        metrics = _evaluate_binary_predictions(y_test, probabilities)
+        evaluated.append((name, model, metrics, prediction_std))
+
+    best_name, best_model, best_metrics, best_prediction_std = max(
+        evaluated,
+        key=lambda item: (_binary_metric_score(item[2]), item[2].get("f1", 0.0), item[2].get("precision", 0.0), item[2].get("accuracy", 0.0)),
+    )
+    candidate_metrics = {
+        name: dict(metrics)
+        for name, _, metrics, _ in evaluated
+    }
+    return best_model, dict(best_metrics), best_name, candidate_metrics, best_prediction_std
+
+
+def _fit_selected_chain_binary_model(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    x_eval: np.ndarray,
+    y_eval: np.ndarray,
+    random_state: int,
+) -> tuple[object, dict, str, dict]:
+    class_counts = np.bincount(y_train, minlength=2)
+    candidates: list[tuple[str, object]] = []
+    if int(class_counts.min()) >= 2:
+        logistic_model = LogisticRegression(
+            max_iter=3000,
+            class_weight="balanced",
+            solver="liblinear",
+            random_state=random_state,
+        )
+        logistic_model.fit(x_train, y_train)
+        candidates.append(("logistic", logistic_model))
+        candidates.append(("mlp", _fit_mlp_binary_candidate(x_train, y_train, random_state=random_state)))
+    else:
+        fallback = DummyClassifier(strategy="prior")
+        fallback.fit(x_train, y_train)
+        candidates.append(("dummy", fallback))
+
+    evaluated: list[tuple[str, object, dict]] = []
+    for name, model in candidates:
+        probabilities, _ = _forest_prediction_stats(model, x_eval)
+        metrics = _evaluate_binary_predictions(y_eval, probabilities)
+        evaluated.append((name, model, metrics))
+
+    best_name, best_model, best_metrics = max(
+        evaluated,
+        key=lambda item: (_binary_metric_score(item[2]), item[2].get("f1", 0.0), item[2].get("precision", 0.0), item[2].get("accuracy", 0.0)),
+    )
+    candidate_metrics = {name: metrics for name, _, metrics in evaluated}
+    return best_model, best_metrics, best_name, candidate_metrics
+
+
+class _TextRecordDataset(Dataset):
+    def __init__(self, texts: list[str], labels: np.ndarray):
+        self.texts = texts
+        self.labels = np.asarray(labels, dtype=float)
+
+    def __len__(self) -> int:
+        return len(self.texts)
+
+    def __getitem__(self, index: int) -> tuple[str, np.ndarray]:
+        return self.texts[index], self.labels[index]
+
+
+class _TextTransformerClassifier(nn.Module):
+    def __init__(self, encoder, num_labels: int, dropout: float = 0.2):
+        super().__init__()
+        self.encoder = encoder
+        hidden_size = int(getattr(encoder.config, "hidden_size", 768))
+        self.dropout = nn.Dropout(dropout)
+        self.classifier = nn.Linear(hidden_size, num_labels)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
+        hidden_state = outputs.last_hidden_state[:, 0, :]
+        logits = self.classifier(self.dropout(hidden_state))
+        return logits
+
+
+def _select_text_transformer_rows(
+    texts: list[str],
+    labels: np.ndarray,
+    max_rows: int,
+    random_state: int,
+) -> tuple[list[str], np.ndarray]:
+    if len(texts) <= max_rows:
+        return texts, labels
+
+    labels = np.asarray(labels, dtype=int)
+    positive_mask = labels.sum(axis=1) > 0
+    positive_indices = np.where(positive_mask)[0]
+    negative_indices = np.where(~positive_mask)[0]
+    rng = np.random.default_rng(random_state)
+
+    selected_indices: list[int] = []
+    if len(positive_indices):
+        selected_indices.extend(positive_indices.tolist())
+    remaining = max_rows - len(selected_indices)
+    if remaining > 0 and len(negative_indices):
+        replace = len(negative_indices) < remaining
+        sampled_negatives = rng.choice(negative_indices, size=remaining, replace=replace)
+        selected_indices.extend(np.asarray(sampled_negatives, dtype=int).tolist())
+
+    if len(selected_indices) < max_rows:
+        missing = max_rows - len(selected_indices)
+        pool = np.arange(len(texts))
+        sampled = rng.choice(pool, size=missing, replace=False if len(pool) >= missing else True)
+        selected_indices.extend(np.asarray(sampled, dtype=int).tolist())
+
+    selected_indices = list(dict.fromkeys(selected_indices))
+    if len(selected_indices) > max_rows:
+        selected_indices = rng.choice(selected_indices, size=max_rows, replace=False).tolist()
+
+    selected_texts = [texts[index] for index in selected_indices]
+    selected_labels = labels[selected_indices]
+    return selected_texts, selected_labels
+
+
+def _train_text_transformer_classifier(
+    texts: list[str],
+    labels: np.ndarray,
+    random_state: int,
+    max_rows: int = 8000,
+    batch_size: int = 8,
+    epochs: int = 2,
+    learning_rate: float = 2e-5,
+) -> dict:
+    from .feature_extract import _load_transformer_encoder
+
+    np.random.seed(random_state)
+    torch.manual_seed(random_state)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(random_state)
+
+    selected_texts, selected_labels = _select_text_transformer_rows(
+        texts=texts,
+        labels=labels,
+        max_rows=max_rows,
+        random_state=random_state,
+    )
+    if len(selected_texts) < 32:
+        raise ValueError("Not enough usable text rows to train a transformer classifier.")
+
+    encoder_bundle = _load_transformer_encoder("english")
+    if encoder_bundle is None:
+        raise ValueError("No local transformer encoder was available for text training.")
+
+    tokenizer = encoder_bundle["tokenizer"]
+    encoder = encoder_bundle["model"]
+    encoder.train()
+    for parameter in encoder.parameters():
+        parameter.requires_grad = False
+    if hasattr(encoder, "transformer") and hasattr(encoder.transformer, "layer"):
+        for layer in encoder.transformer.layer[-2:]:
+            for parameter in layer.parameters():
+                parameter.requires_grad = True
+    for parameter in getattr(encoder, "embeddings", []).parameters() if hasattr(encoder, "embeddings") else []:
+        parameter.requires_grad = False
+
+    rng = np.random.default_rng(random_state)
+    indices = rng.permutation(len(selected_texts))
+    split_index = max(1, int(len(indices) * 0.8))
+    train_indices = indices[:split_index]
+    eval_indices = indices[split_index:] if split_index < len(indices) else indices[: max(1, len(indices) // 5)]
+
+    train_texts = [selected_texts[index] for index in train_indices]
+    train_labels = np.asarray(selected_labels[train_indices], dtype=float)
+    eval_texts = [selected_texts[index] for index in eval_indices]
+    eval_labels = np.asarray(selected_labels[eval_indices], dtype=float)
+
+    def collate_fn(batch: list[tuple[str, np.ndarray]]) -> tuple[dict[str, torch.Tensor], torch.Tensor]:
+        batch_texts = [item[0] for item in batch]
+        batch_labels = torch.tensor(np.asarray([item[1] for item in batch], dtype=float), dtype=torch.float32)
+        encoded = tokenizer(
+            batch_texts,
+            truncation=True,
+            padding=True,
+            max_length=128,
+            return_tensors="pt",
+        )
+        return encoded, batch_labels
+
+    train_loader = DataLoader(
+        _TextRecordDataset(train_texts, train_labels),
+        batch_size=batch_size,
+        shuffle=True,
+        collate_fn=collate_fn,
+    )
+    eval_loader = DataLoader(
+        _TextRecordDataset(eval_texts, eval_labels),
+        batch_size=batch_size,
+        shuffle=False,
+        collate_fn=collate_fn,
+    )
+
+    model = _TextTransformerClassifier(encoder=encoder, num_labels=len(PREDICTION_DOMAINS))
+    model = model.to("cpu")
+    optimizer = torch.optim.AdamW(
+        (parameter for parameter in model.parameters() if parameter.requires_grad),
+        lr=learning_rate,
+    )
+
+    positive_counts = np.clip(train_labels.sum(axis=0), 1.0, None)
+    negative_counts = np.clip(len(train_labels) - positive_counts, 1.0, None)
+    pos_weight = torch.tensor(negative_counts / positive_counts, dtype=torch.float32)
+    loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
+
+    best_state = None
+    best_score = -1.0
+    best_probabilities = None
+    best_labels = None
+
+    for _ in range(epochs):
+        model.train()
+        for encoded, batch_labels in train_loader:
+            optimizer.zero_grad(set_to_none=True)
+            logits = model(encoded["input_ids"], encoded["attention_mask"])
+            loss = loss_fn(logits, batch_labels)
+            loss.backward()
+            optimizer.step()
+
+        model.eval()
+        eval_probabilities: list[np.ndarray] = []
+        eval_true: list[np.ndarray] = []
+        with torch.no_grad():
+            for encoded, batch_labels in eval_loader:
+                logits = model(encoded["input_ids"], encoded["attention_mask"])
+                probabilities = torch.sigmoid(logits).cpu().numpy()
+                eval_probabilities.append(probabilities)
+                eval_true.append(batch_labels.cpu().numpy())
+        if not eval_probabilities:
+            continue
+        probabilities_y = np.vstack(eval_probabilities)
+        labels_y = np.vstack(eval_true)
+        thresholds, _ = _tune_comorbidity_thresholds(labels_y, probabilities_y)
+        metrics, _ = _evaluate_multilabel_predictions(labels_y, probabilities_y, thresholds=thresholds)
+        score = _binary_metric_score(
+            {
+                "f1": metrics["macro_f1"],
+                "precision": metrics["label_accuracy"],
+                "accuracy": metrics["exact_match"],
+                "recall": metrics["macro_f1"],
+            }
+        )
+        if score > best_score:
+            best_score = score
+            best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
+            best_probabilities = probabilities_y
+            best_labels = labels_y
+
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    model.eval()
+
+    if best_probabilities is None or best_labels is None:
+        raise ValueError("Transformer training did not produce validation predictions.")
+
+    thresholds, threshold_tuning = _tune_comorbidity_thresholds(best_labels, best_probabilities)
+    metrics, predicted_labels = _evaluate_multilabel_predictions(best_labels, best_probabilities, thresholds=thresholds)
+
+    bundle = {
+        "model_type": "text_transformer_multilabel",
+        "modality": "text_transformer",
+        "domains": list(PREDICTION_DOMAINS),
+        "feature_names": [],
+        "model": model.cpu(),
+        "tokenizer": tokenizer,
+        "transformer": {
+            "model_name": encoder_bundle["model_name"],
+            "model_family": encoder_bundle["model_family"],
+            "language": encoder_bundle["language"],
+            "preferred_family": encoder_bundle.get("preferred_family"),
+            "max_rows": int(max_rows),
+            "batch_size": int(batch_size),
+            "epochs": int(epochs),
+            "learning_rate": float(learning_rate),
+        },
+        "label_thresholds": thresholds,
+        "metrics": {
+            **metrics,
+            "sample_count": int(len(selected_texts)),
+        },
+        "sample_count": int(len(selected_texts)),
+        "sample_counts": {domain: int(np.sum(selected_labels[:, index])) for index, domain in enumerate(PREDICTION_DOMAINS)},
+        "train_counts": {},
+        "test_counts": {},
+        "manifest_path": None,
+        "dataset_root": None,
+        "source_datasets": [],
+        "label_sources": [],
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "skipped_domains": {},
+        "training_strategy": "transformer_finetune",
+        "joint_prediction": {
+            "model_type": "text_transformer_multilabel",
+            "label_thresholds": thresholds,
+            "threshold_tuning": threshold_tuning,
+        },
+    }
+    save_model_bundle("text_transformer", bundle)
+    return bundle
+
+
+class _AudioSequenceDataset(Dataset):
+    def __init__(self, sequences: list[np.ndarray], labels: np.ndarray):
+        self.sequences = sequences
+        self.labels = np.asarray(labels, dtype=float)
+
+    def __len__(self) -> int:
+        return len(self.sequences)
+
+    def __getitem__(self, index: int) -> tuple[np.ndarray, np.ndarray]:
+        return self.sequences[index], self.labels[index]
+
+
+class _AudioSequenceBiLSTM(nn.Module):
+    def __init__(self, input_size: int, hidden_size: int, num_layers: int, num_labels: int, dropout: float = 0.25):
+        super().__init__()
+        self.lstm = nn.LSTM(
+            input_size=input_size,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            dropout=dropout if num_layers > 1 else 0.0,
+            bidirectional=True,
+            batch_first=True,
+        )
+        self.dropout = nn.Dropout(dropout)
+        self.projection = nn.Sequential(
+            nn.Linear(hidden_size * 6, hidden_size * 2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+        self.classifier = nn.Linear(hidden_size * 2, num_labels)
+
+    def forward(self, padded_sequences: torch.Tensor, lengths: torch.Tensor) -> torch.Tensor:
+        packed = torch.nn.utils.rnn.pack_padded_sequence(
+            padded_sequences,
+            lengths.cpu(),
+            batch_first=True,
+            enforce_sorted=False,
+        )
+        packed_output, (hidden_state, _) = self.lstm(packed)
+        forward_hidden = hidden_state[-2]
+        backward_hidden = hidden_state[-1]
+        padded_output, _ = torch.nn.utils.rnn.pad_packed_sequence(packed_output, batch_first=True)
+        max_length = int(padded_output.shape[1])
+        time_index = torch.arange(max_length, device=padded_output.device).unsqueeze(0)
+        mask = time_index < lengths.unsqueeze(1)
+        mask_3d = mask.unsqueeze(-1)
+        masked_output = padded_output * mask_3d
+        pooled_mean = masked_output.sum(dim=1) / lengths.clamp(min=1).unsqueeze(1).to(padded_output.dtype)
+        pooled_max = padded_output.masked_fill(~mask_3d, float("-inf")).max(dim=1).values
+        pooled_max = torch.where(torch.isfinite(pooled_max), pooled_max, torch.zeros_like(pooled_max))
+        features = torch.cat([forward_hidden, backward_hidden, pooled_mean, pooled_max], dim=-1)
+        return self.classifier(self.projection(self.dropout(features)))
+
+
+def _normalize_sequence_collection(sequences: list[np.ndarray]) -> tuple[list[np.ndarray], dict[str, list[float]]]:
+    stacked = np.vstack(sequences).astype(np.float32)
+    mean = stacked.mean(axis=0)
+    std = stacked.std(axis=0)
+    std = np.where(std < 1e-6, 1.0, std)
+    normalized = [((sequence - mean) / std).astype(np.float32) for sequence in sequences]
+    return normalized, {
+        "mean": mean.astype(np.float32).tolist(),
+        "std": std.astype(np.float32).tolist(),
+    }
+
+
+def _train_audio_sequence_model(
+    manifest_path: str | Path,
+    dataset_root: str | Path | None = None,
+    random_state: int = 42,
+    max_rows: int = 1200,
+    batch_size: int = 16,
+    epochs: int = 8,
+    learning_rate: float = 8e-4,
+    max_frames: int = 160,
+) -> dict:
+    manifest_path = Path(manifest_path)
+    base_dir = Path(dataset_root) if dataset_root else manifest_path.parent
+    np.random.seed(random_state)
+    torch.manual_seed(random_state)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(random_state)
+    df = _load_manifest(manifest_path)
+    records = [
+        record
+        for record in df.to_dict(orient="records")
+        if _resolve_path(base_dir, record.get("audio_path")) and _comorbidity_targets(record) is not None
+    ]
+    print(f"[audio_sequence] loaded {len(df)} manifest rows", flush=True)
+    print(f"[audio_sequence] usable audio rows {len(records)}", flush=True)
+    if max_rows > 0 and len(records) > max_rows:
+        rng = np.random.default_rng(random_state)
+        selected_indices = np.sort(rng.choice(len(records), size=max_rows, replace=False))
+        records = [records[index] for index in selected_indices]
+    print(f"[audio_sequence] sampling {len(records)} rows", flush=True)
+
+    sequences: list[np.ndarray] = []
+    labels: list[list[int]] = []
+    source_datasets = sorted({str(value).strip() for value in df.get("source_dataset", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
+    label_sources = sorted({str(value).strip() for value in df.get("label_source", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
+
+    for record in records:
+        audio_path = _resolve_path(base_dir, record.get("audio_path"))
+        if not audio_path:
+            continue
+        targets = _comorbidity_targets(record)
+        if targets is None:
+            continue
+        if len(sequences) and len(sequences) % 10 == 0:
+            print(f"[audio_sequence] extracted {len(sequences)} sequences", flush=True)
+        extracted = extract_audio_sequence_features(audio_path, max_frames=max_frames)
+        if not extracted.get("available"):
+            continue
+        sequences.append(np.asarray(extracted["sequence_features"], dtype=np.float32))
+        labels.append(targets)
+    print(f"[audio_sequence] usable sequences {len(sequences)}", flush=True)
+
+    if len(sequences) < 32:
+        raise ValueError("At least 32 usable audio rows are required to train the sequence model.")
+
+    labels_array = np.asarray(labels, dtype=int)
+    rng = np.random.default_rng(random_state)
+    indices = rng.permutation(len(sequences))
+    split_index = max(1, int(len(indices) * 0.8))
+    train_indices = indices[:split_index]
+    eval_indices = indices[split_index:] if split_index < len(indices) else indices[: max(1, len(indices) // 5)]
+
+    train_sequences = [sequences[index] for index in train_indices]
+    train_labels = labels_array[train_indices]
+    eval_sequences = [sequences[index] for index in eval_indices]
+    eval_labels = labels_array[eval_indices]
+
+    def collate_fn(batch: list[tuple[np.ndarray, np.ndarray]]) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        seq_tensors = [torch.tensor(item[0], dtype=torch.float32) for item in batch]
+        lengths = torch.tensor([tensor.shape[0] for tensor in seq_tensors], dtype=torch.long)
+        padded = torch.nn.utils.rnn.pad_sequence(seq_tensors, batch_first=True)
+        label_tensor = torch.tensor(np.asarray([item[1] for item in batch], dtype=float), dtype=torch.float32)
+        return padded, lengths, label_tensor
+
+    train_loader = DataLoader(
+        _AudioSequenceDataset(train_sequences, train_labels),
+        batch_size=batch_size,
+        shuffle=True,
+        collate_fn=collate_fn,
+    )
+    eval_loader = DataLoader(
+        _AudioSequenceDataset(eval_sequences, eval_labels),
+        batch_size=batch_size,
+        shuffle=False,
+        collate_fn=collate_fn,
+    )
+
+    train_sequences, normalization = _normalize_sequence_collection(train_sequences)
+    eval_sequences = [((sequence - np.asarray(normalization["mean"], dtype=np.float32)) / np.asarray(normalization["std"], dtype=np.float32)).astype(np.float32) for sequence in eval_sequences]
+
+    model = _AudioSequenceBiLSTM(
+        input_size=int(train_sequences[0].shape[1]),
+        hidden_size=128,
+        num_layers=2,
+        num_labels=len(PREDICTION_DOMAINS),
+        dropout=0.35,
+    )
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    positive_counts = np.clip(train_labels.sum(axis=0), 1.0, None)
+    negative_counts = np.clip(len(train_labels) - positive_counts, 1.0, None)
+    pos_weight = torch.tensor(negative_counts / positive_counts, dtype=torch.float32)
+
+    best_state = None
+    best_score = -1.0
+    best_eval_probs = None
+    best_eval_labels = None
+
+    for epoch_index in range(epochs):
+        model.train()
+        for padded, lengths, batch_labels in train_loader:
+            optimizer.zero_grad(set_to_none=True)
+            logits = model(padded, lengths)
+            bce_loss = nn.functional.binary_cross_entropy_with_logits(logits, batch_labels, reduction="none", pos_weight=pos_weight)
+            probabilities = torch.sigmoid(logits)
+            pt = probabilities * batch_labels + (1.0 - probabilities) * (1.0 - batch_labels)
+            focal_weight = torch.pow(1.0 - pt, 1.5)
+            loss = (bce_loss * focal_weight).mean()
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+            optimizer.step()
+
+        model.eval()
+        eval_probs: list[np.ndarray] = []
+        eval_true: list[np.ndarray] = []
+        with torch.no_grad():
+            for padded, lengths, batch_labels in eval_loader:
+                logits = model(padded, lengths)
+                probs = torch.sigmoid(logits).cpu().numpy()
+                eval_probs.append(probs)
+                eval_true.append(batch_labels.cpu().numpy())
+        if not eval_probs:
+            continue
+        probabilities_y = np.vstack(eval_probs)
+        labels_y = np.vstack(eval_true)
+        epoch_thresholds, _ = _tune_comorbidity_thresholds(labels_y, probabilities_y)
+        metrics, _ = _evaluate_multilabel_predictions(labels_y, probabilities_y, thresholds=epoch_thresholds)
+        print(f"[audio_sequence] epoch {epoch_index + 1}/{epochs} metrics {metrics}", flush=True)
+        score = metrics["macro_f1"] + 0.25 * metrics["label_accuracy"] + 0.1 * metrics["exact_match"]
+        if score > best_score:
+            best_score = score
+            best_state = {key: value.detach().cpu().clone() for key, value in model.state_dict().items()}
+            best_eval_probs = probabilities_y
+            best_eval_labels = labels_y
+
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    model.eval()
+
+    if best_eval_probs is None or best_eval_labels is None:
+        raise ValueError("Audio sequence training did not produce validation predictions.")
+
+    thresholds, threshold_tuning = _tune_comorbidity_thresholds(best_eval_labels, best_eval_probs)
+    metrics, _ = _evaluate_multilabel_predictions(best_eval_labels, best_eval_probs, thresholds=thresholds)
+
+    bundle = {
+        "model_type": "audio_bilstm_multilabel",
+        "modality": "audio_sequence",
+        "domains": list(PREDICTION_DOMAINS),
+        "feature_names": [
+            "chunk_mean",
+            "chunk_std",
+            "chunk_max",
+            "chunk_min",
+            "chunk_energy",
+            "chunk_rms",
+            "chunk_zero_crossing",
+            "chunk_abs_mean",
+            "chunk_spectral_centroid",
+            "chunk_spectral_bandwidth",
+            "chunk_spectral_flatness",
+        ],
+        "model": model.cpu(),
+        "sequence_config": {
+            "input_size": int(train_sequences[0].shape[1]),
+            "hidden_size": 128,
+            "num_layers": 2,
+            "batch_size": int(batch_size),
+            "epochs": int(epochs),
+            "learning_rate": float(learning_rate),
+            "max_rows": int(max_rows),
+            "max_frames": int(max_frames),
+        },
+        "sequence_normalization": normalization,
+        "label_thresholds": thresholds,
+        "metrics": {
+            **metrics,
+            "sample_count": int(len(sequences)),
+        },
+        "sample_count": int(len(sequences)),
+        "sample_counts": {domain: int(np.sum(labels_array[:, index])) for index, domain in enumerate(PREDICTION_DOMAINS)},
+        "train_counts": {},
+        "test_counts": {},
+        "manifest_path": None,
+        "dataset_root": None,
+        "source_datasets": source_datasets,
+        "label_sources": label_sources,
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "skipped_domains": {},
+        "training_strategy": "audio_bilstm",
+        "joint_prediction": {
+            "model_type": "audio_bilstm_multilabel",
+            "label_thresholds": thresholds,
+            "threshold_tuning": threshold_tuning,
+        },
+    }
+    save_model_bundle("audio_sequence", bundle)
+    return bundle
 
 
 def _extract_feature_vector(record: dict, base_dir: Path, modality: str) -> tuple[dict, list[str], list[float]] | None:
@@ -226,28 +987,31 @@ def _fit_comorbidity_chain(
                     "domain_index": int(domain_index),
                     "model": None,
                     "constant_probability": float(np.clip(target.mean() if len(target) else 0.0, 0.0, 1.0)),
+                    "model_family": "dummy",
                     "train_accuracy": float(model.score(augmented, target)) if len(target) else 0.0,
                     "train_f1": float(f1_score(target, model.predict(augmented), zero_division=0)) if len(target) else 0.0,
                 }
             )
             continue
 
-        model = LogisticRegression(
-            max_iter=1500,
-            class_weight="balanced",
-            solver="liblinear",
+        model, metrics, model_family, candidate_metrics = _fit_selected_chain_binary_model(
+            x_train=augmented,
+            y_train=target,
+            x_eval=augmented,
+            y_eval=target,
             random_state=random_state + position + domain_index,
         )
-        model.fit(augmented, target)
-        predictions = model.predict(augmented)
+        predictions = (np.asarray(model.predict_proba(augmented), dtype=float)[:, -1] >= 0.5).astype(int) if hasattr(model, "predict_proba") else model.predict(augmented)
         chain_models.append(
             {
                 "domain": domain,
                 "domain_index": int(domain_index),
                 "model": model,
                 "constant_probability": None,
-                "train_accuracy": float(accuracy_score(target, predictions)),
-                "train_f1": float(f1_score(target, predictions, zero_division=0)),
+                "model_family": model_family,
+                "candidate_metrics": candidate_metrics,
+                "train_accuracy": float(metrics.get("accuracy", accuracy_score(target, predictions))),
+                "train_f1": float(metrics.get("f1", f1_score(target, predictions, zero_division=0))),
             }
         )
 
@@ -428,28 +1192,30 @@ def _fit_domain_model(
     targets_y: np.ndarray,
     random_state: int,
     test_size: float,
-) -> tuple[RandomForestRegressor, dict, int, int, dict]:
+) -> tuple[RandomForestClassifier | DummyClassifier | Pipeline, dict, int, int, dict]:
+    binary_targets = _binary_targets(targets_y)
+    stratify = binary_targets if len(np.unique(binary_targets)) > 1 and int(np.bincount(binary_targets, minlength=2).min()) >= 2 else None
     x_train, x_test, y_train, y_test = train_test_split(
         features_x,
-        targets_y,
+        binary_targets,
         test_size=min(test_size, 0.4) if len(features_x) > 6 else 0.2,
         random_state=random_state,
+        stratify=stratify,
     )
 
-    model = RandomForestRegressor(
-        n_estimators=240,
+    model, metrics, model_family, candidate_metrics, prediction_std = _fit_selected_binary_model(
+        x_train=x_train,
+        y_train=y_train,
+        x_test=x_test,
+        y_test=y_test,
         random_state=random_state,
-        min_samples_leaf=2,
-        n_jobs=-1,
+        allow_deep_candidate=True,
     )
-    model.fit(x_train, y_train)
-    predictions, prediction_std = _forest_prediction_stats(model, x_test)
-    metrics = {
-        "mse": float(mean_squared_error(y_test, predictions)),
-        "r2": float(r2_score(y_test, predictions)),
-    }
+    metrics = dict(metrics)
     calibrator = _fit_confidence_calibrator(
-        predictions=predictions,
+        predictions=np.asarray(model.predict_proba(x_test), dtype=float)[:, -1]
+        if hasattr(model, "predict_proba")
+        else np.asarray(model.predict(x_test), dtype=float),
         prediction_std=prediction_std,
         targets_y=y_test,
         tolerance=CALIBRATION_TOLERANCE,
@@ -457,11 +1223,25 @@ def _fit_domain_model(
     )
     metrics["confidence_brier"] = float(calibrator["metrics"]["calibrated_brier"])
     metrics["confidence_accuracy"] = float(calibrator["metrics"]["calibrated_accuracy"])
+    metrics["selected_model_family"] = model_family
+    metrics["candidate_metrics"] = candidate_metrics
     return model, metrics, int(len(x_train)), int(len(x_test)), calibrator
 
 
-def _forest_prediction_stats(model: RandomForestRegressor, features_x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    tree_predictions = np.asarray([estimator.predict(features_x) for estimator in model.estimators_], dtype=float)
+def _forest_prediction_stats(model, features_x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    if getattr(model, "predict_proba", None) is not None:
+        predicted_probabilities = np.asarray(model.predict_proba(features_x), dtype=float)[:, -1]
+        if hasattr(model, "estimators_"):
+            tree_predictions = np.asarray(
+                [np.asarray(estimator.predict_proba(features_x), dtype=float)[:, -1] for estimator in model.estimators_],
+                dtype=float,
+            )
+        else:
+            tree_predictions = np.asarray([predicted_probabilities], dtype=float)
+    elif hasattr(model, "estimators_"):
+        tree_predictions = np.asarray([estimator.predict(features_x) for estimator in model.estimators_], dtype=float)
+    else:
+        tree_predictions = np.asarray([np.asarray(model.predict(features_x), dtype=float)], dtype=float)
     mean_prediction = np.clip(tree_predictions.mean(axis=0), 0.0, 1.0)
     prediction_std = np.clip(tree_predictions.std(axis=0), 0.0, 1.0)
     return mean_prediction, prediction_std
@@ -755,9 +1535,11 @@ def train_modality_model(
     source_datasets = sorted({str(value).strip() for value in df.get("source_dataset", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
     label_sources = sorted({str(value).strip() for value in df.get("label_source", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
 
-    models: dict[str, RandomForestRegressor] = {}
+    models: dict[str, RandomForestClassifier | DummyClassifier | Pipeline] = {}
     metrics: dict[str, dict] = {}
     confidence_calibrators: dict[str, dict] = {}
+    model_families: dict[str, str] = {}
+    model_selection: dict[str, dict] = {}
     sample_counts: dict[str, int] = {}
     train_counts: dict[str, int] = {}
     test_counts: dict[str, int] = {}
@@ -792,6 +1574,8 @@ def train_modality_model(
         models[domain] = model
         metrics[domain] = domain_metrics
         confidence_calibrators[domain] = calibrator
+        model_families[domain] = str(domain_metrics.get("selected_model_family", type(model).__name__)).strip()
+        model_selection[domain] = dict(domain_metrics.get("candidate_metrics", {}))
         sample_counts[domain] = int(len(features_x))
         train_counts[domain] = train_count
         test_counts[domain] = test_count
@@ -805,6 +1589,10 @@ def train_modality_model(
         )
 
     trained_domains = list(models.keys())
+    macro_accuracy = float(np.mean([metrics[domain]["accuracy"] for domain in trained_domains]))
+    macro_precision = float(np.mean([metrics[domain]["precision"] for domain in trained_domains]))
+    macro_recall = float(np.mean([metrics[domain]["recall"] for domain in trained_domains]))
+    macro_f1 = float(np.mean([metrics[domain]["f1"] for domain in trained_domains]))
     macro_r2 = float(np.mean([metrics[domain]["r2"] for domain in trained_domains]))
     calibration_quality = float(
         np.mean([
@@ -812,7 +1600,7 @@ def train_modality_model(
             for domain in trained_domains
         ])
     )
-    confidence_hint = float(np.clip(0.35 * ((macro_r2 + 1.0) / 2.0) + 0.65 * calibration_quality, 0.05, 0.99))
+    confidence_hint = float(np.clip(0.4 * macro_f1 + 0.2 * macro_precision + 0.4 * calibration_quality, 0.05, 0.99))
 
     bundle = {
         "modality": modality,
@@ -820,8 +1608,14 @@ def train_modality_model(
         "feature_names": feature_names,
         "models": models,
         "confidence_calibrators": confidence_calibrators,
+        "model_families": model_families,
+        "model_selection": model_selection,
         "metrics": {
             **metrics,
+            "macro_accuracy": macro_accuracy,
+            "macro_precision": macro_precision,
+            "macro_recall": macro_recall,
+            "macro_f1": macro_f1,
             "macro_r2": macro_r2,
             "calibration_quality": calibration_quality,
         },
@@ -921,6 +1715,13 @@ def train_comorbidity_model(
         for chain_index, chain_order in enumerate(chain_orders)
     ]
     pairwise_lift = _comorbidity_pairwise_lift(labels_y)
+    chain_model_families = {
+        f"chain_{index + 1:02d}": [
+            model_spec.get("model_family", "unknown")
+            for model_spec in chain_spec.get("models", [])
+        ]
+        for index, chain_spec in enumerate(chain_ensemble)
+    }
 
     raw_probability_rows = []
     for row in features_x:
@@ -984,6 +1785,7 @@ def train_comorbidity_model(
         "label_thresholds": label_thresholds,
         "label_prevalence": {domain: round(float(value), 3) for domain, value in zip(PREDICTION_DOMAINS, labels_y.mean(axis=0))},
         "pairwise_lift": pairwise_lift,
+        "chain_model_families": chain_model_families,
         "probability_calibrators": probability_calibrators,
         "metrics": {
             "exact_match": exact_match,
@@ -1172,6 +1974,54 @@ def train_all_federated_models(
     return results
 
 
+def train_text_transformer_model(
+    manifest_path: str | Path,
+    dataset_root: str | Path | None = None,
+    random_state: int = 42,
+    max_rows: int = 8000,
+    batch_size: int = 8,
+    epochs: int = 2,
+    learning_rate: float = 2e-5,
+) -> dict:
+    manifest_path = Path(manifest_path)
+    base_dir = Path(dataset_root) if dataset_root else manifest_path.parent
+    df = _load_manifest(manifest_path)
+    records = df.to_dict(orient="records")
+    texts: list[str] = []
+    labels: list[list[int]] = []
+    source_datasets = sorted({str(value).strip() for value in df.get("source_dataset", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
+    label_sources = sorted({str(value).strip() for value in df.get("label_source", pd.Series(dtype=str)).dropna().tolist() if str(value).strip()})
+
+    for record in records:
+        text = str(record.get("text", "") or "").strip()
+        if not text:
+            continue
+        targets = _comorbidity_targets(record)
+        if targets is None:
+            continue
+        texts.append(text)
+        labels.append(targets)
+
+    if len(texts) < 32:
+        raise ValueError("At least 32 labeled text rows are required to train the transformer model.")
+
+    bundle = _train_text_transformer_classifier(
+        texts=texts,
+        labels=np.asarray(labels, dtype=int),
+        random_state=random_state,
+        max_rows=max_rows,
+        batch_size=batch_size,
+        epochs=epochs,
+        learning_rate=learning_rate,
+    )
+    bundle["manifest_path"] = str(manifest_path.resolve())
+    bundle["dataset_root"] = str(base_dir.resolve())
+    bundle["source_datasets"] = source_datasets
+    bundle["label_sources"] = label_sources
+    save_model_bundle("text_transformer", bundle)
+    return bundle
+
+
 def _parse_domains_argument(raw_value: str | None) -> list[str] | None:
     if raw_value is None:
         return None
@@ -1198,7 +2048,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--modality",
-        choices=(*SUPPORTED_MODALITIES, "comorbidity", "all"),
+        choices=(*SUPPORTED_MODALITIES, "audio-sequence", "comorbidity", "text-transformer", "all"),
         default="all",
         help="Train one modality, the joint comorbidity head, or all supported modalities.",
     )
@@ -1267,6 +2117,26 @@ def main() -> None:
                     ),
                 }
             }
+    elif args.modality == "text-transformer":
+        result = {
+            "text_transformer": {
+                "status": "trained",
+                "bundle": train_text_transformer_model(
+                    manifest_path=args.manifest,
+                    dataset_root=args.dataset_root,
+                ),
+            }
+        }
+    elif args.modality == "audio-sequence":
+        result = {
+            "audio_sequence": {
+                "status": "trained",
+                "bundle": _train_audio_sequence_model(
+                    manifest_path=args.manifest,
+                    dataset_root=args.dataset_root,
+                ),
+            }
+        }
     elif args.modality == "comorbidity":
         result = {
             COMORBIDITY_MODEL_NAME: {

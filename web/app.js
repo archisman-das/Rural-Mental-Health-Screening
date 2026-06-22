@@ -1744,6 +1744,8 @@ const state = {
   adaptiveTypingEvents: [],
 };
 
+const APP_BUILD = "2026-06-22";
+
 const MODEL_STATS_FALLBACK_URL = "/web/model-stats.json";
 const MODEL_STATS_FALLBACK = {
   text: {
@@ -1804,6 +1806,23 @@ function apiUrl(path) {
 
 function isModelStatsVisible() {
   return false;
+}
+
+async function clearStaleAppState() {
+  try {
+    const cachedBuild = window.localStorage.getItem("mh-dashboard-build");
+    if (cachedBuild && cachedBuild !== APP_BUILD && "serviceWorker" in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((registration) => registration.unregister()));
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((key) => caches.delete(key)));
+      }
+    }
+    window.localStorage.setItem("mh-dashboard-build", APP_BUILD);
+  } catch (error) {
+    console.warn("Could not clear stale app state", error);
+  }
 }
 
 const elements = {
@@ -7352,6 +7371,7 @@ window.addEventListener("offline", () => {
 });
 
 async function bootstrapDashboard() {
+  await clearStaleAppState();
   buildQuestionnaire();
   wireQuestionnaireEvents();
   applyLanguage();

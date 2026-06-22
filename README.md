@@ -9,7 +9,7 @@ Deployment quick check:
 - Render service type: `Web Service`
 - Backend entrypoint: `dashboard_server.py`
 - Start command: `gunicorn dashboard_server:app`
-- Health check: `/health`
+- Health check: `/healthz`
 - Host bind on Render: `0.0.0.0`
 
 ## What This Project Includes
@@ -173,7 +173,7 @@ Use these settings:
 - **Environment**: `Python`
 - **Build command**: `pip install -r requirements.txt`
 - **Start command**: `gunicorn dashboard_server:app`
-- **Health check path**: `/health`
+- **Health check path**: `/healthz` or `/health`
 - **Version check**: `/version`
 
 Important:
@@ -182,6 +182,7 @@ Important:
 - Render should launch the app with Gunicorn; local development can still use `python dashboard_server.py`.
 - Do not point Render at `app.py`; that file is the older Streamlit prototype.
 - The frontend assets are served by the Flask app from `web/`, so the backend must stay active for the dashboard and API routes to work.
+- `/healthz` is the preferred Render probe and `/health` remains an alias for compatibility.
 
 ## App Usage
 

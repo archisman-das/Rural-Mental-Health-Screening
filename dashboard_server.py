@@ -667,7 +667,7 @@ def manifest():
 
 @app.after_request
 def add_response_headers(response):
-    if request.path == "/" or request.path.startswith("/api/") or request.path in {"/version", "/health"}:
+    if request.path == "/" or request.path.startswith("/api/") or request.path in {"/version", "/health", "/healthz"}:
         response.headers.setdefault("Cache-Control", "no-store, max-age=0")
         response.headers["X-App-Build"] = APP_BUILD
     return response
@@ -678,6 +678,7 @@ def health():
     return jsonify(
         {
             "status": "ok",
+            "build": APP_BUILD,
             "database": get_database_metadata(),
             "limits": {
                 "max_upload_mb": round(app.config["MAX_CONTENT_LENGTH"] / (1024 * 1024), 2),
@@ -686,6 +687,11 @@ def health():
             },
         }
     )
+
+
+@app.get("/healthz")
+def healthz():
+    return health()
 
 
 @app.get("/api/assessments")

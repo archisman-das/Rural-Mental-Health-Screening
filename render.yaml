@@ -5,7 +5,11 @@ services:
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn -c gunicorn_conf.py dashboard_server:app
-    healthCheckPath: /health
+    healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: TZ
+        value: Asia/Kolkata
+      - key: PYTHONUNBUFFERED
+        value: "1"

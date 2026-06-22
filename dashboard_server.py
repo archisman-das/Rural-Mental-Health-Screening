@@ -34,6 +34,7 @@ from mental_health_screening.utils import average, confidence_weighted_score, no
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/web")
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
+APP_BUILD = "2026-06-22"
 
 MAX_TEXT_INPUT_LENGTH = 5000
 LIST_LIMIT_DEFAULT = 50
@@ -632,7 +633,20 @@ def _extract_adaptive_request_payload():
 
 @app.get("/")
 def root():
-    return send_from_directory(app.static_folder, "index.html")
+    response = send_from_directory(app.static_folder, "index.html")
+    response.headers["Cache-Control"] = "no-store, max-age=0"
+    response.headers["X-App-Build"] = APP_BUILD
+    return response
+
+
+@app.get("/version")
+def version():
+    return jsonify(
+        {
+            "build": APP_BUILD,
+            "service": "learning-disorder-intelligence",
+        }
+    )
 
 
 @app.get("/sw.js")
@@ -648,6 +662,14 @@ def manifest():
     response = send_from_directory(app.static_folder, "manifest.webmanifest")
     response.headers["Cache-Control"] = "no-cache"
     response.mimetype = "application/manifest+json"
+    return response
+
+
+@app.after_request
+def add_response_headers(response):
+    if request.path == "/" or request.path.startswith("/api/") or request.path in {"/version", "/health"}:
+        response.headers.setdefault("Cache-Control", "no-store, max-age=0")
+        response.headers["X-App-Build"] = APP_BUILD
     return response
 
 
@@ -960,4 +982,4 @@ if __name__ == "__main__":
         except OSError:
             pass
         raise SystemExit(0)
-    app.run(host="127.0.0.1", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=False)

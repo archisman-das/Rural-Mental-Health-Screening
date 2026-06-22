@@ -1,0 +1,74 @@
+{
+  "text": {
+    "model_source": "trained_bundle",
+    "sample_count": 95956,
+    "macro_r2": -1.3228550304108673,
+    "confidence_hint": 0.5426943220030669,
+    "trained_at": "2026-06-21T14:41:00.870608+00:00",
+    "dataset_root": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    "manifest_path": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\meld_proxy.csv",
+    "domains": [
+      "depression",
+      "anxiety",
+      "stress",
+      "sleep_disorder",
+      "burnout",
+      "loneliness",
+      "substance_abuse"
+    ]
+  },
+  "audio": {
+    "model_source": "trained_bundle",
+    "sample_count": 10080,
+    "macro_r2": -0.4638916186242856,
+    "confidence_hint": 0.6106527200230442,
+    "trained_at": "2026-06-21T14:42:57.624860+00:00",
+    "dataset_root": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    "manifest_path": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\ravdess_proxy.csv",
+    "domains": [
+      "depression",
+      "anxiety",
+      "stress",
+      "sleep_disorder",
+      "burnout",
+      "loneliness",
+      "substance_abuse"
+    ]
+  },
+  "image": {
+    "model_source": "trained_bundle",
+    "sample_count": 3360,
+    "macro_r2": 0.24400604529084496,
+    "confidence_hint": 0.7146633420393247,
+    "trained_at": "2026-06-21T14:42:38.227307+00:00",
+    "dataset_root": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    "manifest_path": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\ravdess_proxy.csv",
+    "domains": [
+      "depression",
+      "anxiety",
+      "stress",
+      "sleep_disorder",
+      "burnout",
+      "loneliness",
+      "substance_abuse"
+    ]
+  },
+  "comorbidity": {
+    "model_source": "trained_bundle",
+    "sample_count": 60000,
+    "macro_f1": 0.31011737048616844,
+    "label_accuracy": 0.5792642857142857,
+    "trained_at": "2026-06-21T15:09:59.077078+00:00",
+    "dataset_root": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    "manifest_path": "D:\\Project\\Rural Mental Heath Screening AI\\tmp_datasets\\comorbidity_60k.csv",
+    "domains": [
+      "depression",
+      "anxiety",
+      "stress",
+      "sleep_disorder",
+      "burnout",
+      "loneliness",
+      "substance_abuse"
+    ]
+  }
+}

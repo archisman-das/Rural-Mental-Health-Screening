@@ -1711,6 +1711,7 @@ const state = {
   currentPage: 1,
   latestCreatedRecord: null,
   modelStats: {},
+  modelStatsSource: "api",
   qualityCheckReport: null,
   qualityCheckLoading: false,
   adaptiveResponses: {},
@@ -1742,6 +1743,68 @@ const state = {
   mainTypingEvents: [],
   adaptiveTypingEvents: [],
 };
+
+const MODEL_STATS_FALLBACK_URL = "/web/model-stats.json";
+const MODEL_STATS_FALLBACK = {
+  text: {
+    model_source: "trained_bundle",
+    sample_count: 95956,
+    macro_r2: -1.3228550304108673,
+    confidence_hint: 0.5426943220030669,
+    trained_at: "2026-06-21T14:41:00.870608+00:00",
+    dataset_root: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    manifest_path: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\meld_proxy.csv",
+    domains: ["depression", "anxiety", "stress", "sleep_disorder", "burnout", "loneliness", "substance_abuse"],
+  },
+  audio: {
+    model_source: "trained_bundle",
+    sample_count: 10080,
+    macro_r2: -0.4638916186242856,
+    confidence_hint: 0.6106527200230442,
+    trained_at: "2026-06-21T14:42:57.624860+00:00",
+    dataset_root: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    manifest_path: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\ravdess_proxy.csv",
+    domains: ["depression", "anxiety", "stress", "sleep_disorder", "burnout", "loneliness", "substance_abuse"],
+  },
+  image: {
+    model_source: "trained_bundle",
+    sample_count: 3360,
+    macro_r2: 0.24400604529084496,
+    confidence_hint: 0.7146633420393247,
+    trained_at: "2026-06-21T14:42:38.227307+00:00",
+    dataset_root: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    manifest_path: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests\\ravdess_proxy.csv",
+    domains: ["depression", "anxiety", "stress", "sleep_disorder", "burnout", "loneliness", "substance_abuse"],
+  },
+  comorbidity: {
+    model_source: "trained_bundle",
+    sample_count: 60000,
+    macro_f1: 0.31011737048616844,
+    label_accuracy: 0.5792642857142857,
+    trained_at: "2026-06-21T15:09:59.077078+00:00",
+    dataset_root: "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    manifest_path: "D:\\Project\\Rural Mental Heath Screening AI\\tmp_datasets\\comorbidity_60k.csv",
+    domains: ["depression", "anxiety", "stress", "sleep_disorder", "burnout", "loneliness", "substance_abuse"],
+  },
+};
+const DASHBOARD_API_BASE_URL = (() => {
+  const metaBase = document.querySelector('meta[name="dashboard-api-base"]')?.content?.trim();
+  const globalBase = window.__DASHBOARD_API_BASE_URL__;
+  const rawBase = metaBase || globalBase || window.location.origin;
+  try {
+    return new URL(rawBase, window.location.href).origin;
+  } catch {
+    return window.location.origin;
+  }
+})();
+
+function apiUrl(path) {
+  return new URL(path, DASHBOARD_API_BASE_URL).toString();
+}
+
+function isModelStatsVisible() {
+  return false;
+}
 
 const elements = {
   tabButtons: [...document.querySelectorAll(".tab-btn")],
@@ -3344,8 +3407,6 @@ function applyLanguage() {
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(1) .section-heading p", t("domainAnalysisText"));
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(2) .section-heading h2", t("componentContributionTitle"));
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(2) .section-heading p", t("componentContributionText"));
-  setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(4) .panel:nth-child(1) .section-heading h2", t("modelStatisticsTitle"));
-  setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(4) .panel:nth-child(1) .section-heading p", t("modelStatisticsText"));
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(4) .panel:nth-child(2) .section-heading h2", t("nlpSafetyTitle"));
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(4) .panel:nth-child(2) .section-heading p", t("nlpSafetyText"));
   setNodeText("#analyticsView .analytics-grid-secondary:nth-of-type(5) .panel:nth-child(1) .section-heading h2", t("modalityQualityTitle"));
@@ -5240,8 +5301,16 @@ function renderModelStatistics() {
     `;
   }).join("");
 
+  const statsSourceNote = state.modelStatsSource === "api"
+    ? ""
+    : state.modelStatsSource === "file"
+      ? "Showing bundled model statistics because the live API was unavailable."
+      : "Showing embedded model statistics because both the live API and bundled stats file were unavailable.";
+
   elements.villageSummary.className = "chart-stack";
   elements.villageSummary.innerHTML = `
+    <p class="chart-note">Build 2026-06-22</p>
+    ${statsSourceNote ? `<p class="chart-note">${statsSourceNote}</p>` : ""}
     ${hasSavedModelStats ? "" : `<p class="chart-note">${t("liveModelStatsFallbackLabel")}</p>`}
     ${trainedRows.length && fallbackRows.length && hasSavedModelStats
       ? `<p class="chart-note">${t("fallbackRowsHiddenLabel")}</p>`
@@ -6174,7 +6243,9 @@ function renderDashboard() {
   renderOverview();
   renderRiskDistribution();
   renderSubmissionTrend();
-  renderModelStatistics();
+  if (isModelStatsVisible()) {
+    renderModelStatistics();
+  }
   renderNlpSignalSummary();
   renderQualityCheckSummary();
   renderRiskHotspots();
@@ -6940,14 +7011,26 @@ async function loadApiResults(sourceLabel, focusLatest = false) {
 
 async function loadModelStats() {
   try {
-    const response = await fetch("/api/model-stats", { cache: "no-store" });
+    const response = await fetch(apiUrl("/api/model-stats"), { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
     state.modelStats = await response.json();
+    state.modelStatsSource = "api";
   } catch (error) {
-    console.error("Model stats load failed", error);
-    state.modelStats = {};
+    console.warn("Model stats API unavailable, falling back to bundled snapshot.", error);
+    try {
+      const fallbackResponse = await fetch(MODEL_STATS_FALLBACK_URL, { cache: "no-store" });
+      if (!fallbackResponse.ok) {
+        throw new Error(`HTTP ${fallbackResponse.status}`);
+      }
+      state.modelStats = await fallbackResponse.json();
+      state.modelStatsSource = "file";
+    } catch (fallbackError) {
+      console.warn("Model stats file fallback unavailable, using embedded snapshot.", fallbackError);
+      state.modelStats = structuredClone ? structuredClone(MODEL_STATS_FALLBACK) : JSON.parse(JSON.stringify(MODEL_STATS_FALLBACK));
+      state.modelStatsSource = "embedded";
+    }
   }
 }
 

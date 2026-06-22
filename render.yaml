@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: learning-disorder-intelligence
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn_conf.py dashboard_server:app
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

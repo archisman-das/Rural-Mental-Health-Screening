@@ -2,6 +2,16 @@
 
 An AI-based rural mental health screening dashboard for questionnaire intake, multimodal signals, adaptive screening, multilingual analysis views, saved result retrieval, and PDF reporting.
 
+**Render-ready Flask web service**: `dashboard_server.py` + `gunicorn dashboard_server:app` + `/health`
+
+Deployment quick check:
+
+- Render service type: `Web Service`
+- Backend entrypoint: `dashboard_server.py`
+- Start command: `gunicorn dashboard_server:app`
+- Health check: `/health`
+- Host bind on Render: `0.0.0.0`
+
 ## What This Project Includes
 
 - Multilingual dashboard UI with English, Hindi, and Bengali switching
@@ -154,6 +164,25 @@ python dashboard_server.py
 
 4. Open `http://127.0.0.1:8000/` in your browser.
 
+## Render Deployment
+
+Deploy this project on Render as a **Web Service**, not a Static Site.
+
+Use these settings:
+
+- **Environment**: `Python`
+- **Build command**: `pip install -r requirements.txt`
+- **Start command**: `gunicorn dashboard_server:app`
+- **Health check path**: `/health`
+- **Version check**: `/version`
+
+Important:
+
+- The Flask backend lives in `dashboard_server.py`.
+- Render should launch the app with Gunicorn; local development can still use `python dashboard_server.py`.
+- Do not point Render at `app.py`; that file is the older Streamlit prototype.
+- The frontend assets are served by the Flask app from `web/`, so the backend must stay active for the dashboard and API routes to work.
+
 ## App Usage
 
 - Open the dashboard and complete the candidate profile, narrative, and symptom questionnaire in `Assessment Workspace`.
@@ -191,7 +220,9 @@ The training path has two honest stages:
 
 If the datasets are already on disk, the orchestration script validates roots, generates manifests, and runs the training commands in one flow.
 
-It now also regenerates the balanced comorbidity manifest from the MELD and RAVDESS proxy outputs before training, then retrains the joint comorbidity head from that balanced file.
+It now also regenerates the bootstrapped comorbidity manifest from the MELD and RAVDESS proxy outputs before training, then retrains the joint comorbidity head from that larger file. By default, the pipeline writes a balanced `60,000` rows to `tmp_datasets/comorbidity_60k.csv` so it avoids the locked file in `data/manifests/` and gives the joint head more training volume.
+
+See [docs/config_examples.md](/D:/Project/Rural%20Mental%20Heath%20Screening%20AI/docs/config_examples.md) for a short explanation of the example JSON config files and the writable manifest path.
 
 1. Copy the example config and update the dataset paths:
 
@@ -321,12 +352,15 @@ python -m src.mental_health_screening.dataset_prep daic-woz C:\path\to\DAIC-WOZ 
 Build the balanced comorbidity training manifest from the proxy datasets:
 
 ```powershell
-python -m src.mental_health_screening.dataset_prep comorbidity-balance `
+python -m src.mental_health_screening.dataset_prep comorbidity-expand `
   data\manifests\meld_proxy.csv `
   data\manifests\ravdess_proxy.csv `
-  --output-path data\manifests\comorbidity_balanced.csv `
-  --bucket-targets 0:600,1:600,2:500,3:600,4:1400
+  --output-path tmp_datasets\comorbidity_60k.csv `
+  --target-rows 60000 `
+  --bucket-targets 0:12000,1:12000,2:12000,3:12000,4:12000
 ```
+
+If you need a smaller copy under `data/manifests/`, use a different output path only after the file lock is cleared.
 
 ### Train Modality Models
 

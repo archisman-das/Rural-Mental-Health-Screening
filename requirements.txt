@@ -1,5 +1,6 @@
 streamlit
 flask
+gunicorn
 psycopg[binary]
 cryptography
 shap

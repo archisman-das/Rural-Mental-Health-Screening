@@ -1561,6 +1561,22 @@ body::before {
   font-size: 1.05rem;
 }
 
+.build-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(109, 56, 22, 0.14);
+  background: rgba(255, 252, 247, 0.88);
+  color: var(--primary-deep);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  width: fit-content;
+}
+
 .hero-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

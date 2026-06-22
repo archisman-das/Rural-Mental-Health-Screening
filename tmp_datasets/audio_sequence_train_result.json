@@ -1,0 +1,12 @@
+{
+  "bundle_path": "D:\\Project\\Rural Mental Heath Screening AI\\tmp_datasets\\audio_sequence_bundle.pkl",
+  "metrics": {
+    "exact_match": 0.0763888888888889,
+    "macro_f1": 0.4455892318356192,
+    "label_accuracy": 0.6101190476190477,
+    "sample_count": 1440
+  },
+  "sample_count": 1440,
+  "model_type": "audio_bilstm_multilabel",
+  "best_seed": 84
+}

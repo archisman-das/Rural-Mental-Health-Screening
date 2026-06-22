@@ -1,0 +1,33 @@
+Traceback (most recent call last):
+  File "D:\Project\Rural Mental Heath Screening AI\tmp_datasets\run_audio_sequence_train.py", line 20, in main
+    bundle = _train_audio_sequence_model(
+        manifest_path=ROOT / "data" / "manifests" / "ravdess_proxy.csv",
+    ...<4 lines>...
+        max_frames=80,
+    )
+  File "D:\Project\Rural Mental Heath Screening AI\src\mental_health_screening\training.py", line 727, in _train_audio_sequence_model
+    logits = model(padded, lengths)
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "D:\Project\Rural Mental Heath Screening AI\src\mental_health_screening\training.py", line 601, in forward
+    return self.classifier(self.projection(self.dropout(features)))
+                           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\container.py", line 250, in forward
+    input = module(input)
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "C:\Users\dasar\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\nn\modules\linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (32x768 and 1024x256)

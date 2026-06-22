@@ -1,0 +1,631 @@
+{
+  "status": "completed",
+  "updated_at": "2026-06-21T10:23:23+00:00",
+  "comorbidity_balanced_manifest": "D:\\Project\\Rural Mental Heath Screening AI\\tmp_datasets\\comorbidity_60k.csv",
+  "comorbidity_target_rows": 60000,
+  "comorbidity_bucket_targets": "0:12000,1:12000,2:12000,3:12000,4:12000",
+  "comorbidity_bundle": {
+    "modality": "comorbidity",
+    "bundle_path": "D:\\Project\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\comorbidity_bundle.pkl",
+    "domains": [
+      "depression",
+      "anxiety",
+      "stress",
+      "sleep_disorder",
+      "burnout",
+      "loneliness",
+      "substance_abuse"
+    ],
+    "feature_names": [
+      "text_available",
+      "text_confidence",
+      "text_depression_score",
+      "text_anxiety_score",
+      "text_stress_score",
+      "text_sleep_disorder_score",
+      "text_burnout_score",
+      "text_loneliness_score",
+      "text_substance_abuse_score",
+      "audio_available",
+      "audio_confidence",
+      "audio_depression_score",
+      "audio_anxiety_score",
+      "audio_stress_score",
+      "audio_sleep_disorder_score",
+      "audio_burnout_score",
+      "audio_loneliness_score",
+      "audio_substance_abuse_score",
+      "image_available",
+      "image_confidence",
+      "image_depression_score",
+      "image_anxiety_score",
+      "image_stress_score",
+      "image_sleep_disorder_score",
+      "image_burnout_score",
+      "image_loneliness_score",
+      "image_substance_abuse_score",
+      "available_modalities_count"
+    ],
+    "training_strategy": "classifier_chain_ensemble",
+    "federated": {},
+    "confidence_hint": 0.0,
+    "sample_count": 60000,
+    "sample_counts": {
+      "depression": 8286,
+      "anxiety": 26622,
+      "stress": 30847,
+      "sleep_disorder": 11842,
+      "burnout": 12576,
+      "loneliness": 8286,
+      "substance_abuse": 21660
+    },
+    "train_counts": {},
+    "test_counts": {},
+    "manifest_path": "D:\\Project\\Rural Mental Heath Screening AI\\tmp_datasets\\comorbidity_60k.csv",
+    "dataset_root": "D:\\Project\\Rural Mental Heath Screening AI\\data\\manifests",
+    "source_datasets": [
+      "MELD",
+      "RAVDESS"
+    ],
+    "label_sources": [
+      "meld_emotion_sentiment_keyword_proxy",
+      "ravdess_emotion_intensity_proxy"
+    ],
+    "trained_at": "2026-06-21T11:03:56.334220+00:00",
+    "macro_r2": 0.0,
+    "calibration_quality": 0.0,
+    "explainability": {
+      "library": "shap",
+      "available": false,
+      "supported_domains": []
+    },
+    "confidence_calibration": {
+      "depression": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "anxiety": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "stress": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "sleep_disorder": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "burnout": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "loneliness": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      },
+      "substance_abuse": {
+        "method": "none",
+        "uncertainty_scale": 0.0,
+        "metrics": {}
+      }
+    },
+    "metrics": {
+      "exact_match": 0.17976666666666666,
+      "macro_f1": 0.31011737048616844,
+      "label_accuracy": 0.5792642857142857,
+      "sample_count": 60000,
+      "ensemble_train_accuracy": 0.8205866666666667,
+      "ensemble_train_f1": 0.6760919741317835
+    },
+    "skipped_domains": {},
+    "model_source": "trained_bundle",
+    "onnx_artifacts": {
+      "modality": "comorbidity",
+      "bundle_path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\comorbidity_bundle.pkl",
+      "feature_count": 28,
+      "artifacts": {
+        "chain_01": {
+          "chain_order": [
+            "depression",
+            "anxiety",
+            "stress",
+            "sleep_disorder",
+            "burnout",
+            "loneliness",
+            "substance_abuse"
+          ],
+          "artifacts": {
+            "depression": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\depression.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "anxiety": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\anxiety.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "stress": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\stress.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "sleep_disorder": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\sleep_disorder.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "burnout": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\burnout.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "loneliness": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\loneliness.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "substance_abuse": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_01\\substance_abuse.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            }
+          }
+        },
+        "chain_02": {
+          "chain_order": [
+            "sleep_disorder",
+            "stress",
+            "substance_abuse",
+            "burnout",
+            "anxiety",
+            "loneliness",
+            "depression"
+          ],
+          "artifacts": {
+            "sleep_disorder": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\sleep_disorder.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "stress": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\stress.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "substance_abuse": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\substance_abuse.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "burnout": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\burnout.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "anxiety": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\anxiety.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "loneliness": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\loneliness.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "depression": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_02\\depression.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            }
+          }
+        },
+        "chain_03": {
+          "chain_order": [
+            "depression",
+            "stress",
+            "substance_abuse",
+            "anxiety",
+            "burnout",
+            "sleep_disorder",
+            "loneliness"
+          ],
+          "artifacts": {
+            "depression": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\depression.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "stress": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\stress.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "substance_abuse": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\substance_abuse.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "anxiety": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\anxiety.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "burnout": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\burnout.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "sleep_disorder": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\sleep_disorder.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "loneliness": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_03\\loneliness.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            }
+          }
+        },
+        "chain_04": {
+          "chain_order": [
+            "substance_abuse",
+            "anxiety",
+            "burnout",
+            "stress",
+            "loneliness",
+            "sleep_disorder",
+            "depression"
+          ],
+          "artifacts": {
+            "substance_abuse": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\substance_abuse.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "anxiety": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\anxiety.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "burnout": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\burnout.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "stress": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\stress.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "loneliness": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\loneliness.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "sleep_disorder": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\sleep_disorder.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "depression": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_04\\depression.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            }
+          }
+        },
+        "chain_05": {
+          "chain_order": [
+            "depression",
+            "loneliness",
+            "burnout",
+            "stress",
+            "substance_abuse",
+            "sleep_disorder",
+            "anxiety"
+          ],
+          "artifacts": {
+            "depression": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\depression.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "loneliness": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\loneliness.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "burnout": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\burnout.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "stress": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\stress.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "substance_abuse": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\substance_abuse.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "sleep_disorder": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\sleep_disorder.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            },
+            "anxiety": {
+              "path": "C:\\Rural Mental Heath Screening AI\\models\\mental_health_screening\\onnx\\comorbidity\\chain_05\\anxiety.onnx",
+              "inputs": 28,
+              "outputs": [
+                "output_label",
+                "output_probability"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "joint_prediction": {
+      "model_type": "classifier_chain_ensemble",
+      "ensemble_size": 5,
+      "chain_orders": [
+        [
+          "depression",
+          "anxiety",
+          "stress",
+          "sleep_disorder",
+          "burnout",
+          "loneliness",
+          "substance_abuse"
+        ],
+        [
+          "sleep_disorder",
+          "stress",
+          "substance_abuse",
+          "burnout",
+          "anxiety",
+          "loneliness",
+          "depression"
+        ],
+        [
+          "depression",
+          "stress",
+          "substance_abuse",
+          "anxiety",
+          "burnout",
+          "sleep_disorder",
+          "loneliness"
+        ],
+        [
+          "substance_abuse",
+          "anxiety",
+          "burnout",
+          "stress",
+          "loneliness",
+          "sleep_disorder",
+          "depression"
+        ],
+        [
+          "depression",
+          "loneliness",
+          "burnout",
+          "stress",
+          "substance_abuse",
+          "sleep_disorder",
+          "anxiety"
+        ]
+      ],
+      "label_thresholds": {
+        "depression": 0.3,
+        "anxiety": 0.235,
+        "stress": 0.264,
+        "sleep_disorder": 0.591,
+        "burnout": 0.05,
+        "loneliness": 0.429,
+        "substance_abuse": 0.134
+      },
+      "prediction_rule": "average_probabilities_across_randomized_label_orders",
+      "probability_calibration": {
+        "depression": {
+          "method": "isotonic",
+          "positive_rate": 0.1381
+        },
+        "anxiety": {
+          "method": "isotonic",
+          "positive_rate": 0.4437
+        },
+        "stress": {
+          "method": "isotonic",
+          "positive_rate": 0.5141166666666667
+        },
+        "sleep_disorder": {
+          "method": "isotonic",
+          "positive_rate": 0.19736666666666666
+        },
+        "burnout": {
+          "method": "isotonic",
+          "positive_rate": 0.2096
+        },
+        "loneliness": {
+          "method": "isotonic",
+          "positive_rate": 0.1381
+        },
+        "substance_abuse": {
+          "method": "isotonic",
+          "positive_rate": 0.361
+        }
+      },
+      "threshold_tuning": {
+        "depression": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.1381,
+          "best_fbeta": 0.444795,
+          "threshold": 0.3
+        },
+        "anxiety": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.4437,
+          "best_fbeta": 0.799517,
+          "threshold": 0.235
+        },
+        "stress": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.5141166666666667,
+          "best_fbeta": 0.841031,
+          "threshold": 0.264
+        },
+        "sleep_disorder": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.19736666666666666,
+          "best_fbeta": 0.551468,
+          "threshold": 0.591
+        },
+        "burnout": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.2096,
+          "best_fbeta": 0.570061,
+          "threshold": 0.05
+        },
+        "loneliness": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.1381,
+          "best_fbeta": 0.444795,
+          "threshold": 0.429
+        },
+        "substance_abuse": {
+          "method": "precision_recall_fbeta",
+          "beta": 2.0,
+          "sample_count": 60000,
+          "positive_rate": 0.361,
+          "best_fbeta": 0.738543,
+          "threshold": 0.134
+        }
+      }
+    }
+  }
+}

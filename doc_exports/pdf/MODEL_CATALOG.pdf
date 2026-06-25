@@ -1,0 +1,167 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2309 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Model Catalog) Tj
+T*
+() Tj
+T*
+(This file lists every model family and saved bundle used in the project, along with its purpose in the screening workflow.) Tj
+T*
+() Tj
+T*
+(## Text) Tj
+T*
+() Tj
+T*
+(- text_transformer: primary transformer-based text scorer for narrative screening; used when the local transformer bundle is available.) Tj
+T*
+(- text: classical text scorer and fallback bundle; used when the transformer bundle is unavailable or as a stability backup.) Tj
+T*
+() Tj
+T*
+(## Audio) Tj
+T*
+() Tj
+T*
+(- audio: primary acoustic screening bundle; the main audio scorer for mood-heavy and speech-derived signals.) Tj
+T*
+(- audio_spectrogram: secondary audio branch trained on spectrograms; used as a stabilizer when available.) Tj
+T*
+(- audio_sequence: secondary audio branch trained on chunk sequences; used as a fallback stabilizer until it improves further.) Tj
+T*
+() Tj
+T*
+(## Image) Tj
+T*
+() Tj
+T*
+(- image_dl: primary image scorer; the current CNN-based image bundle with stronger augmentation and better diversity.) Tj
+T*
+(- image: classical image bundle; used as a fallback and stabilizer for face-derived features.) Tj
+T*
+() Tj
+T*
+(## Comorbidity) Tj
+T*
+() Tj
+T*
+(- comorbidity: classifier-chain ensemble for joint label prediction; used to estimate co-occurring domain patterns and now blends upstream text, audio, and image consensus.) Tj
+T*
+() Tj
+T*
+(## Supporting Runtime Components) Tj
+T*
+() Tj
+T*
+(These are not final decision models, but they support the screening stack:) Tj
+T*
+() Tj
+T*
+(- questionnaire scoring: structured symptom scoring from the assessment workspace.) Tj
+T*
+(- passive biomarkers: typing and phone-camera-derived adjunct signals for low-hardware screening support.) Tj
+T*
+(- heuristic NLP features: sentiment, emotion, distress phrases, and safety-language cues that keep the app usable when transformers are unavailable.) Tj
+T*
+() Tj
+T*
+(## Practical Priority Order) Tj
+T*
+() Tj
+T*
+(The runtime currently prefers:) Tj
+T*
+() Tj
+T*
+(1. text_transformer over text) Tj
+T*
+(2. audio over audio_spectrogram and audio_sequence) Tj
+T*
+(3. image_dl over image) Tj
+T*
+(4. comorbidity after upstream modality consensus is available) Tj
+T*
+() Tj
+T*
+(## Where These Models Are Used) Tj
+T*
+() Tj
+T*
+(- Preview scoring in the dashboard) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 532 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- Saved assessment scoring) Tj
+T*
+(- Analytics Hub model statistics) Tj
+T*
+(- PDF report summaries) Tj
+T*
+(- Quality-check and trajectory views) Tj
+T*
+(- Training and retraining workflows) Tj
+T*
+() Tj
+T*
+(## Related Files) Tj
+T*
+() Tj
+T*
+(- docs/MODEL_COMPARISON_MATRIX.md \(MODEL_COMPARISON_MATRIX.md\)) Tj
+T*
+(- docs/MULTIMODAL_FUSION.md \(MULTIMODAL_FUSION.md\)) Tj
+T*
+(- docs/DEEP_LEARNING_MODEL_GUIDE.md \(DEEP_LEARNING_MODEL_GUIDE.md\)) Tj
+T*
+(- README.md \(../README.md\)) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R ] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+8 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Model Catalog) /Creator (Codex) >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002440 00000 n 
+0000002566 00000 n 
+0000003149 00000 n 
+0000003275 00000 n 
+0000003340 00000 n 
+0000003389 00000 n 
+trailer
+<< /Size 9 /Root 7 0 R /Info 8 0 R >>
+startxref
+3486
+%%EOF

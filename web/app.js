@@ -514,7 +514,9 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Refreshing the live preview from the Python NLP backend...",
     noRecordSelected: "No assessment selected.",
     assessmentIdLabel: "Assessment ID",
-    overallConfidenceLabel: "Overall Confidence",
+    overallConfidenceLabel: "Calibrated Confidence",
+    confidenceLiftText: "Calibration strengthens the combined confidence signal.",
+    evidenceStrengthLabel: "Evidence Strength",
     overallRiskLabel: "Overall Risk",
     candidateLabel: "Candidate",
     villageShortLabel: "Village",
@@ -523,7 +525,7 @@ const UI_TRANSLATIONS = {
     analyticsIntroCurrent: "One assessment in focus",
     analyticsIntroCurrentText: "Analytics Hub now explains the currently saved assessment and does not preload backend records automatically.",
     analyticsIntroModel: "Model Insights",
-    analyticsIntroModelText: "Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.",
+    analyticsIntroModelText: "Review domain-level scores, modality quality, calibrated confidence, evidence strength, transformer usage, and NLP signal interpretation for this assessment.",
     analyticsIntroScope: "Prediction Scope",
     analyticsIntroScopeText: "Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.",
     analyticsIntroInstrumentKicker: "Validated instrument",
@@ -893,7 +895,9 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Python NLP बैकएंड से लाइव प्रीव्यू ताज़ा किया जा रहा है...",
     noRecordSelected: "कोई आकलन चुना नहीं गया है।",
     assessmentIdLabel: "आकलन आईडी",
-    overallConfidenceLabel: "कुल कॉन्फिडेंस",
+    overallConfidenceLabel: "कैलिब्रेटेड कॉन्फिडेंस",
+    confidenceLiftText: "कैलिब्रेशन संयुक्त कॉन्फिडेंस सिग्नल को मजबूत करता है।",
+    evidenceStrengthLabel: "साक्ष्य शक्ति",
     overallRiskLabel: "कुल जोखिम",
     candidateLabel: "उम्मीदवार",
     villageShortLabel: "गाँव",
@@ -902,7 +906,7 @@ const UI_TRANSLATIONS = {
     analyticsIntroCurrent: "एक आकलन पर ध्यान",
     analyticsIntroCurrentText: "Analytics Hub अब पुराने रिकॉर्ड स्वतः लोड करने के बजाय वर्तमान सहेजे गए आकलन की व्याख्या करता है।",
     analyticsIntroModel: "मॉडल अंतर्दृष्टि",
-    analyticsIntroModelText: "इस आकलन के लिए डोमेन स्कोर, मॉडेलिटी गुणवत्ता, कॉन्फिडेंस, ट्रांसफॉर्मर उपयोग और NLP संकेत देखें।",
+    analyticsIntroModelText: "इस आकलन के लिए डोमेन स्कोर, मॉडेलिटी गुणवत्ता, कैलिब्रेटेड कॉन्फिडेंस, साक्ष्य शक्ति, ट्रांसफॉर्मर उपयोग और NLP संकेत देखें।",
     analyticsIntroScope: "पूर्वानुमान क्षेत्र",
     analyticsIntroScopeText: "डिप्रेशन, एंग्जायटी, तनाव, नींद संबंधी समस्या, बर्नआउट, अकेलापन और पदार्थ दुरुपयोग।",
     analyticsIntroInstrumentKicker: "मान्यीकृत प्रश्नावली",
@@ -1254,7 +1258,9 @@ const UI_TRANSLATIONS = {
     previewRefreshing: "Python NLP ব্যাকএন্ড থেকে লাইভ প্রিভিউ আপডেট করা হচ্ছে...",
     noRecordSelected: "কোনো মূল্যায়ন নির্বাচন করা হয়নি।",
     assessmentIdLabel: "মূল্যায়ন আইডি",
-    overallConfidenceLabel: "সামগ্রিক কনফিডেন্স",
+    overallConfidenceLabel: "ক্যালিব্রেটেড কনফিডেন্স",
+    confidenceLiftText: "ক্যালিব্রেশন সম্মিলিত কনফিডেন্স সিগন্যালকে শক্তিশালী করে।",
+    evidenceStrengthLabel: "প্রমাণ শক্তি",
     overallRiskLabel: "সামগ্রিক ঝুঁকি",
     candidateLabel: "প্রার্থী",
     villageShortLabel: "গ্রাম",
@@ -1263,7 +1269,7 @@ const UI_TRANSLATIONS = {
     analyticsIntroCurrent: "একটি মূল্যায়ন এখন কেন্দ্রে",
     analyticsIntroCurrentText: "Analytics Hub আর আগের রেকর্ড নিজে থেকে টেনে আনে না; এখন এটি সদ্য সংরক্ষিত বর্তমান মূল্যায়নটিকেই ব্যাখ্যা করে।",
     analyticsIntroModel: "মডেল বিশ্লেষণ",
-    analyticsIntroModelText: "এই মূল্যায়নের জন্য ডোমেইনভিত্তিক স্কোর, ইনপুটের মান, কনফিডেন্স, ট্রান্সফর্মার ব্যবহার এবং NLP সংকেত দেখুন।",
+    analyticsIntroModelText: "এই মূল্যায়নের জন্য ডোমেইনভিত্তিক স্কোর, ইনপুটের মান, ক্যালিব্রেটেড কনফিডেন্স, প্রমাণ শক্তি, ট্রান্সফর্মার ব্যবহার এবং NLP সংকেত দেখুন।",
     analyticsIntroScope: "পূর্বাভাসের ক্ষেত্র",
     analyticsIntroScopeText: "বিষণ্নতা, উদ্বেগ, চাপ, ঘুমের সমস্যা, বার্নআউট, একাকীত্ব এবং পদার্থের অপব্যবহার।",
     analyticsIntroInstrumentKicker: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
@@ -1744,7 +1750,14 @@ const state = {
   adaptiveTypingEvents: [],
 };
 
-const APP_BUILD = "2026-06-22";
+const APP_BUILD = "2026-06-24";
+
+const FINAL_SCORE_WEIGHTS = {
+  text: 0.22,
+  audio: 0.30,
+  image: 0.40,
+  passive_biomarkers: 0.08,
+};
 
 const MODEL_STATS_FALLBACK_URL = "/web/model-stats.json";
 const MODEL_STATS_FALLBACK = {
@@ -1805,7 +1818,7 @@ function apiUrl(path) {
 }
 
 function isModelStatsVisible() {
-  return false;
+  return true;
 }
 
 async function clearStaleAppState() {
@@ -1893,6 +1906,7 @@ const elements = {
   statusBanner: document.getElementById("statusBanner"),
   analysisAssessmentId: document.getElementById("analysisAssessmentId"),
   analysisConfidence: document.getElementById("analysisConfidence"),
+  analysisEvidenceStrength: document.getElementById("analysisEvidenceStrength"),
   analysisStrongestDomain: document.getElementById("analysisStrongestDomain"),
   analysisCoverage: document.getElementById("analysisCoverage"),
   analysisSubmissionTime: document.getElementById("analysisSubmissionTime"),
@@ -1906,6 +1920,7 @@ const elements = {
   trajectorySummary: document.getElementById("trajectorySummary"),
   villageSummary: document.getElementById("villageSummary"),
   assessorSummary: document.getElementById("assessorSummary"),
+  scoreWeightSummary: document.getElementById("scoreWeightSummary"),
   recordLookup: document.getElementById("recordLookup"),
   fetchRecordBtn: document.getElementById("fetchRecordBtn"),
   downloadSelectedPdfBtn: document.getElementById("downloadSelectedPdfBtn"),
@@ -3401,6 +3416,8 @@ function applyLanguage() {
   elements.recordLookup.placeholder = t("recordLookupPlaceholder");
   setNodeText("#analysisAssessmentIdLabel", t("assessmentIdLabel"));
   setNodeText("#analysisConfidenceLabel", t("overallConfidenceLabel"));
+  setNodeText("#analysisConfidenceLiftText", t("confidenceLiftText"));
+  setNodeText("#analysisEvidenceStrengthLabel", t("evidenceStrengthLabel"));
   setNodeText("#analysisOverallRiskLabel", t("overallRiskLabel"));
   setNodeText("#recordsTableAssessmentIdHeader", t("assessmentIdLabel"));
   setNodeText("#recordsTableNameHeader", t("candidateLabel"));
@@ -4780,6 +4797,7 @@ function renderOverview() {
   if (!record) {
     elements.analysisAssessmentId.textContent = t("noDataLabel");
     elements.analysisConfidence.textContent = "0%";
+    if (elements.analysisEvidenceStrength) elements.analysisEvidenceStrength.textContent = "0%";
     elements.analysisStrongestDomain.textContent = t("noDataLabel");
     elements.analysisCoverage.textContent = "0/3";
     elements.analysisSubmissionTime.textContent = t("noDataLabel");
@@ -4794,6 +4812,9 @@ function renderOverview() {
   const trajectory = getTrajectory(record);
   elements.analysisAssessmentId.textContent = record.assessment_id;
   elements.analysisConfidence.textContent = formatPercent(record.multimodal?.overall?.confidence || 0);
+  if (elements.analysisEvidenceStrength) {
+    elements.analysisEvidenceStrength.textContent = formatPercent(record.multimodal?.overall?.evidence_strength || record.multimodal?.overall?.confidence || 0);
+  }
   elements.analysisStrongestDomain.textContent = dominant ? localizedDomainLabel(dominant) : t("noDataLabel");
   elements.analysisCoverage.textContent = `${modalitiesUsed}/3`;
   elements.analysisSubmissionTime.textContent = formatDate(record.created_at);
@@ -4829,6 +4850,47 @@ function buildChartCard(title, subtitle, visual, footer = "") {
   `;
 }
 
+function renderScoreWeightSummary() {
+  const items = ["image", "text", "audio", "passive_biomarkers"].map((modality) => {
+    const label = localizedModalityLabel(modality);
+    const weight = finalScoreWeight(modality);
+    const weightPct = Math.round(weight * 100);
+    const className = modality === "image"
+      ? "score-weight-item image-priority"
+      : modality === "audio"
+        ? "score-weight-item audio-priority"
+        : "score-weight-item";
+    return `
+      <div class="${className}">
+        <div class="score-weight-row">
+          <span class="score-weight-label">
+            ${label}
+            ${modality === "image" ? '<span class="score-weight-tag">Lead signal</span>' : ""}
+          </span>
+          <strong>${weightPct}%</strong>
+        </div>
+        <div class="score-weight-track"><span style="width:${weightPct}%"></span></div>
+      </div>
+    `;
+  }).join("");
+  if (elements.scoreWeightSummary) {
+    const weightSummary = ["image", "text", "audio", "passive_biomarkers"]
+      .map((modality) => `${localizedModalityLabel(modality)} ${Math.round(finalScoreWeight(modality) * 100)}%`)
+      .join(", ");
+    elements.scoreWeightSummary.innerHTML = `
+      <div class="score-weight-intro">
+        <span class="risk-pill instrument-pill image-focus-pill">Image now leads the combined score</span>
+        <span class="summary-meta">${weightSummary}.</span>
+      </div>
+      <div class="score-weight-grid">${items}</div>
+    `;
+  }
+}
+
+function finalScoreWeight(modality) {
+  return Number(FINAL_SCORE_WEIGHTS[modality] || 0);
+}
+
 function formatMetricNumber(value, digits = 2) {
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "N/A";
@@ -4839,6 +4901,57 @@ function formatCompactPath(value) {
   if (!value) return "Unavailable";
   const parts = String(value).split(/[\\/]+/).filter(Boolean);
   return parts.slice(-2).join("/");
+}
+
+function classifyBundleFamily(bundleKey, bundle) {
+  const metrics = bundle?.metrics || {};
+  if (bundleKey === "text_transformer") return "Transformer";
+  if (bundleKey === "audio_sequence") return "Sequence";
+  if (bundleKey === "comorbidity") return "Joint label";
+  if (metrics.exact_match !== undefined || metrics.label_accuracy !== undefined) return "Joint label";
+  if (metrics.macro_accuracy !== undefined || metrics.macro_precision !== undefined || metrics.macro_recall !== undefined) return "Classic classifier";
+  return "Other";
+}
+
+function modelMetricSummary(bundleKey, bundle) {
+  const metrics = bundle?.metrics || {};
+  const family = classifyBundleFamily(bundleKey, bundle);
+  if (family === "Classic classifier") {
+    return [
+      { label: "Accuracy", value: metrics.macro_accuracy },
+      { label: "Precision", value: metrics.macro_precision },
+      { label: "Recall", value: metrics.macro_recall },
+      { label: "Macro F1", value: metrics.macro_f1 },
+      { label: "Macro R2", value: metrics.macro_r2 },
+    ];
+  }
+  if (family === "Transformer" || family === "Sequence" || family === "Joint label") {
+    return [
+      { label: "Macro F1", value: metrics.macro_f1 },
+      { label: "Exact match", value: metrics.exact_match },
+      { label: "Label accuracy", value: metrics.label_accuracy },
+    ];
+  }
+  return Object.entries(metrics)
+    .filter(([key, value]) => Number.isFinite(Number(value)))
+    .slice(0, 5)
+    .map(([label, value]) => ({ label, value }));
+}
+
+function metricMissingList(bundleKey, bundle) {
+  const metrics = bundle?.metrics || {};
+  const family = classifyBundleFamily(bundleKey, bundle);
+  if (family === "Classic classifier") {
+    return ["macro_accuracy", "macro_precision", "macro_recall", "macro_f1", "macro_r2"]
+      .filter((key) => metrics[key] === undefined)
+      .map((key) => key.replace("macro_", "Macro ").replace("_", " "));
+  }
+  if (family === "Transformer" || family === "Sequence" || family === "Joint label") {
+    return ["macro_accuracy", "macro_precision", "macro_recall", "macro_r2"]
+      .filter((key) => metrics[key] === undefined)
+      .map((key) => key.replace("macro_", "Macro ").replace("_", " "));
+  }
+  return [];
 }
 
 function getModelStats(record) {
@@ -5096,21 +5209,22 @@ function renderSubmissionTrend() {
     elements.submissionTrend.textContent = t("noComponentBreakdown");
     return;
   }
-  const modalityRows = ["text", "audio", "image"].map((modality) => {
+  const modalityRows = ["image", "text", "audio"].map((modality) => {
     const payload = record.multimodal?.[modality] || {};
     const avgScore = average(DOMAINS.map((domain) => Number(payload[`${domain}_score`] || 0)));
+    const weight = finalScoreWeight(modality);
     return {
       label: modality.charAt(0).toUpperCase() + modality.slice(1),
       value: Number(payload.confidence || 0),
-      display: `${formatPercent(payload.confidence || 0)} conf | ${avgScore.toFixed(2)} avg score`,
+      display: `${formatPercent(payload.confidence || 0)} conf | ${avgScore.toFixed(2)} avg score | ${Math.round(weight * 100)}% weight`,
     };
   });
   elements.submissionTrend.className = "chart-stack";
   elements.submissionTrend.innerHTML = buildChartCard(
     "Component Contribution",
-    "Confidence and average signal strength by modality",
+    "Confidence, average signal strength, and final score weight by modality",
     buildHorizontalMetricSvg(modalityRows, "#287970"),
-    "This view shows how strongly text, audio, and image contributed to the final screening result."
+    "Image now carries the largest share of the combined score when it is available."
   );
 }
 
@@ -5127,14 +5241,20 @@ function renderRiskHotspots() {
     const features = payload.features || {};
     const displayConfidence = modalityDisplayConfidence(modality, payload);
     const available = modalityHasUsableSignal(modality, payload) || displayConfidence > 0;
+    const weightPct = Math.round(finalScoreWeight(modality) * 100);
+    const emphasisClass = modality === "image" ? " image-emphasis" : "";
     const metadata = [];
     if (features.transformer_model && features.transformer_model !== "unavailable") metadata.push(features.transformer_model);
     if (features.vision_backend) metadata.push(features.vision_backend);
     if (features.duration) metadata.push(`${Number(features.duration).toFixed(1)}s`);
     if (features.voiced_ratio !== undefined) metadata.push(`voiced ${Math.round(Number(features.voiced_ratio) * 100)}%`);
     return `
-      <div class="detail-card">
+      <div class="detail-card modality-card${emphasisClass}">
         <div class="detail-inline"><h3>${localizedModalityLabel(modality)}</h3><strong>${available ? t("usableLabel") : t("limitedLabel")}</strong></div>
+        <div class="modality-weight-row">
+          <span class="risk-pill instrument-pill weight-pill">${weightPct}% final weight</span>
+          ${modality === "image" ? '<span class="risk-pill instrument-pill image-focus-pill">Image emphasized</span>' : ""}
+        </div>
         ${scoreLine(t("confidenceLabel"), displayConfidence)}
         <p class="detail-muted">${payload.notes || t("noModalityNoteLabel")}</p>
         <p class="detail-muted">${metadata.join(" | ") || t("noAdditionalProcessingStatsLabel")}</p>
@@ -5264,91 +5384,91 @@ function renderTrajectoryModel() {
 }
 
 function renderModelStatistics() {
-  const record = getAnalysisRecord();
-  if (!record) {
+  const modelStats = state.modelStats || {};
+  const bundleEntries = Object.entries(modelStats).filter(([, bundle]) => bundle && typeof bundle === "object");
+  if (!bundleEntries.length) {
     elements.villageSummary.className = "chart-stack empty-state";
     elements.villageSummary.textContent = t("modelStatsUnavailableLabel");
     return;
   }
 
-  const hasSavedModelStats = Boolean(record?.model_stats || record?.multimodal?.model_stats);
-  const textFeatures = record.multimodal?.text?.features || {};
-  const modelRows = getModelComparisonRows(record);
-  const trainedRows = modelRows.filter((item) => item.source === "trained_bundle");
-  const fallbackRows = modelRows.filter((item) => item.source !== "trained_bundle" && (item.sampleCount > 0 || modalityHasUsableSignal(item.modality, record.multimodal?.[item.modality] || {})));
-  const availableRows = trainedRows.length ? trainedRows : fallbackRows;
+  const familyGroups = {
+    "Classic classifier": [],
+    Transformer: [],
+    Sequence: [],
+    "Joint label": [],
+    Other: [],
+  };
+  bundleEntries.forEach(([bundleKey, bundle]) => {
+    const family = classifyBundleFamily(bundleKey, bundle);
+    familyGroups[family] = familyGroups[family] || [];
+    familyGroups[family].push({ bundleKey, bundle });
+  });
 
-  if (!availableRows.length) {
-    elements.villageSummary.className = "chart-stack empty-state";
-    elements.villageSummary.textContent = t("noTrainedModelStatsLabel");
-    return;
-  }
+  const familyCards = Object.entries(familyGroups)
+    .filter(([, bundles]) => bundles.length)
+    .map(([family, bundles]) => `
+      <div class="detail-card">
+        <div class="detail-inline">
+          <h3>${family}</h3>
+          <strong>${bundles.length} model${bundles.length === 1 ? "" : "s"}</strong>
+        </div>
+        <p class="detail-muted">${bundles.map(({ bundleKey }) => bundleKey).join(", ")}</p>
+      </div>
+    `)
+    .join("");
 
-  const summaryCards = [
-    { label: t("textTransformerLabel"), value: textFeatures.transformer_model || t("unavailableLabel") },
-    { label: t("transformerFamilyLabel"), value: localizedTransformerFamilyLabel(textFeatures.transformer_preferred_family) },
-    { label: `${t("sentimentLabel")} ${t("analysisEngineLabel")}`, value: textFeatures.sentiment_model || t("unavailableLabel") },
-    { label: `${t("emotionLabel")} ${t("analysisEngineLabel")}`, value: textFeatures.emotion_model || t("unavailableLabel") },
-    { label: t("trainedModalitiesLabel"), value: `${availableRows.length}/${modelRows.length}` },
-  ];
-
-  const metricChart = buildHorizontalMetricSvg(
-    availableRows.map((item) => ({
-      label: item.label,
-      value: Math.max(item.macroR2, 0),
-      display: `R2 ${formatMetricNumber(item.macroR2, 3)} | ${item.sampleCount} samples`,
-    })),
-    "#9e4d29"
-  );
-
-  const comparisonCards = availableRows.map((item) => {
-    const sourceLabel = item.source === "trained_bundle" ? t("trainedBundleLabel") : t("fallbackLabel");
-    const sourceDetail = item.source === "trained_bundle"
-      ? `${t("trainedAtLabel")}: ${item.trainedAt === "Unavailable" ? t("unavailableLabel") : formatDate(item.trainedAt)}`
-      : t("liveModelStatsFallbackLabel");
+  const bundleCards = bundleEntries.map(([bundleKey, bundle]) => {
+    const family = classifyBundleFamily(bundleKey, bundle);
+    const metrics = modelMetricSummary(bundleKey, bundle);
+    const missingMetrics = metricMissingList(bundleKey, bundle);
+    const sampleCount = Number(bundle.sample_count || 0);
+    const metricPills = metrics
+      .map((metric) => `
+        <span class="risk-pill instrument-pill metric-pill">
+          ${metric.label}: ${Number.isFinite(Number(metric.value)) ? formatMetricNumber(metric.value, 3) : "N/A"}
+        </span>
+      `)
+      .join("");
+    const sourceLine = [
+      bundle.training_strategy ? `Strategy: ${bundle.training_strategy}` : null,
+      bundle.trained_at ? `Trained: ${formatDate(bundle.trained_at)}` : null,
+      bundle.sample_count ? `Samples: ${bundle.sample_count}` : null,
+    ].filter(Boolean).join(" | ");
+    const missingLine = missingMetrics.length
+      ? `Classic scores not reported: ${missingMetrics.join(", ")}`
+      : "All classic score columns are reported for this family.";
+    const labelSources = Array.isArray(bundle.label_sources) && bundle.label_sources.length
+      ? bundle.label_sources.join(", ")
+      : "Unavailable";
     return `
       <div class="detail-card">
-        <div class="detail-inline"><h3>${item.label}</h3><strong>${sourceLabel}</strong></div>
-        <p class="detail-muted">${sourceDetail}</p>
-        ${scoreLine(t("confidenceHintLabel"), item.confidenceHint)}
-        <p class="detail-muted">${t("macroR2Label")}: ${formatMetricNumber(item.macroR2, 3)}</p>
-        <p class="detail-muted">${t("samplesLabel")}: ${item.sampleCount}</p>
-        <p class="detail-muted">${t("domainsLabel")}: ${item.domains.length ? item.domains.map((domain) => localizedDomainLabel(domain)).join(", ") : t("unavailableLabel")}</p>
-        <p class="detail-muted">${t("manifestLabel")}: ${formatCompactPath(item.manifestPath)}</p>
-        <p class="detail-muted">${t("datasetRootLabel")}: ${formatCompactPath(item.datasetRoot)}</p>
+        <div class="detail-inline">
+          <h3>${bundleKey}</h3>
+          <strong class="metric-family-pill">${family}</strong>
+        </div>
+        <p class="detail-muted">${sourceLine || "Model metadata unavailable."}</p>
+        <div class="detail-inline metric-pills">${metricPills}</div>
+        <p class="detail-muted">${missingLine}</p>
+        <p class="detail-muted">Label sources: ${labelSources}</p>
       </div>
     `;
   }).join("");
 
-  const statsSourceNote = state.modelStatsSource === "api"
-    ? ""
-    : state.modelStatsSource === "file"
-      ? "Showing bundled model statistics because the live API was unavailable."
-      : "Showing embedded model statistics because both the live API and bundled stats file were unavailable.";
-
   elements.villageSummary.className = "chart-stack";
   elements.villageSummary.innerHTML = `
-    <p class="chart-note">Build 2026-06-22</p>
-    ${statsSourceNote ? `<p class="chart-note">${statsSourceNote}</p>` : ""}
-    ${hasSavedModelStats ? "" : `<p class="chart-note">${t("liveModelStatsFallbackLabel")}</p>`}
-    ${trainedRows.length && fallbackRows.length && hasSavedModelStats
-      ? `<p class="chart-note">${t("fallbackRowsHiddenLabel")}</p>`
-      : ""}
-    <div class="tile-grid">
-      ${summaryCards.map((item) => `
-        <div class="summary-tile">
-          <div class="tile-top"><span>${item.label}</span><strong>${item.value}</strong></div>
-        </div>
-      `).join("")}
+    <div class="detail-card">
+      <div class="detail-inline">
+        <h3>Model Performance Matrix</h3>
+        <strong>${bundleEntries.length} bundles</strong>
+      </div>
+      <p class="detail-muted">Classic classifier bundles report accuracy, precision, recall, macro F1, and macro R2. Transformer, sequence, and joint-label bundles report their own family metrics instead of those columns.</p>
     </div>
-    ${buildChartCard(
-      t("trainedBundleComparisonTitle"),
-      t("macroR2CoverageText"),
-      metricChart,
-      t("trainedBundleDescription")
-    )}
+    <div class="detail-grid compact-grid">
+      ${familyCards}
+    </div>
     <div class="compare-grid">
-      ${comparisonCards}
+      ${bundleCards}
     </div>
   `;
 }
@@ -6260,6 +6380,7 @@ function renderWorkspacePanels() {
 
 function renderDashboard() {
   renderOverview();
+  renderScoreWeightSummary();
   renderRiskDistribution();
   renderSubmissionTrend();
   if (isModelStatsVisible()) {
@@ -6282,6 +6403,7 @@ function switchView(viewId) {
   elements.viewSections.forEach((section) => {
     const isActive = section.id === viewId;
     section.classList.toggle("is-hidden", !isActive);
+    section.hidden = !isActive;
     section.classList.toggle("section-live", false);
     if (isActive) {
       void section.offsetWidth;

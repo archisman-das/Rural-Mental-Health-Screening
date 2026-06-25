@@ -1,0 +1,733 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2484 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Deep Learning Model Guide) Tj
+T*
+() Tj
+T*
+(This document explains the deep learning models and model families mentioned in the project, how each one works at a high level, and how it is used inside the Rural Mental Health Screening AI system.) Tj
+T*
+() Tj
+T*
+(The goal is to make the model stack easy to understand for developers, researchers, and paper authors. It separates:) Tj
+T*
+() Tj
+T*
+(- true deep learning components) Tj
+T*
+(- supporting computer-vision or classical fallback components) Tj
+T*
+(- downstream classifiers that consume learned features) Tj
+T*
+() Tj
+T*
+(## 1. Model Stack Overview) Tj
+T*
+() Tj
+T*
+(The project uses a multimodal screening pipeline:) Tj
+T*
+() Tj
+T*
+(1. Text is encoded with transformer models such as BERT, DistilBERT, MuRIL, and IndicBERT.) Tj
+T*
+(2. Audio is processed with speech models such as wav2vec2 and Whisper.) Tj
+T*
+(3. Face images are processed with MediaPipe Face Mesh and an OpenCV fallback when needed.) Tj
+T*
+(4. The extracted representations are passed into downstream screening heads for depression, anxiety, stress, sleep disorder, burnout, loneliness, and substance abuse risk estimation.) Tj
+T*
+() Tj
+T*
+(Current runtime priority:) Tj
+T*
+() Tj
+T*
+(- text_transformer is the primary text scorer when available) Tj
+T*
+(- audio is the primary audio scorer, with audio_spectrogram and audio_sequence as secondary support) Tj
+T*
+(- image_dl is the primary image scorer, with the classical image bundle as fallback) Tj
+T*
+(- comorbidity blends the chain ensemble with upstream modality consensus) Tj
+T*
+() Tj
+T*
+(The deep learning models are not used as isolated black boxes. They are part of a larger workflow that combines multilingual NLP, speech understanding, and visual feature extraction.) Tj
+T*
+() Tj
+T*
+(## 2. Text Models) Tj
+T*
+() Tj
+T*
+(### 2.1 BERT) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(BERT stands for Bidirectional Encoder Representations from Transformers. It is a transformer encoder trained to understand text in both left-to-right and right-to-left context at the same time.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(- Text is first split into tokens.) Tj
+T*
+(- Each token is converted into an embedding vector.) Tj
+T*
+(- Self-attention layers let every token attend to the other tokens in the sequence.) Tj
+T*
+(- The model learns contextual meaning instead of treating words independently.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 2061 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(BERT is useful for screening text because user narratives often contain indirect expressions, mood cues, and mixed symptom descriptions. The contextual encoding helps the system interpret phrases such as:) Tj
+T*
+() Tj
+T*
+(- "I cannot sleep properly") Tj
+T*
+(- "I feel exhausted and worried") Tj
+T*
+(- "I do not feel like talking to anyone") Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(The repository uses English BERT-family encoders as part of the text feature extraction path when local transformer support is available. Those encoders produce contextual vectors that are then passed into downstream classifiers.) Tj
+T*
+() Tj
+T*
+(### 2.2 DistilBERT) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(DistilBERT is a compressed version of BERT designed to be faster and lighter while retaining much of BERT's language understanding ability.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(DistilBERT is trained through knowledge distillation. A smaller student model learns to imitate a larger teacher model, which reduces size and latency while keeping useful contextual representations.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+T*
+() Tj
+T*
+(The dashboard may run in resource-constrained environments. DistilBERT is a practical option when the system needs:) Tj
+T*
+() Tj
+T*
+(- lower inference latency) Tj
+T*
+(- lower memory usage) Tj
+T*
+(- acceptable performance for English text) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(The text pipeline lists DistilBERT as one of the English encoder options. It is especially helpful when the application must remain responsive on modest hardware.) Tj
+T*
+() Tj
+T*
+(### 2.3 MuRIL) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(MuRIL is a multilingual transformer model built for Indian languages and code-mixed text.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(MuRIL learns cross-lingual and transliteration-aware representations. That means it can better handle:) Tj
+T*
+() Tj
+T*
+(- native scripts) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 2194 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- transliterated Indian-language text) Tj
+T*
+(- code-mixed phrasing) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+T*
+() Tj
+T*
+(Mental health screening in rural settings often involves language mixing, informal grammar, and expressions that do not map cleanly to standard English. MuRIL helps the system handle Hindi and Bengali inputs more naturally.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(MuRIL is included as a native-language transformer option for Hindi and Bengali text analysis. It supports multilingual encoding before the downstream screening logic runs.) Tj
+T*
+() Tj
+T*
+(### 2.4 IndicBERT) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(IndicBERT is another transformer model family designed for Indian languages.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(IndicBERT uses transformer self-attention, just like BERT, but it is adapted for Indian-language coverage. It is intended to learn useful representations from scripts and vocabulary patterns common across Indian languages.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+T*
+() Tj
+T*
+(The system must remain useful for Hindi and Bengali speakers. IndicBERT helps preserve meaning in language-specific input rather than forcing all text into an English-centric representation.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(IndicBERT is listed in the repo as a supported text encoder for Hindi and Bengali, either as a primary encoder or as a fallback option when another local model is not available.) Tj
+T*
+() Tj
+T*
+(### 2.5 Text Pipeline Functionality) Tj
+T*
+() Tj
+T*
+(In this project, the text models do more than generic sentiment analysis. They support:) Tj
+T*
+() Tj
+T*
+(- symptom and distress interpretation) Tj
+T*
+(- contextual screening heuristics) Tj
+T*
+(- emotion and sentiment enrichment) Tj
+T*
+(- safety-related phrase detection) Tj
+T*
+(- multilingual understanding for English, Hindi, and Bengali) Tj
+T*
+() Tj
+T*
+(The pipeline typically works as follows:) Tj
+T*
+() Tj
+T*
+(1. User text is normalized.) Tj
+T*
+(2. The text is tokenized.) Tj
+T*
+(3. The transformer encoder generates contextual embeddings.) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 2133 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(4. A lightweight screening head or scoring layer turns embeddings into model outputs.) Tj
+T*
+(5. If the transformer stack is unavailable, the application falls back to heuristic features so the dashboard still functions.) Tj
+T*
+() Tj
+T*
+(## 3. Audio Models) Tj
+T*
+() Tj
+T*
+(### 3.1 wav2vec2) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(wav2vec2 is a self-supervised speech representation model. It learns from raw audio waveforms instead of requiring hand-crafted acoustic features only.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(- The audio waveform is encoded into latent speech representations.) Tj
+T*
+(- The model learns patterns from speech structure using contrastive objectives.) Tj
+T*
+(- During fine-tuning, the learned speech features are adapted to transcription or classification tasks.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+T*
+() Tj
+T*
+(Speech is important in rural screening because many users may prefer voice input over typing. wav2vec2 helps the system understand speech from Bengali and Hindi speakers, including dialect variation.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(The repository supports wav2vec2 as a fine-tuning family for rural speech. It can be configured for dialect-specific training and uses local cached checkpoints when available.) Tj
+T*
+() Tj
+T*
+(Typical use cases in this repo:) Tj
+T*
+() Tj
+T*
+(- speech-to-text transcription) Tj
+T*
+(- dialect-aware adaptation) Tj
+T*
+(- transcription support for downstream mental health screening) Tj
+T*
+() Tj
+T*
+(### 3.2 Whisper) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(Whisper is a multilingual speech recognition model that maps audio to text using an encoder-decoder architecture.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(- The audio is converted into a learned representation.) Tj
+T*
+(- The decoder generates the transcript token by token.) Tj
+T*
+(- The model is trained on large and diverse speech-text pairs, which makes it robust to accents, noise, and varied speaking styles.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 2279 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(Whisper is useful when the user speaks in real-world conditions that are not perfectly clean. It is a strong fit for community screening environments where recording quality can vary.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(The repo includes Whisper as an alternative speech family alongside wav2vec2. It can be fine-tuned for Bengali and Hindi speech and selected through the voice training pipeline.) Tj
+T*
+() Tj
+T*
+(### 3.3 Audio Pipeline Functionality) Tj
+T*
+() Tj
+T*
+(The audio workflow typically follows this sequence:) Tj
+T*
+() Tj
+T*
+(1. A voice clip is uploaded or captured.) Tj
+T*
+(2. The selected ASR model converts speech to text.) Tj
+T*
+(3. The transcript is passed into the text screening logic.) Tj
+T*
+(4. The system can also attach modality quality metadata to show whether audio was usable, partial, or weak.) Tj
+T*
+() Tj
+T*
+(This design keeps the system flexible. Even when a voice model is not available, the assessment can still proceed through text and questionnaire inputs.) Tj
+T*
+() Tj
+T*
+(## 4. Vision and Image Models) Tj
+T*
+() Tj
+T*
+(### 4.1 MediaPipe Face Mesh) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+T*
+(MediaPipe Face Mesh is a landmark detection system for faces. It predicts dense facial keypoints rather than only detecting the face bounding box.) Tj
+T*
+() Tj
+T*
+(**Working principle**) Tj
+T*
+() Tj
+T*
+(- The image is normalized and passed through the facial landmark detector.) Tj
+T*
+(- The model returns facial mesh coordinates.) Tj
+T*
+(- Those coordinates can be turned into derived measurements such as facial geometry, eye openness, and other visual signals.) Tj
+T*
+() Tj
+T*
+(**Why it matters in this project**) Tj
+T*
+() Tj
+T*
+(The system uses image inputs as one more modality for screening support. Face landmark extraction helps build lightweight visual features without needing a heavyweight custom image classifier for every case.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(The feature extraction path uses MediaPipe Face Mesh in static image mode when available. The implementation reports the backend as mediapipe_face_mesh when that route succeeds.) Tj
+T*
+() Tj
+T*
+(### 4.2 OpenCV Haar Fallback) Tj
+T*
+() Tj
+T*
+(**What it is**) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 2294 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(OpenCV Haar cascades are classical computer-vision detectors, not deep learning models.) Tj
+T*
+() Tj
+T*
+(**Why it is included**) Tj
+T*
+() Tj
+T*
+(The project uses Haar-based face detection as a fallback when the primary face mesh pipeline cannot run. This improves robustness in low-dependency or partially configured environments.) Tj
+T*
+() Tj
+T*
+(**How the project uses it**) Tj
+T*
+() Tj
+T*
+(If the face mesh route is unavailable, the system can still detect or crop a face region using Haar-based detection so that downstream processing is not blocked.) Tj
+T*
+() Tj
+T*
+(## 5. Supporting Data Sources) Tj
+T*
+() Tj
+T*
+(These are not models, but they matter because they shape how the models learn:) Tj
+T*
+() Tj
+T*
+(- **MELD**: used for proxy text supervision and emotion-aligned language patterns.) Tj
+T*
+(- **RAVDESS**: used for proxy audio and image supervision.) Tj
+T*
+(- **DAIC-WOZ**: used as the clinical supervision source for more realistic depression-oriented training and evaluation.) Tj
+T*
+() Tj
+T*
+(These datasets help the project bridge the gap between broad representation learning and clinically relevant screening behavior.) Tj
+T*
+() Tj
+T*
+(## 6. Downstream Screening Heads) Tj
+T*
+() Tj
+T*
+(The repository also contains downstream trained bundles that sit on top of the deep learning feature extractors.) Tj
+T*
+() Tj
+T*
+(Important note:) Tj
+T*
+() Tj
+T*
+(- these downstream bundles are not themselves deep learning models) Tj
+T*
+(- they are usually classical estimators or lightweight classifier heads) Tj
+T*
+(- they consume embeddings, transcript features, and modality summaries) Tj
+T*
+() Tj
+T*
+(The project now uses the stronger bundles as the first choice for each modality:) Tj
+T*
+() Tj
+T*
+(- text_transformer before classical text) Tj
+T*
+(- audio before the auxiliary audio branches) Tj
+T*
+(- image_dl before classical image) Tj
+T*
+(- comorbidity after the improved upstream modality outputs have been stabilized) Tj
+T*
+() Tj
+T*
+(In other words, the deep learning models do the representation learning, and the screening heads do the final risk estimation and aggregation.) Tj
+T*
+() Tj
+T*
+(## 7. Multimodal Decision Flow) Tj
+T*
+() Tj
+T*
+(The final assessment is built from several signals:) Tj
+T*
+() Tj
+T*
+(- questionnaire scores) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 2056 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- text embeddings and safety signals) Tj
+T*
+(- audio transcript or audio-derived features) Tj
+T*
+(- image-derived facial signals) Tj
+T*
+(- modality quality and confidence indicators) Tj
+T*
+() Tj
+T*
+(This multimodal design is important because mental health screening in the field is rarely supported by one perfect input. The system therefore combines multiple weak-to-moderate signals into one practical screening outcome.) Tj
+T*
+() Tj
+T*
+(## 8. Practical Behavior in the App) Tj
+T*
+() Tj
+T*
+(The app does not depend on every model being available at runtime.) Tj
+T*
+() Tj
+T*
+(If a transformer or speech checkpoint is not installed locally, the application:) Tj
+T*
+() Tj
+T*
+(- falls back to lighter heuristic logic) Tj
+T*
+(- keeps the assessment flow working) Tj
+T*
+(- preserves saved records and reports) Tj
+T*
+() Tj
+T*
+(This means the project is robust enough for development machines, demo environments, and partially configured deployments.) Tj
+T*
+() Tj
+T*
+(## 9. Research and Paper Writing Notes) Tj
+T*
+() Tj
+T*
+(When you describe this system in a paper, it is useful to separate the model families by function:) Tj
+T*
+() Tj
+T*
+(- **Text understanding**: BERT, DistilBERT, MuRIL, IndicBERT) Tj
+T*
+(- **Speech understanding**: wav2vec2, Whisper) Tj
+T*
+(- **Vision landmarks**: MediaPipe Face Mesh) Tj
+T*
+(- **Fallback vision support**: OpenCV Haar cascades) Tj
+T*
+() Tj
+T*
+(That separation makes the methodology section clearer and avoids mixing representation-learning models with downstream decision heads.) Tj
+T*
+() Tj
+T*
+(## 10. Recommended Citation Targets) Tj
+T*
+() Tj
+T*
+(For academic writing, this document should be paired with the references already present in paper/references.bib, especially for:) Tj
+T*
+() Tj
+T*
+(- MuRIL) Tj
+T*
+(- RAVDESS) Tj
+T*
+(- PHQ-9 and PHQ-4) Tj
+T*
+(- any clinical screening references already cited in the manuscript) Tj
+T*
+() Tj
+T*
+(If you add more model families later, extend this guide so the methodology section stays synchronized with the implementation.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R ] /Count 7 >>
+endobj
+17 0 obj
+<< /Type /Catalog /Pages 16 0 R >>
+endobj
+18 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Deep Learning Model Guide) /Creator (Codex) >>
+endobj
+xref
+0 19
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002615 00000 n 
+0000002742 00000 n 
+0000004855 00000 n 
+0000004982 00000 n 
+0000007228 00000 n 
+0000007355 00000 n 
+0000009540 00000 n 
+0000009667 00000 n 
+0000011999 00000 n 
+0000012128 00000 n 
+0000014475 00000 n 
+0000014604 00000 n 
+0000016713 00000 n 
+0000016842 00000 n 
+0000016941 00000 n 
+0000016992 00000 n 
+trailer
+<< /Size 19 /Root 17 0 R /Info 18 0 R >>
+startxref
+17102
+%%EOF

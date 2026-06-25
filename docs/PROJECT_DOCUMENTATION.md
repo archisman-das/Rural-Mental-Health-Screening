@@ -313,6 +313,12 @@ The narrative text pipeline can include:
 - agrarian distress signals,
 - transformer-backed features when available.
 
+Runtime priority:
+
+- `text_transformer` is the primary scorer when installed locally
+- `text` remains the fallback bundle
+- the weakest text domains are lightly retuned from existing text-side cues instead of changing the full text bundle
+
 ### 8.3 Audio
 
 Audio inputs can contribute:
@@ -323,6 +329,12 @@ Audio inputs can contribute:
 - quality-related values,
 - backend inference when available.
 
+Runtime priority:
+
+- `audio` is the primary scorer
+- `audio_spectrogram` and `audio_sequence` remain secondary support
+- mood-heavy audio domains receive the most benefit from the main audio bundle
+
 ### 8.4 Image
 
 Image inputs can contribute:
@@ -332,6 +344,11 @@ Image inputs can contribute:
 - face-related cues,
 - image quality indicators,
 - backend inference when available.
+
+Runtime priority:
+
+- `image_dl` is the primary scorer
+- the classical image bundle remains a fallback and stabilizer
 
 ### 8.5 Passive Biomarkers
 
@@ -351,6 +368,13 @@ The system combines these sources into:
 - disclaimer,
 - modality quality cards,
 - trend/trajectory views.
+
+The fusion layer currently:
+
+- keeps text close behind the stronger visual and acoustic signals,
+- gives audio a slightly larger voice in the final blend,
+- gives image DL slightly more influence than the classical image bundle,
+- keeps comorbidity as a downstream summary of both the chain ensemble and upstream modality consensus.
 
 ## 9. Offline-First Behavior
 
@@ -399,6 +423,10 @@ The project keeps track of:
 These details appear in the model-statistics section so the user can understand how much of the result comes from trained bundles versus fallback heuristics.
 
 The same trained sklearn estimators also have ONNX exports in `models/mental_health_screening/onnx/`, and the original `.pkl` bundles remain available for backward compatibility.
+
+See also:
+
+- [`docs/MULTIMODAL_FUSION.md`](MULTIMODAL_FUSION.md) for the current bundle priorities and fusion rules.
 
 ## 12. Quality Check Functionality
 

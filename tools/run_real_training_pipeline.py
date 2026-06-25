@@ -26,7 +26,7 @@ class DatasetConfig:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Validate DAIC-WOZ, MELD, and RAVDESS dataset folders, build manifests, "
+            "Validate DAIC-WOZ, MELD, RAVDESS, and CREMA-D dataset folders, build manifests, "
             "and run the repo training commands end to end."
         )
     )
@@ -38,9 +38,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--daic-woz-root", type=Path, help="Path to the DAIC-WOZ dataset root.")
     parser.add_argument("--meld-root", type=Path, help="Path to the MELD dataset root.")
     parser.add_argument("--ravdess-root", type=Path, help="Path to the RAVDESS dataset root.")
+    parser.add_argument("--crema-d-root", type=Path, help="Path to the CREMA-D dataset root.")
+    parser.add_argument("--tess-root", type=Path, help="Path to the TESS dataset root.")
     parser.add_argument("--skip-daic-woz", action="store_true", help="Skip DAIC-WOZ manifest generation and training.")
     parser.add_argument("--skip-meld", action="store_true", help="Skip MELD manifest generation and training.")
     parser.add_argument("--skip-ravdess", action="store_true", help="Skip RAVDESS manifest generation and training.")
+    parser.add_argument("--skip-crema-d", action="store_true", help="Skip CREMA-D manifest generation and training.")
+    parser.add_argument("--skip-tess", action="store_true", help="Skip TESS manifest generation and training.")
     parser.add_argument(
         "--federated-manifest",
         type=Path,
@@ -246,7 +250,7 @@ def _resolve_config_value(
 
 
 def apply_config_overrides(args: argparse.Namespace, config: dict) -> None:
-    for field_name in ("daic_woz_root", "meld_root", "ravdess_root"):
+    for field_name in ("daic_woz_root", "meld_root", "ravdess_root", "crema_d_root", "tess_root"):
         if getattr(args, field_name) is None and config.get(field_name) is not None:
             setattr(args, field_name, config.get(field_name))
 
@@ -286,7 +290,7 @@ def apply_config_overrides(args: argparse.Namespace, config: dict) -> None:
             else:
                 setattr(args, field_name, value)
 
-    for field_name in ("skip_daic_woz", "skip_meld", "skip_ravdess", "skip_manifest_build", "skip_training", "dry_run"):
+    for field_name in ("skip_daic_woz", "skip_meld", "skip_ravdess", "skip_crema_d", "skip_tess", "skip_manifest_build", "skip_training", "dry_run"):
         if config.get(field_name):
             setattr(args, field_name, True)
 
@@ -309,6 +313,8 @@ def resolve_dataset_roots(args: argparse.Namespace) -> dict[str, DatasetConfig]:
         "daic_woz_root": args.daic_woz_root or config.get("daic_woz_root"),
         "meld_root": args.meld_root or config.get("meld_root"),
         "ravdess_root": args.ravdess_root or config.get("ravdess_root"),
+        "crema_d_root": args.crema_d_root or config.get("crema_d_root"),
+        "tess_root": args.tess_root or config.get("tess_root"),
     }
 
     resolved: dict[str, DatasetConfig] = {}
@@ -369,6 +375,8 @@ def build_commands(
     skip_daic_woz: bool,
     skip_meld: bool,
     skip_ravdess: bool,
+    skip_crema_d: bool,
+    skip_tess: bool,
 ) -> list[dict]:
     manifest_dir = manifest_dir.resolve()
     ravdess_frames_dir = ravdess_frames_dir.resolve()
@@ -377,8 +385,18 @@ def build_commands(
 
     meld_manifest = manifest_dir / "meld_proxy.csv"
     ravdess_manifest = manifest_dir / "ravdess_proxy.csv"
+    crema_d_manifest = manifest_dir / "crema_d_proxy.csv"
+    tess_manifest = manifest_dir / "tess_proxy.csv"
+    speech_audio_manifest = manifest_dir / "speech_audio_combined.csv"
     daic_manifest = manifest_dir / "daic_clinical.csv"
     comorbidity_manifest = comorbidity_balanced_manifest.resolve()
+    audio_source_manifests: list[Path] = []
+    if not skip_ravdess and "ravdess_root" in dataset_roots:
+        audio_source_manifests.append(ravdess_manifest)
+    if not skip_crema_d and "crema_d_root" in dataset_roots:
+        audio_source_manifests.append(crema_d_manifest)
+    if not skip_tess and "tess_root" in dataset_roots:
+        audio_source_manifests.append(tess_manifest)
 
     commands: list[dict] = []
 
@@ -413,6 +431,34 @@ def build_commands(
                     ],
                 }
             )
+        if not skip_crema_d and "crema_d_root" in dataset_roots:
+            commands.append(
+                {
+                    "label": "Build CREMA-D manifest",
+                    "command": [
+                        sys.executable,
+                        "-m",
+                        "src.mental_health_screening.dataset_prep",
+                        "crema-d",
+                        str(dataset_roots["crema_d_root"].root),
+                        str(crema_d_manifest),
+                    ],
+                }
+            )
+        if not skip_tess and "tess_root" in dataset_roots:
+            commands.append(
+                {
+                    "label": "Build TESS manifest",
+                    "command": [
+                        sys.executable,
+                        "-m",
+                        "src.mental_health_screening.dataset_prep",
+                        "tess",
+                        str(dataset_roots["tess_root"].root),
+                        str(tess_manifest),
+                    ],
+                }
+            )
         if not skip_meld and not skip_ravdess:
             commands.append(
                 {
@@ -444,6 +490,29 @@ def build_commands(
                         "daic-woz",
                         str(dataset_roots["daic_woz_root"].root),
                         str(daic_manifest),
+                    ],
+                }
+            )
+        if audio_source_manifests:
+            source_weights = []
+            if not skip_ravdess and "ravdess_root" in dataset_roots:
+                source_weights.append("RAVDESS=1")
+            if not skip_crema_d and "crema_d_root" in dataset_roots:
+                source_weights.append("CREMA-D=2")
+            if not skip_tess and "tess_root" in dataset_roots:
+                source_weights.append("TESS=5")
+            commands.append(
+                {
+                    "label": "Build combined speech audio manifest",
+                    "command": [
+                        sys.executable,
+                        "-m",
+                        "src.mental_health_screening.dataset_prep",
+                        "combine-manifests",
+                        *[str(path) for path in audio_source_manifests],
+                        "--output-path",
+                        str(speech_audio_manifest),
+                        *sum([["--source-weight", weight] for weight in source_weights], []),
                     ],
                 }
             )
@@ -513,18 +582,19 @@ def build_commands(
                             min_samples_per_domain=min_samples_per_domain,
                         ),
                     },
-                    {
-                        "label": "Train audio models from DAIC-WOZ",
-                        "command": training_command(
-                            manifest=daic_manifest,
-                            modality="audio",
-                            dataset_root=dataset_root_for_training(
-                                dataset_roots["daic_woz_root"].root, manifest_dir, dataset_root_mode
-                            ),
-                            min_samples_per_domain=min_samples_per_domain,
-                        ),
-                    },
                 ]
+            )
+        if audio_source_manifests:
+            commands.append(
+                {
+                    "label": "Train audio models from combined speech corpora",
+                    "command": training_command(
+                        manifest=speech_audio_manifest,
+                        modality="audio",
+                        dataset_root=dataset_root_for_training(manifest_dir, manifest_dir, "manifest-parent"),
+                        min_samples_per_domain=min_samples_per_domain,
+                    ),
+                }
             )
 
     return commands
@@ -720,6 +790,10 @@ def main() -> int:
         required_keys.add("meld_root")
     if not args.skip_ravdess:
         required_keys.add("ravdess_root")
+    if not args.skip_crema_d and (args.crema_d_root is not None or config.get("crema_d_root") is not None):
+        required_keys.add("crema_d_root")
+    if not args.skip_tess and (args.tess_root is not None or config.get("tess_root") is not None):
+        required_keys.add("tess_root")
     validate_dataset_roots(dataset_roots, required_keys)
     ensure_directories(args)
     commands = build_commands(
@@ -755,6 +829,8 @@ def main() -> int:
         skip_daic_woz=args.skip_daic_woz,
         skip_meld=args.skip_meld,
         skip_ravdess=args.skip_ravdess,
+        skip_crema_d=args.skip_crema_d,
+        skip_tess=args.skip_tess,
     )
     results = run_commands(commands, dry_run=args.dry_run)
     write_summary(args.summary_path, args, dataset_roots, results)

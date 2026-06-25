@@ -1,4 +1,4 @@
-const CACHE_NAME = "mh-dashboard-pwa-v3";
+const CACHE_NAME = "mh-dashboard-pwa-v5";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",

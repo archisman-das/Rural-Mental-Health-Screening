@@ -34,7 +34,7 @@ from mental_health_screening.utils import average, confidence_weighted_score, no
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/web")
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
-APP_BUILD = "2026-06-22"
+APP_BUILD = "2026-06-24"
 
 MAX_TEXT_INPUT_LENGTH = 5000
 LIST_LIMIT_DEFAULT = 50
@@ -273,6 +273,17 @@ def _parse_json_field(value: str | None, default):
         return default
     try:
         return json.loads(value)
+    except json.JSONDecodeError:
+        return default
+
+
+def _parse_raw_json_body(default=None):
+    raw_body = request.get_data(cache=True, as_text=True) or ""
+    text = raw_body.strip()
+    if not text or text[0] not in "{[":
+        return default
+    try:
+        return json.loads(text)
     except json.JSONDecodeError:
         return default
 
@@ -586,6 +597,22 @@ def _extract_request_payload():
             "passive_video_path": None,
         }
 
+    payload = _parse_raw_json_body()
+    if isinstance(payload, dict):
+        return {
+            "profile": _normalize_profile(payload.get("profile")),
+            "questionnaire": _normalize_questionnaire(payload.get("questionnaire")),
+            "multimodal": payload.get("multimodal"),
+            "text_input": _clean_text(payload.get("text_input"), MAX_TEXT_INPUT_LENGTH),
+            "audio_metadata": payload.get("audio_metadata"),
+            "image_metadata": payload.get("image_metadata"),
+            "passive_metadata": payload.get("passive_metadata"),
+            "typing_events": payload.get("typing_events"),
+            "audio_path": None,
+            "image_path": None,
+            "passive_video_path": None,
+        }
+
     profile = _normalize_profile(_parse_json_field(request.form.get("profile"), {}))
     questionnaire = _normalize_questionnaire(_parse_json_field(request.form.get("questionnaire"), {}))
     multimodal = _parse_json_field(request.form.get("multimodal"), None)
@@ -614,8 +641,13 @@ def _extract_adaptive_request_payload():
         responses = payload.get("responses")
         language = payload.get("language")
     else:
-        responses = _parse_json_field(request.form.get("responses"), {})
-        language = request.form.get("language")
+        payload = _parse_raw_json_body({})
+        if isinstance(payload, dict):
+            responses = payload.get("responses")
+            language = payload.get("language")
+        else:
+            responses = _parse_json_field(request.form.get("responses"), {})
+            language = request.form.get("language")
 
     if not isinstance(responses, dict):
         return None

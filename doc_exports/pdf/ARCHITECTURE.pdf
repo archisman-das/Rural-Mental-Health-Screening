@@ -1,0 +1,1187 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 1974 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Architecture Guide) Tj
+T*
+() Tj
+T*
+(## 1. Purpose) Tj
+T*
+() Tj
+T*
+(This document explains how the project is structured, how the components fit together, and how the dashboard works end to end.) Tj
+T*
+() Tj
+T*
+(It is intended for:) Tj
+T*
+() Tj
+T*
+(- developers who want to understand the codebase,) Tj
+T*
+(- researchers who want to describe the system in a paper,) Tj
+T*
+(- maintainers who need to extend or debug the workflow,) Tj
+T*
+(- reviewers who want a precise technical overview.) Tj
+T*
+() Tj
+T*
+(## 2. System Architecture at a Glance) Tj
+T*
+() Tj
+T*
+(The project is organized into four layers:) Tj
+T*
+() Tj
+T*
+(1. Browser frontend.) Tj
+T*
+(2. Flask backend server.) Tj
+T*
+(3. Core screening and storage package.) Tj
+T*
+(4. Supporting assets, tools, and research files.) Tj
+T*
+() Tj
+T*
+(The browser handles user interaction. The backend handles validation, scoring, persistence, and PDF export. The Python package contains the reusable screening logic. The tools and data directories support training, evaluation, and publication.) Tj
+T*
+() Tj
+T*
+(## 3. Frontend Architecture) Tj
+T*
+() Tj
+T*
+(### 3.1 Frontend Files) Tj
+T*
+() Tj
+T*
+(- web/index.html \(/c:/Rural%20Mental%20Heath%20Screening%20AI/web/index.html\)) Tj
+T*
+(- web/app.js \(/c:/Rural%20Mental%20Heath%20Screening%20AI/web/app.js\)) Tj
+T*
+(- web/styles.css \(/c:/Rural%20Mental%20Heath%20Screening%20AI/web/styles.css\)) Tj
+T*
+() Tj
+T*
+(### 3.2 Frontend Responsibilities) Tj
+T*
+() Tj
+T*
+(The frontend is responsible for:) Tj
+T*
+() Tj
+T*
+(- rendering the assessment and analytics UI,) Tj
+T*
+(- switching the interface language,) Tj
+T*
+(- capturing questionnaire and narrative input,) Tj
+T*
+(- managing audio, image, and passive biomarker inputs,) Tj
+T*
+(- showing live previews before save,) Tj
+T*
+(- displaying saved results and reports,) Tj
+T*
+(- hiding demo records from the visible user list,) Tj
+T*
+(- supporting report hiding and record deletion actions,) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 1261 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- rendering offline and sync status.) Tj
+T*
+() Tj
+T*
+(### 3.3 Frontend State) Tj
+T*
+() Tj
+T*
+(The dashboard uses local state to track:) Tj
+T*
+() Tj
+T*
+(- the current language,) Tj
+T*
+(- the selected record,) Tj
+T*
+(- all loaded assessment results,) Tj
+T*
+(- filtered results,) Tj
+T*
+(- draft preview data,) Tj
+T*
+(- hidden report IDs,) Tj
+T*
+(- offline sync state,) Tj
+T*
+(- typing events and media capture state,) Tj
+T*
+(- quality-check results,) Tj
+T*
+(- model-statistics state.) Tj
+T*
+() Tj
+T*
+(This state is then used to render the visible panels.) Tj
+T*
+() Tj
+T*
+(### 3.4 Frontend Panels) Tj
+T*
+() Tj
+T*
+(#### Assessment Workspace) Tj
+T*
+() Tj
+T*
+(This panel is the intake form.) Tj
+T*
+() Tj
+T*
+(It includes:) Tj
+T*
+() Tj
+T*
+(- profile fields,) Tj
+T*
+(- consent,) Tj
+T*
+(- questionnaire items,) Tj
+T*
+(- narrative input,) Tj
+T*
+(- optional upload fields,) Tj
+T*
+(- live prediction preview,) Tj
+T*
+(- capture and reset actions.) Tj
+T*
+() Tj
+T*
+(#### Adaptive Test) Tj
+T*
+() Tj
+T*
+(This panel presents one question at a time and adjusts the next question based on the current response state.) Tj
+T*
+() Tj
+T*
+(#### Analytics Hub) Tj
+T*
+() Tj
+T*
+(This panel is the detailed analysis view.) Tj
+T*
+() Tj
+T*
+(It shows:) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1417 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(- score comparison,) Tj
+T*
+(- multimodal contribution,) Tj
+T*
+(- NLP and safety signals,) Tj
+T*
+(- modality quality,) Tj
+T*
+(- recommendation and disclaimer,) Tj
+T*
+(- model statistics,) Tj
+T*
+(- quality-check results,) Tj
+T*
+(- trajectory and trend summary.) Tj
+T*
+() Tj
+T*
+(#### Records and Reports) Tj
+T*
+() Tj
+T*
+(This panel is for browsing, inspecting, exporting, and removing records.) Tj
+T*
+() Tj
+T*
+(It includes:) Tj
+T*
+() Tj
+T*
+(- searchable record list,) Tj
+T*
+(- detailed assessment view,) Tj
+T*
+(- PDF export,) Tj
+T*
+(- record delete action,) Tj
+T*
+(- report hide action.) Tj
+T*
+() Tj
+T*
+(## 4. Backend Architecture) Tj
+T*
+() Tj
+T*
+(### 4.1 Backend Entry Point) Tj
+T*
+() Tj
+T*
+(File:) Tj
+T*
+() Tj
+T*
+(- dashboard_server.py \(/c:/Rural%20Mental%20Heath%20Screening%20AI/dashboard_server.py\)) Tj
+T*
+() Tj
+T*
+(The backend is a Flask application that serves both the static dashboard and the API.) Tj
+T*
+() Tj
+T*
+(### 4.2 Backend Responsibilities) Tj
+T*
+() Tj
+T*
+(The backend performs these core tasks:) Tj
+T*
+() Tj
+T*
+(- validates assessment submissions,) Tj
+T*
+(- normalizes profile and questionnaire fields,) Tj
+T*
+(- computes preview and saved-assessment multimodal outputs,) Tj
+T*
+(- persists assessment records,) Tj
+T*
+(- fetches records by ID,) Tj
+T*
+(- deletes records,) Tj
+T*
+(- provides trajectory summaries,) Tj
+T*
+(- returns model statistics,) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1504 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- runs saved-assessment quality checks,) Tj
+T*
+(- renders PDF reports,) Tj
+T*
+(- supports adaptive screening routes,) Tj
+T*
+(- exposes sample and database metadata endpoints.) Tj
+T*
+() Tj
+T*
+(### 4.3 Backend Validation Path) Tj
+T*
+() Tj
+T*
+(When the backend receives a screening request, it:) Tj
+T*
+() Tj
+T*
+(1. extracts profile and questionnaire data,) Tj
+T*
+(2. validates consent and required fields,) Tj
+T*
+(3. builds or normalizes multimodal inputs,) Tj
+T*
+(4. computes screening outputs,) Tj
+T*
+(5. persists the record if it is a save operation,) Tj
+T*
+(6. returns JSON to the frontend.) Tj
+T*
+() Tj
+T*
+(If required data is missing, the backend returns a structured error message rather than failing silently.) Tj
+T*
+() Tj
+T*
+(### 4.4 Backend Output Types) Tj
+T*
+() Tj
+T*
+(The backend produces:) Tj
+T*
+() Tj
+T*
+(- live preview results,) Tj
+T*
+(- saved assessment records,) Tj
+T*
+(- PDF report bytes,) Tj
+T*
+(- quality-check metrics,) Tj
+T*
+(- trajectory data,) Tj
+T*
+(- adaptive question payloads,) Tj
+T*
+(- database and audit metadata.) Tj
+T*
+() Tj
+T*
+(## 5. Core Python Package Architecture) Tj
+T*
+() Tj
+T*
+(### 5.1 Package Folder) Tj
+T*
+() Tj
+T*
+(- src/mental_health_screening/ \(/c:/Rural%20Mental%20Heath%20Screening%20AI/src/mental_health_screening\)) Tj
+T*
+() Tj
+T*
+(### 5.2 Module Roles) Tj
+T*
+() Tj
+T*
+(#### assessment.py) Tj
+T*
+() Tj
+T*
+(Defines the questionnaire structure and scoring helpers.) Tj
+T*
+() Tj
+T*
+(#### feature_extract.py) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1488 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(Extracts and normalizes text, audio, image, and passive features.) Tj
+T*
+() Tj
+T*
+(#### predict.py) Tj
+T*
+() Tj
+T*
+(Combines questionnaire and modality signals into screening scores and confidence estimates.) Tj
+T*
+() Tj
+T*
+(#### storage.py) Tj
+T*
+() Tj
+T*
+(Manages persisted assessment records, retrieval, deletion, and audit-related helpers.) Tj
+T*
+() Tj
+T*
+(#### report.py) Tj
+T*
+() Tj
+T*
+(Creates assessment PDFs and quality-check PDFs.) Tj
+T*
+() Tj
+T*
+(#### model_store.py) Tj
+T*
+() Tj
+T*
+(Summarizes model bundle metadata and trained-bundle coverage.) Tj
+T*
+() Tj
+T*
+(#### training.py) Tj
+T*
+() Tj
+T*
+(Builds and retrains model bundles for the projects supported modalities.) Tj
+T*
+() Tj
+T*
+(#### utils.py) Tj
+T*
+() Tj
+T*
+(Provides shared utilities used across the package.) Tj
+T*
+() Tj
+T*
+(### 5.3 Separation of Concerns) Tj
+T*
+() Tj
+T*
+(The package is intentionally split so that:) Tj
+T*
+() Tj
+T*
+(- feature extraction stays separate from storage,) Tj
+T*
+(- storage stays separate from reporting,) Tj
+T*
+(- training stays separate from runtime inference,) Tj
+T*
+(- shared utilities stay reusable across the project.) Tj
+T*
+() Tj
+T*
+(That separation makes the code easier to maintain and easier to cite in a paper.) Tj
+T*
+() Tj
+T*
+(## 6. Data Flow Architecture) Tj
+T*
+() Tj
+T*
+(### 6.1 From User Input to Assessment Record) Tj
+T*
+() Tj
+T*
+(The data flow is:) Tj
+T*
+() Tj
+T*
+(1. User enters profile and questionnaire data in the browser.) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 1597 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(2. User adds narrative text and optional media inputs.) Tj
+T*
+(3. Frontend creates a payload.) Tj
+T*
+(4. Payload is sent to the backend preview or save route.) Tj
+T*
+(5. Backend validates and scores the record.) Tj
+T*
+(6. Backend stores the record.) Tj
+T*
+(7. Frontend reloads the list and detail views.) Tj
+T*
+(8. User can export or fetch the record later.) Tj
+T*
+() Tj
+T*
+(### 6.2 Preview Flow) Tj
+T*
+() Tj
+T*
+(Preview flow is used before saving:) Tj
+T*
+() Tj
+T*
+(- the frontend builds a temporary payload,) Tj
+T*
+(- the backend returns preview scores and notes,) Tj
+T*
+(- the dashboard renders the draft view,) Tj
+T*
+(- no permanent save is required yet.) Tj
+T*
+() Tj
+T*
+(### 6.3 Save Flow) Tj
+T*
+() Tj
+T*
+(Save flow is the permanent path:) Tj
+T*
+() Tj
+T*
+(- profile and questionnaire are validated,) Tj
+T*
+(- multimodal scores are computed,) Tj
+T*
+(- record is stored in the database,) Tj
+T*
+(- record ID is returned,) Tj
+T*
+(- analytics and records views update.) Tj
+T*
+() Tj
+T*
+(### 6.4 Offline Flow) Tj
+T*
+() Tj
+T*
+(If the backend cannot be reached:) Tj
+T*
+() Tj
+T*
+(- the dashboard can show an offline preview,) Tj
+T*
+(- the assessment can be stored locally,) Tj
+T*
+(- the system queues the record for later sync,) Tj
+T*
+(- the user sees a clear offline status.) Tj
+T*
+() Tj
+T*
+(## 7. Visibility and Record Rules) Tj
+T*
+() Tj
+T*
+(The project intentionally distinguishes between different kinds of records.) Tj
+T*
+() Tj
+T*
+(### 7.1 Visible User Records) Tj
+T*
+() Tj
+T*
+(These are the records shown in the records table and report panel.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 1591 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(### 7.2 Demo Records) Tj
+T*
+() Tj
+T*
+(Demo records are bundled for development, testing, or examples.) Tj
+T*
+() Tj
+T*
+(They are:) Tj
+T*
+() Tj
+T*
+(- hidden from the user-facing record list,) Tj
+T*
+(- excluded from PDF export,) Tj
+T*
+(- not presented as real user data.) Tj
+T*
+() Tj
+T*
+(### 7.3 Hidden Reports) Tj
+T*
+() Tj
+T*
+(A report can be removed from the visible records/report panel without deleting the underlying assessment.) Tj
+T*
+() Tj
+T*
+(This supports privacy-friendly workflows where a user wants to hide a report from the interface but keep the source record available.) Tj
+T*
+() Tj
+T*
+(## 8. Multilingual Architecture) Tj
+T*
+() Tj
+T*
+(The app supports English, Hindi, and Bengali across the main UI.) Tj
+T*
+() Tj
+T*
+(The multilingual design applies to:) Tj
+T*
+() Tj
+T*
+(- labels and headings,) Tj
+T*
+(- recommendation text,) Tj
+T*
+(- disclaimers,) Tj
+T*
+(- validated instruments,) Tj
+T*
+(- offline notices,) Tj
+T*
+(- quality-check summaries,) Tj
+T*
+(- adaptive-screening prompts.) Tj
+T*
+() Tj
+T*
+(The architecture keeps translation data inside the frontend so the browser can switch instantly without requiring a full page reload or server-side language negotiation for every label.) Tj
+T*
+() Tj
+T*
+(## 9. Scoring Architecture) Tj
+T*
+() Tj
+T*
+(The scoring system combines multiple evidence sources.) Tj
+T*
+() Tj
+T*
+(### 9.1 Questionnaire Scores) Tj
+T*
+() Tj
+T*
+(The questionnaire provides domain-level risk information from structured items.) Tj
+T*
+() Tj
+T*
+(### 9.2 Text Features) Tj
+T*
+() Tj
+T*
+(Text analysis contributes:) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 1531 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- sentiment,) Tj
+T*
+(- emotion,) Tj
+T*
+(- emotion intensity,) Tj
+T*
+(- distress phrases,) Tj
+T*
+(- safety language,) Tj
+T*
+(- agrarian distress markers,) Tj
+T*
+(- model-backed NLP features when available.) Tj
+T*
+() Tj
+T*
+(Current runtime priority:) Tj
+T*
+() Tj
+T*
+(- text_transformer is the primary scorer when available) Tj
+T*
+(- text remains the fallback bundle) Tj
+T*
+(- weak text domains are lightly retuned from existing sentiment, emotion, and keyword cues) Tj
+T*
+() Tj
+T*
+(### 9.3 Audio Features) Tj
+T*
+() Tj
+T*
+(Audio can contribute:) Tj
+T*
+() Tj
+T*
+(- file metadata,) Tj
+T*
+(- voice-derived indicators,) Tj
+T*
+(- confidence signals,) Tj
+T*
+(- heuristic fallback values when full inference is not possible.) Tj
+T*
+() Tj
+T*
+(Current runtime priority:) Tj
+T*
+() Tj
+T*
+(- audio is the primary audio scorer) Tj
+T*
+(- audio_spectrogram and audio_sequence remain secondary stabilizers) Tj
+T*
+(- mood-heavy audio domains are allowed to benefit from the main bundle more than the auxiliary branches) Tj
+T*
+() Tj
+T*
+(### 9.4 Image Features) Tj
+T*
+() Tj
+T*
+(Image inputs contribute:) Tj
+T*
+() Tj
+T*
+(- file metadata,) Tj
+T*
+(- face or vision-related indicators,) Tj
+T*
+(- confidence estimates,) Tj
+T*
+(- heuristic fallback values when full inference is not possible.) Tj
+T*
+() Tj
+T*
+(Current runtime priority:) Tj
+T*
+() Tj
+T*
+(- image_dl is the primary image scorer) Tj
+T*
+(- the classical image bundle remains a stabilizer and fallback) Tj
+T*
+() Tj
+T*
+(### 9.5 Passive Biomarker Features) Tj
+ET
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 1598 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(Passive signals can include:) Tj
+T*
+() Tj
+T*
+(- typing rhythm,) Tj
+T*
+(- passive video metadata,) Tj
+T*
+(- movement or rhythm-derived indicators.) Tj
+T*
+() Tj
+T*
+(### 9.6 Fusion Logic) Tj
+T*
+() Tj
+T*
+(The system fuses the inputs into:) Tj
+T*
+() Tj
+T*
+(- per-domain scores,) Tj
+T*
+(- overall confidence,) Tj
+T*
+(- overall risk labels,) Tj
+T*
+(- recommendation text,) Tj
+T*
+(- modality quality summaries.) Tj
+T*
+() Tj
+T*
+(The current fusion layer gives:) Tj
+T*
+() Tj
+T*
+(- text close-following influence behind the strongest visual/acoustic signals) Tj
+T*
+(- audio stronger influence in the final blend) Tj
+T*
+(- image DL slightly more influence than the classical image path) Tj
+T*
+(- comorbidity a blended view of the upstream modality consensus and the chain ensemble) Tj
+T*
+() Tj
+T*
+(## 10. Recommendation and Disclaimer Architecture) Tj
+T*
+() Tj
+T*
+(The recommendation engine uses the final risk distribution to produce the end-user explanation.) Tj
+T*
+() Tj
+T*
+(It is structured to:) Tj
+T*
+() Tj
+T*
+(- give a clear next step,) Tj
+T*
+(- vary by risk level,) Tj
+T*
+(- localize into the active language,) Tj
+T*
+(- include a screening disclaimer,) Tj
+T*
+(- distinguish screening support from diagnosis.) Tj
+T*
+() Tj
+T*
+(This is intentionally separate from the scoring logic so the result can be explained in plain language without changing how the score is computed.) Tj
+T*
+() Tj
+T*
+(## 11. Model Statistics Architecture) Tj
+T*
+() Tj
+T*
+(The model statistics panel displays:) Tj
+T*
+() Tj
+T*
+(- loaded model family,) Tj
+T*
+(- transformer labels,) Tj
+ET
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 1603 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- sample counts,) Tj
+T*
+(- coverage,) Tj
+T*
+(- manifest information,) Tj
+T*
+(- dataset root,) Tj
+T*
+(- trained versus fallback sources.) Tj
+T*
+() Tj
+T*
+(This gives the user context about the source of the predictions and helps identify when the dashboard is relying on a trained bundle versus fallback heuristics.) Tj
+T*
+() Tj
+T*
+(## 12. Quality-Check Architecture) Tj
+T*
+() Tj
+T*
+(The quality-check workflow is part of the analytics layer.) Tj
+T*
+() Tj
+T*
+(It:) Tj
+T*
+() Tj
+T*
+(- reads saved assessments,) Tj
+T*
+(- computes proxy metrics,) Tj
+T*
+(- highlights mismatches,) Tj
+T*
+(- can be exported as PDF,) Tj
+T*
+(- can be used to monitor dashboard consistency over time.) Tj
+T*
+() Tj
+T*
+(## 13. Trajectory and Trend Architecture) Tj
+T*
+() Tj
+T*
+(The app builds longitudinal views from repeated assessments of the same person when patient identity can be linked.) Tj
+T*
+() Tj
+T*
+(These views show:) Tj
+T*
+() Tj
+T*
+(- baseline to current change,) Tj
+T*
+(- recent change,) Tj
+T*
+(- volatility,) Tj
+T*
+(- domain drift,) Tj
+T*
+(- overall trajectory status.) Tj
+T*
+() Tj
+T*
+(This is useful for repeat screening and follow-up workflows.) Tj
+T*
+() Tj
+T*
+(## 14. Training and Research Architecture) Tj
+T*
+() Tj
+T*
+(The project includes supporting research and training flows:) Tj
+T*
+() Tj
+T*
+(- proxy pretraining from public emotion datasets,) Tj
+T*
+(- clinical retraining from approved datasets,) Tj
+T*
+(- manifest building,) Tj
+T*
+(- federated or multi-center training support,) Tj
+T*
+(- saved-assessment evaluation,) Tj
+T*
+(- publication-ready paper scaffolding.) Tj
+ET
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 20 0 R >>
+endobj
+22 0 obj
+<< /Length 1875 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(This means the repository is not only an app, but also a research and experimentation workspace.) Tj
+T*
+() Tj
+T*
+(The trained sklearn estimators in models/mental_health_screening/ also have ONNX exports in models/mental_health_screening/onnx/, while the original pickle bundles remain in place for compatibility and inspection. The exporter script is tools/export_model_bundles_to_onnx.py.) Tj
+T*
+() Tj
+T*
+(## 15. Deployment Architecture) Tj
+T*
+() Tj
+T*
+(The standard local deployment path is:) Tj
+T*
+() Tj
+T*
+(python dashboard_server.py) Tj
+T*
+() Tj
+T*
+(Then open:) Tj
+T*
+() Tj
+T*
+(http://127.0.0.1:8000/) Tj
+T*
+() Tj
+T*
+(Typical deployment concerns:) Tj
+T*
+() Tj
+T*
+(- backend availability,) Tj
+T*
+(- database persistence,) Tj
+T*
+(- service worker behavior,) Tj
+T*
+(- offline fallback,) Tj
+T*
+(- report generation,) Tj
+T*
+(- model bundle presence,) Tj
+T*
+(- secure handling of records.) Tj
+T*
+() Tj
+T*
+(## 16. Extensibility Notes) Tj
+T*
+() Tj
+T*
+(The architecture is already set up so new work can be added in clean layers:) Tj
+T*
+() Tj
+T*
+(- new UI panels can be added in web/,) Tj
+T*
+(- new API routes can be added in dashboard_server.py,) Tj
+T*
+(- new scoring features can be added in src/mental_health_screening/,) Tj
+T*
+(- new experiments can be added to tools/,) Tj
+T*
+(- new documentation can be added to docs/,) Tj
+T*
+(- new publication material can be added to paper/.) Tj
+T*
+() Tj
+T*
+(## 17. How the Current Working Features Fit Together) Tj
+T*
+() Tj
+T*
+(The important working behaviors in the current codebase are:) Tj
+T*
+() Tj
+T*
+(- the dashboard only shows visible user records in the main records/report flow,) Tj
+T*
+(- demo records are filtered out of user-facing panels,) Tj
+T*
+(- report hiding works without destroying the record,) Tj
+T*
+(- text and image are treated as usable when real signal exists,) Tj
+ET
+endstream
+endobj
+23 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 22 0 R >>
+endobj
+24 0 obj
+<< /Length 769 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- recommendation wording adjusts to the detected risk level,) Tj
+T*
+(- multilingual content is integrated through the frontend translation layer,) Tj
+T*
+(- offline preview is available when the backend is unreachable,) Tj
+T*
+(- PDFs and quality checks are generated from saved data.) Tj
+T*
+() Tj
+T*
+(## 18. Related Documentation) Tj
+T*
+() Tj
+T*
+(Other documents in the repo:) Tj
+T*
+() Tj
+T*
+(- docs/PROJECT_DOCUMENTATION.md \(/c:/Rural%20Mental%20Heath%20Screening%20AI/docs/PROJECT_DOCUMENTATION.md\)) Tj
+T*
+(- paper/manuscript.tex \(/c:/Rural%20Mental%20Heath%20Screening%20AI/paper/manuscript.tex\)) Tj
+T*
+(- paper/research-proposals.md \(/c:/Rural%20Mental%20Heath%20Screening%20AI/paper/research-proposals.md\)) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+25 0 obj
+<< /Type /Page /Parent 26 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 24 0 R >>
+endobj
+26 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R 23 0 R 25 0 R ] /Count 12 >>
+endobj
+27 0 obj
+<< /Type /Catalog /Pages 26 0 R >>
+endobj
+28 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Architecture) /Creator (Codex) >>
+endobj
+xref
+0 29
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002105 00000 n 
+0000002232 00000 n 
+0000003545 00000 n 
+0000003672 00000 n 
+0000005141 00000 n 
+0000005268 00000 n 
+0000006824 00000 n 
+0000006951 00000 n 
+0000008492 00000 n 
+0000008621 00000 n 
+0000010271 00000 n 
+0000010400 00000 n 
+0000012044 00000 n 
+0000012173 00000 n 
+0000013757 00000 n 
+0000013886 00000 n 
+0000015537 00000 n 
+0000015666 00000 n 
+0000017322 00000 n 
+0000017451 00000 n 
+0000019379 00000 n 
+0000019508 00000 n 
+0000020329 00000 n 
+0000020458 00000 n 
+0000020593 00000 n 
+0000020644 00000 n 
+trailer
+<< /Size 29 /Root 27 0 R /Info 28 0 R >>
+startxref
+20741
+%%EOF

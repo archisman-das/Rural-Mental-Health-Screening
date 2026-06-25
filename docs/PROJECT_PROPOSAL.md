@@ -48,6 +48,13 @@ The platform should:
 7. continue to function in limited form when the backend is offline,
 8. provide quality-check and model-statistics views for transparency.
 
+The current implementation follows a prioritized multimodal stack:
+
+- `text_transformer` is the primary text scorer,
+- `audio` is the primary audio scorer,
+- `image_dl` is the primary image scorer,
+- `comorbidity` blends classifier-chain output with upstream modality consensus.
+
 ## Why This Matters
 
 The main value of the project is not only prediction accuracy. It is the complete workflow.
@@ -134,6 +141,8 @@ The system combines multiple evidence sources:
 - trained bundle metadata,
 - fallback heuristics when trained inference is unavailable.
 
+The weaker text/audio/image domains are now handled with targeted calibration and bundle prioritization instead of broad bundle rewrites.
+
 The final output includes:
 
 - per-domain risk labels,
@@ -196,6 +205,13 @@ The strongest evaluation approach is an ablation study:
 - questionnaire + text + audio + image + passive,
 - backend mode versus offline fallback mode.
 
+For the current codebase, a practical follow-up evaluation is:
+
+- compare the upgraded `image_dl` bundle against classical image,
+- compare the main `audio` bundle against the auxiliary audio branches,
+- compare `text_transformer` against classical text,
+- retrain and validate `comorbidity` only after the upstream bundle priorities stabilize.
+
 ## Ethics and Safety
 
 The system is a screening tool, not a diagnosis engine.
@@ -254,4 +270,3 @@ The project should produce:
 ## Conclusion
 
 This project proposal frames the repository as a full screening system rather than just a model. It is designed for usability, traceability, multilingual access, and future research validation. The current implementation already provides a strong base for publication, field testing, and operational deployment.
-

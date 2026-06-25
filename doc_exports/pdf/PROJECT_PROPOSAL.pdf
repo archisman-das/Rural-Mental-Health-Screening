@@ -1,0 +1,669 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2578 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Project Proposal) Tj
+T*
+() Tj
+T*
+(## Title) Tj
+T*
+() Tj
+T*
+(Rural Mental Health Screening AI: A Multilingual, Multimodal, Offline-Ready Screening Platform for Community and Primary-Care Settings) Tj
+T*
+() Tj
+T*
+(## Executive Summary) Tj
+T*
+() Tj
+T*
+(This project proposes a practical screening platform for rural and low-resource mental health workflows. The system is designed to support a real-world screening session from start to finish: capturing profile information, collecting questionnaire responses, interpreting narrative text, optionally using audio and image inputs, handling passive biomarker signals, producing recommendation text, storing the assessment, generating a PDF, and allowing later record review.) Tj
+T*
+() Tj
+T*
+(The repository already contains a working dashboard and backend implementation. This document describes the project as a formal proposal so the architecture can be explained clearly for research, evaluation, deployment planning, and future publication.) Tj
+T*
+() Tj
+T*
+(## Problem Context) Tj
+T*
+() Tj
+T*
+(Rural mental health screening is difficult for several reasons:) Tj
+T*
+() Tj
+T*
+(- specialist access is limited,) Tj
+T*
+(- follow-up documentation is often fragmented,) Tj
+T*
+(- internet connectivity may be unstable,) Tj
+T*
+(- patients may speak different languages,) Tj
+T*
+(- health workers need short, actionable outputs,) Tj
+T*
+(- records often need to be reviewed later in a report-friendly format.) Tj
+T*
+() Tj
+T*
+(Most digital tools do not solve all of these at once. Some tools only provide a score. Some are not multilingual. Some rely fully on stable internet access. Some generate results but do not explain them in a form a community health worker can use.) Tj
+T*
+() Tj
+T*
+(This project addresses those gaps by combining:) Tj
+T*
+() Tj
+T*
+(- multilingual screening,) Tj
+T*
+(- multimodal signal handling,) Tj
+T*
+(- offline fallback behavior,) Tj
+T*
+(- report generation,) Tj
+T*
+(- record management,) Tj
+T*
+(- quality-check reporting,) Tj
+T*
+(- and research-ready documentation.) Tj
+T*
+() Tj
+T*
+(## Core Proposal) Tj
+T*
+() Tj
+T*
+(The proposal is to build and evaluate a browser-based and backend-supported screening platform that can assist community health workers and primary-care teams in capturing and reviewing mental health screening data.) Tj
+T*
+() Tj
+T*
+(The platform should:) Tj
+T*
+() Tj
+T*
+(1. work in English, Hindi, and Bengali,) Tj
+T*
+(2. support structured questionnaires and narrative input,) Tj
+T*
+(3. optionally use audio, image, and passive biomarker signals,) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 1676 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(4. give a clear recommendation and screening disclaimer,) Tj
+T*
+(5. save assessments for later retrieval,) Tj
+T*
+(6. export PDF reports,) Tj
+T*
+(7. continue to function in limited form when the backend is offline,) Tj
+T*
+(8. provide quality-check and model-statistics views for transparency.) Tj
+T*
+() Tj
+T*
+(The current implementation follows a prioritized multimodal stack:) Tj
+T*
+() Tj
+T*
+(- text_transformer is the primary text scorer,) Tj
+T*
+(- audio is the primary audio scorer,) Tj
+T*
+(- image_dl is the primary image scorer,) Tj
+T*
+(- comorbidity blends classifier-chain output with upstream modality consensus.) Tj
+T*
+() Tj
+T*
+(## Why This Matters) Tj
+T*
+() Tj
+T*
+(The main value of the project is not only prediction accuracy. It is the complete workflow.) Tj
+T*
+() Tj
+T*
+(The system aims to:) Tj
+T*
+() Tj
+T*
+(- reduce friction for front-line screening,) Tj
+T*
+(- make the output understandable,) Tj
+T*
+(- preserve the record for follow-up,) Tj
+T*
+(- support language access,) Tj
+T*
+(- and keep the app useful even when the network is unreliable.) Tj
+T*
+() Tj
+T*
+(That combination is especially relevant in rural or community settings.) Tj
+T*
+() Tj
+T*
+(## Proposed System Design) Tj
+T*
+() Tj
+T*
+(### Frontend) Tj
+T*
+() Tj
+T*
+(The frontend is responsible for:) Tj
+T*
+() Tj
+T*
+(- language switching,) Tj
+T*
+(- profile and questionnaire entry,) Tj
+T*
+(- narrative input,) Tj
+T*
+(- optional media capture,) Tj
+T*
+(- adaptive test flow,) Tj
+T*
+(- preview rendering,) Tj
+T*
+(- result interpretation,) Tj
+T*
+(- records and reports browsing,) Tj
+T*
+(- record deletion,) Tj
+T*
+(- report hiding,) Tj
+T*
+(- offline status messaging.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Length 1605 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(### Backend) Tj
+T*
+() Tj
+T*
+(The Flask backend is responsible for:) Tj
+T*
+() Tj
+T*
+(- validating assessment input,) Tj
+T*
+(- computing preview and saved assessment results,) Tj
+T*
+(- persisting records,) Tj
+T*
+(- serving record lookup and deletion,) Tj
+T*
+(- generating PDFs,) Tj
+T*
+(- exposing model statistics,) Tj
+T*
+(- running quality checks,) Tj
+T*
+(- serving sample and database metadata,) Tj
+T*
+(- supporting adaptive screening requests.) Tj
+T*
+() Tj
+T*
+(### Core Logic) Tj
+T*
+() Tj
+T*
+(The core Python package handles:) Tj
+T*
+() Tj
+T*
+(- questionnaire definitions,) Tj
+T*
+(- feature extraction,) Tj
+T*
+(- inference and confidence estimation,) Tj
+T*
+(- storage,) Tj
+T*
+(- PDF reporting,) Tj
+T*
+(- training and bundle generation,) Tj
+T*
+(- model metadata summarization.) Tj
+T*
+() Tj
+T*
+(## Functional Workflow) Tj
+T*
+() Tj
+T*
+(The system works in this order:) Tj
+T*
+() Tj
+T*
+(1. The user selects a language.) Tj
+T*
+(2. The user enters profile details and consent.) Tj
+T*
+(3. The user completes the questionnaire.) Tj
+T*
+(4. The user adds a narrative description.) Tj
+T*
+(5. Optional audio, image, or passive biomarker inputs are added.) Tj
+T*
+(6. The dashboard generates a live preview.) Tj
+T*
+(7. The user saves the assessment.) Tj
+T*
+(8. The record appears in the records and analytics views.) Tj
+T*
+(9. The user can later fetch, export, delete, or hide the record.) Tj
+T*
+() Tj
+T*
+(If the backend is unavailable, the dashboard can still show a limited preview and queue the record for later sync.) Tj
+T*
+() Tj
+T*
+(## Proposed Technical Method) Tj
+ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 1630 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(The system combines multiple evidence sources:) Tj
+T*
+() Tj
+T*
+(- questionnaire domain scores,) Tj
+T*
+(- narrative NLP,) Tj
+T*
+(- speech or audio metadata,) Tj
+T*
+(- facial/image metadata,) Tj
+T*
+(- passive biomarker traces,) Tj
+T*
+(- trained bundle metadata,) Tj
+T*
+(- fallback heuristics when trained inference is unavailable.) Tj
+T*
+() Tj
+T*
+(The weaker text/audio/image domains are now handled with targeted calibration and bundle prioritization instead of broad bundle rewrites.) Tj
+T*
+() Tj
+T*
+(The final output includes:) Tj
+T*
+() Tj
+T*
+(- per-domain risk labels,) Tj
+T*
+(- overall confidence,) Tj
+T*
+(- recommendation text,) Tj
+T*
+(- screening disclaimer,) Tj
+T*
+(- modality quality summaries,) Tj
+T*
+(- trajectory and trend information.) Tj
+T*
+() Tj
+T*
+(## Multilingual Strategy) Tj
+T*
+() Tj
+T*
+(The UI is designed so the active language changes more than labels. It also changes:) Tj
+T*
+() Tj
+T*
+(- validated instrument display,) Tj
+T*
+(- recommendations,) Tj
+T*
+(- disclaimers,) Tj
+T*
+(- offline messages,) Tj
+T*
+(- quality-check explanations,) Tj
+T*
+(- and adaptive-screening prompts.) Tj
+T*
+() Tj
+T*
+(This matters because a mental health screening tool must be understandable to the actual user, not only technically correct.) Tj
+T*
+() Tj
+T*
+(## ONNX and Bundle Strategy) Tj
+T*
+() Tj
+T*
+(The repository now keeps both:) Tj
+T*
+() Tj
+T*
+(- the original pickle bundles,) Tj
+T*
+(- and the exported ONNX artifacts.) Tj
+T*
+() Tj
+T*
+(This is useful because it preserves compatibility while also making deployment and portability easier for supported estimators.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 1495 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(The ONNX files live under:) Tj
+T*
+() Tj
+T*
+(- models/mental_health_screening/onnx/) Tj
+T*
+() Tj
+T*
+(The export tool is:) Tj
+T*
+() Tj
+T*
+(- tools/export_model_bundles_to_onnx.py) Tj
+T*
+() Tj
+T*
+(## Evaluation Plan) Tj
+T*
+() Tj
+T*
+(The project should be evaluated with:) Tj
+T*
+() Tj
+T*
+(- accuracy,) Tj
+T*
+(- macro F1,) Tj
+T*
+(- calibration or Brier score,) Tj
+T*
+(- ROC AUC where appropriate,) Tj
+T*
+(- offline success rate,) Tj
+T*
+(- adaptive completion rate,) Tj
+T*
+(- usability feedback,) Tj
+T*
+(- multilingual consistency,) Tj
+T*
+(- record completeness.) Tj
+T*
+() Tj
+T*
+(The strongest evaluation approach is an ablation study:) Tj
+T*
+() Tj
+T*
+(- questionnaire only,) Tj
+T*
+(- questionnaire + text,) Tj
+T*
+(- questionnaire + text + audio,) Tj
+T*
+(- questionnaire + text + image,) Tj
+T*
+(- questionnaire + text + audio + image + passive,) Tj
+T*
+(- backend mode versus offline fallback mode.) Tj
+T*
+() Tj
+T*
+(For the current codebase, a practical follow-up evaluation is:) Tj
+T*
+() Tj
+T*
+(- compare the upgraded image_dl bundle against classical image,) Tj
+T*
+(- compare the main audio bundle against the auxiliary audio branches,) Tj
+T*
+(- compare text_transformer against classical text,) Tj
+T*
+(- retrain and validate comorbidity only after the upstream bundle priorities stabilize.) Tj
+T*
+() Tj
+T*
+(## Ethics and Safety) Tj
+T*
+() Tj
+T*
+(The system is a screening tool, not a diagnosis engine.) Tj
+T*
+() Tj
+T*
+(The proposal requires that:) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 1291 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- consent be obtained,) Tj
+T*
+(- demo data be excluded from clinical claims,) Tj
+T*
+(- records be treated with privacy protection,) Tj
+T*
+(- disclaimer text be explicit,) Tj
+T*
+(- emergency escalation pathways remain clear,) Tj
+T*
+(- the system not overstate certainty.) Tj
+T*
+() Tj
+T*
+(## Risks) Tj
+T*
+() Tj
+T*
+(Technical risks include:) Tj
+T*
+() Tj
+T*
+(- missing model bundles,) Tj
+T*
+(- backend downtime,) Tj
+T*
+(- unstable connectivity,) Tj
+T*
+(- incomplete media capture,) Tj
+T*
+(- conversion issues between formats.) Tj
+T*
+() Tj
+T*
+(Research risks include:) Tj
+T*
+() Tj
+T*
+(- dataset bias,) Tj
+T*
+(- limited multilingual coverage,) Tj
+T*
+(- proxy-data mismatch,) Tj
+T*
+(- overfitting,) Tj
+T*
+(- poor subgroup calibration.) Tj
+T*
+() Tj
+T*
+(Mitigation includes:) Tj
+T*
+() Tj
+T*
+(- offline fallback logic,) Tj
+T*
+(- local queueing,) Tj
+T*
+(- ONNX and pickle coexistence,) Tj
+T*
+(- quality checks,) Tj
+T*
+(- error analysis,) Tj
+T*
+(- transparent reporting.) Tj
+T*
+() Tj
+T*
+(## Expected Deliverables) Tj
+T*
+() Tj
+T*
+(The project should produce:) Tj
+T*
+() Tj
+T*
+(- a working multilingual dashboard,) Tj
+T*
+(- adaptive screening,) Tj
+T*
+(- backend APIs,) Tj
+T*
+(- PDF reports,) Tj
+T*
+(- trajectory and quality-check views,) Tj
+T*
+(- documentation,) Tj
+ET
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 531 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- research proposals,) Tj
+T*
+(- paper scaffolding,) Tj
+T*
+(- ONNX exports,) Tj
+T*
+(- reproducible evaluation scripts.) Tj
+T*
+() Tj
+T*
+(## Conclusion) Tj
+T*
+() Tj
+T*
+(This project proposal frames the repository as a full screening system rather than just a model. It is designed for usability, traceability, multilingual access, and future research validation. The current implementation already provides a strong base for publication, field testing, and operational deployment.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 16 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R 7 0 R 9 0 R 11 0 R 13 0 R 15 0 R ] /Count 7 >>
+endobj
+17 0 obj
+<< /Type /Catalog /Pages 16 0 R >>
+endobj
+18 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Project Proposal) /Creator (Codex) >>
+endobj
+xref
+0 19
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002709 00000 n 
+0000002836 00000 n 
+0000004564 00000 n 
+0000004691 00000 n 
+0000006348 00000 n 
+0000006475 00000 n 
+0000008157 00000 n 
+0000008284 00000 n 
+0000009832 00000 n 
+0000009961 00000 n 
+0000011305 00000 n 
+0000011434 00000 n 
+0000012017 00000 n 
+0000012146 00000 n 
+0000012245 00000 n 
+0000012296 00000 n 
+trailer
+<< /Size 19 /Root 17 0 R /Info 18 0 R >>
+startxref
+12397
+%%EOF

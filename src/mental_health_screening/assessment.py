@@ -650,6 +650,7 @@ def get_response_options(language: str | None = None) -> dict[str, int]:
 
 def get_validated_instruments(language: str | None = None) -> list[dict]:
     normalized_language = _normalize_language(language)
+    excluded_ids = {"gad7", "gad7-hi", "gad7-bn", "gad2", "gad2-hi", "gad2-bn"}
     localized_labels = {
         "phq9": {
             "English": "PHQ-9",
@@ -851,6 +852,8 @@ def get_validated_instruments(language: str | None = None) -> list[dict]:
     }
     instruments = []
     for instrument_id, instrument in VALIDATED_INSTRUMENTS.items():
+        if instrument_id in excluded_ids:
+            continue
         items = [
             {
                 "id": item_id,

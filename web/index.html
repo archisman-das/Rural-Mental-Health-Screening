@@ -6,7 +6,7 @@
   <title id="appTitle">Rural Mental Health Dashboard</title>
   <meta name="theme-color" content="#9e4d29">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/web/styles.css?v=20260607">
+  <link rel="stylesheet" href="/web/styles.css?v=20260623">
 </head>
 <body>
   <div class="page-shell">
@@ -94,6 +94,7 @@
     <section class="tab-bar panel reveal">
       <button id="workspaceTabBtn" class="tab-btn active" data-view="workspaceView" type="button">Assessment Workspace</button>
       <button id="adaptiveTabBtn" class="tab-btn" data-view="adaptiveView" type="button">Adaptive Test</button>
+      <button id="analyticsTabBtn" class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
       <button id="recordsTabBtn" class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
     </section>
 
@@ -372,9 +373,13 @@
           <h3 id="analyticsIntroCurrent">One assessment in focus</h3>
           <p id="analyticsIntroCurrentText">Analytics Hub now explains the currently saved assessment instead of loading a list of backend records by default.</p>
         </article>
-          <article class="info-card">
+        <article class="info-card">
           <p id="analyticsIntroModel" class="intake-kicker">Model Insights</p>
           <p id="analyticsIntroModelText">Review domain-level scores, modality quality, confidence, transformer usage, and NLP signal interpretation for this assessment.</p>
+        </article>
+        <article class="info-card">
+          <p class="intake-kicker">Final Score Weights</p>
+          <div id="scoreWeightSummary" class="score-weight-summary">Image, audio, and text weights will appear here.</div>
         </article>
         <article class="info-card">
           <p id="analyticsIntroScope" class="intake-kicker">Prediction Scope</p>
@@ -392,9 +397,14 @@
           <p id="analysisAssessmentIdLabel" class="metric-label">Assessment ID</p>
           <p id="analysisAssessmentId" class="metric-value metric-small">No data</p>
         </article>
-        <article class="metric-card panel">
+        <article class="metric-card panel confidence-lift-card">
           <p id="analysisConfidenceLabel" class="metric-label">Overall Confidence</p>
           <p id="analysisConfidence" class="metric-value">0%</p>
+          <p id="analysisConfidenceLiftText" class="detail-muted">Calibration strengthens the combined confidence signal.</p>
+        </article>
+        <article class="metric-card panel">
+          <p id="analysisEvidenceStrengthLabel" class="metric-label">Evidence Strength</p>
+          <p id="analysisEvidenceStrength" class="metric-value metric-small">0%</p>
         </article>
         <article class="metric-card panel">
           <p id="analysisStrongestDomainLabel" class="metric-label">Strongest Signal</p>
@@ -436,7 +446,7 @@
       </section>
 
       <section class="analytics-grid analytics-grid-secondary reveal">
-        <article class="panel" hidden>
+        <article class="panel">
           <div class="section-heading">
             <h2 id="modelStatisticsTitle">Model Statistics</h2>
             <p id="modelStatisticsText">Deep learning and NLP model details used in this assessment</p>
@@ -585,6 +595,6 @@
     </section>
   </div>
 
-  <script src="/web/app.js?v=20260622-2"></script>
+  <script src="/web/app.js?v=20260623-1"></script>
 </body>
 </html>

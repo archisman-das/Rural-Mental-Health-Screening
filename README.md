@@ -33,7 +33,14 @@ The current model targets:
 - Loneliness
 - Substance abuse
 
-The `comorbidity` bundle now performs joint multi-label prediction so the model can estimate co-occurring patterns such as depression + anxiety rather than treating each label independently.
+The current scoring stack is intentionally hierarchical:
+
+- text uses the `text_transformer` bundle when available, with the classical `text` bundle as fallback
+- audio uses the main `audio` bundle as the primary scorer, with `audio_sequence` and `audio_spectrogram` as secondary stabilizers
+- image uses `image_dl` as the primary scorer, with the classical `image` bundle as fallback
+- comorbidity combines the upstream text, audio, and image consensus with the classifier-chain ensemble
+
+The `comorbidity` bundle performs joint multi-label prediction so the model can estimate co-occurring patterns such as depression + anxiety rather than treating each label independently.
 
 ## Included
 
@@ -45,9 +52,13 @@ The `comorbidity` bundle now performs joint multi-label prediction so the model 
 - `src/mental_health_screening/storage.py`: SQLite-backed assessment storage with JSON cache sync.
 - `src/mental_health_screening/report.py`: PDF report generation for saved assessments.
 - `src/mental_health_screening/training.py`: training CLI and model-bundle builder for text, audio, and image.
+- `src/mental_health_screening/training.py`: training CLI and model-bundle builder for text, audio, image, and comorbidity.
 - `src/mental_health_screening/utils.py`: shared utility helpers.
 - `docs/PROJECT_DOCUMENTATION.md`: detailed project documentation, architecture, API, and workflow guide.
 - `docs/ARCHITECTURE.md`: standalone architecture guide that explains the working system in detail.
+- `docs/MULTIMODAL_FUSION.md`: bundle-priority and fusion guide for the current text/audio/image/comorbidity stack.
+- `docs/MODEL_CATALOG.md`: purpose-only catalog of every model family and saved bundle used in the project.
+- `docs/MODEL_COMPARISON_MATRIX.md`: model-by-model working purpose and comparison matrix with current bundle metrics.
 - `docs/PROJECT_PROPOSAL.md`: formal project proposal with motivation, scope, methodology, and evaluation plan.
 - `docs/DEEP_LEARNING_MODEL_GUIDE.md`: detailed explanation of the text, audio, and vision model families used in the project.
 - `models/mental_health_screening/onnx/`: exported ONNX artifacts for the sklearn bundle estimators, kept alongside the original `.pkl` bundles.
@@ -221,7 +232,7 @@ The training path has two honest stages:
 
 If the datasets are already on disk, the orchestration script validates roots, generates manifests, and runs the training commands in one flow.
 
-It now also regenerates the bootstrapped comorbidity manifest from the MELD and RAVDESS proxy outputs before training, then retrains the joint comorbidity head from that larger file. By default, the pipeline writes a balanced `60,000` rows to `tmp_datasets/comorbidity_60k.csv` so it avoids the locked file in `data/manifests/` and gives the joint head more training volume.
+It also regenerates the bootstrapped comorbidity manifest from the MELD and RAVDESS proxy outputs before training, then retrains the joint comorbidity head from that larger file. By default, the pipeline writes a balanced `60,000` rows to `tmp_datasets/comorbidity_60k.csv` so it avoids the locked file in `data/manifests/` and gives the joint head more training volume.
 
 See [docs/config_examples.md](/D:/Project/Rural%20Mental%20Heath%20Screening%20AI/docs/config_examples.md) for a short explanation of the example JSON config files and the writable manifest path.
 
@@ -408,6 +419,16 @@ Implementation notes:
 - `DAIC-WOZ` is treated as clinical supervision mainly for `depression`, with conservative derived support for `sleep_disorder` and `burnout` when PHQ item columns are present
 - proxy datasets are useful for representation learning, but they are not a substitute for clinically validated labels
 - the comorbidity head uses a classifier-chain ensemble so it can learn label co-occurrence and emit joint probabilities for combinations like depression + anxiety
+- the final comorbidity score now also blends upstream text, audio, and image consensus so the weakest head benefits from stronger modality stabilization
+
+### Current Bundle Priorities
+
+The runtime bundle priorities are:
+
+- `text_transformer` primary for text, `text` as fallback
+- `image_dl` primary for image, `image` as fallback
+- `audio` primary for audio, with `audio_sequence` and `audio_spectrogram` as secondary support
+- `comorbidity` retrained on the improved upstream modality outputs and blended with them at inference
 
 ### Rural Voice Models
 

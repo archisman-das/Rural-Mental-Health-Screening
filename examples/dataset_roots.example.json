@@ -5,5 +5,7 @@
   "comorbidity_target_rows": 60000,
   "daic_woz_root": "C:\\datasets\\DAIC-WOZ",
   "meld_root": "C:\\datasets\\MELD",
-  "ravdess_root": "C:\\datasets\\RAVDESS"
+  "ravdess_root": "C:\\datasets\\RAVDESS",
+  "crema_d_root": "C:\\datasets\\CREMA-D",
+  "tess_root": "C:\\datasets\\TESS"
 }

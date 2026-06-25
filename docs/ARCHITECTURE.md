@@ -314,6 +314,12 @@ Text analysis contributes:
 - agrarian distress markers,
 - model-backed NLP features when available.
 
+Current runtime priority:
+
+- `text_transformer` is the primary scorer when available
+- `text` remains the fallback bundle
+- weak text domains are lightly retuned from existing sentiment, emotion, and keyword cues
+
 ### 9.3 Audio Features
 
 Audio can contribute:
@@ -323,6 +329,12 @@ Audio can contribute:
 - confidence signals,
 - heuristic fallback values when full inference is not possible.
 
+Current runtime priority:
+
+- `audio` is the primary audio scorer
+- `audio_spectrogram` and `audio_sequence` remain secondary stabilizers
+- mood-heavy audio domains are allowed to benefit from the main bundle more than the auxiliary branches
+
 ### 9.4 Image Features
 
 Image inputs contribute:
@@ -331,6 +343,11 @@ Image inputs contribute:
 - face or vision-related indicators,
 - confidence estimates,
 - heuristic fallback values when full inference is not possible.
+
+Current runtime priority:
+
+- `image_dl` is the primary image scorer
+- the classical `image` bundle remains a stabilizer and fallback
 
 ### 9.5 Passive Biomarker Features
 
@@ -349,6 +366,13 @@ The system fuses the inputs into:
 - overall risk labels,
 - recommendation text,
 - modality quality summaries.
+
+The current fusion layer gives:
+
+- text close-following influence behind the strongest visual/acoustic signals
+- audio stronger influence in the final blend
+- image DL slightly more influence than the classical image path
+- comorbidity a blended view of the upstream modality consensus and the chain ensemble
 
 ## 10. Recommendation and Disclaimer Architecture
 

@@ -60,6 +60,65 @@ RAVDESS_PROXY_SCORES = {
     "surprised": {"depression": 0.12, "anxiety": 0.44, "stress": 0.38, "sleep_disorder": 0.14, "burnout": 0.12, "loneliness": 0.08, "substance_abuse": 0.05},
 }
 
+CREMA_D_EMOTION_ALIASES = {
+    "ang": "angry",
+    "anger": "angry",
+    "angry": "angry",
+    "dis": "disgust",
+    "disgust": "disgust",
+    "fea": "fear",
+    "fear": "fear",
+    "fearful": "fear",
+    "hap": "happy",
+    "happy": "happy",
+    "neu": "neutral",
+    "neutral": "neutral",
+    "sad": "sad",
+    "sadness": "sad",
+    "sur": "surprise",
+    "surp": "surprise",
+    "surprised": "surprise",
+    "surprise": "surprise",
+}
+
+CREMA_D_PROXY_SCORES = {
+    "neutral": {"depression": 0.12, "anxiety": 0.1, "stress": 0.1, "sleep_disorder": 0.08, "burnout": 0.08, "loneliness": 0.08, "substance_abuse": 0.04},
+    "happy": {"depression": 0.04, "anxiety": 0.04, "stress": 0.05, "sleep_disorder": 0.04, "burnout": 0.04, "loneliness": 0.03, "substance_abuse": 0.03},
+    "sad": {"depression": 0.82, "anxiety": 0.3, "stress": 0.36, "sleep_disorder": 0.3, "burnout": 0.36, "loneliness": 0.72, "substance_abuse": 0.08},
+    "angry": {"depression": 0.24, "anxiety": 0.38, "stress": 0.84, "sleep_disorder": 0.22, "burnout": 0.66, "loneliness": 0.12, "substance_abuse": 0.18},
+    "fear": {"depression": 0.32, "anxiety": 0.92, "stress": 0.78, "sleep_disorder": 0.24, "burnout": 0.22, "loneliness": 0.12, "substance_abuse": 0.08},
+    "disgust": {"depression": 0.22, "anxiety": 0.28, "stress": 0.56, "sleep_disorder": 0.18, "burnout": 0.42, "loneliness": 0.1, "substance_abuse": 0.18},
+    "surprise": {"depression": 0.12, "anxiety": 0.42, "stress": 0.36, "sleep_disorder": 0.14, "burnout": 0.12, "loneliness": 0.08, "substance_abuse": 0.05},
+}
+
+TESS_EMOTION_ALIASES = {
+    "ang": "angry",
+    "angry": "angry",
+    "dis": "disgust",
+    "disgust": "disgust",
+    "fea": "fear",
+    "fear": "fear",
+    "happy": "happy",
+    "hap": "happy",
+    "neu": "neutral",
+    "neutral": "neutral",
+    "sad": "sad",
+    "ps": "surprise",
+    "pleasant_surprise": "surprise",
+    "sur": "surprise",
+    "surprise": "surprise",
+}
+
+TESS_PROXY_SCORES = {
+    "neutral": {"depression": 0.12, "anxiety": 0.1, "stress": 0.1, "sleep_disorder": 0.08, "burnout": 0.08, "loneliness": 0.08, "substance_abuse": 0.04},
+    "happy": {"depression": 0.04, "anxiety": 0.04, "stress": 0.05, "sleep_disorder": 0.04, "burnout": 0.04, "loneliness": 0.03, "substance_abuse": 0.03},
+    "sad": {"depression": 0.84, "anxiety": 0.3, "stress": 0.38, "sleep_disorder": 0.32, "burnout": 0.38, "loneliness": 0.74, "substance_abuse": 0.08},
+    "angry": {"depression": 0.26, "anxiety": 0.4, "stress": 0.84, "sleep_disorder": 0.22, "burnout": 0.66, "loneliness": 0.12, "substance_abuse": 0.18},
+    "fear": {"depression": 0.32, "anxiety": 0.92, "stress": 0.8, "sleep_disorder": 0.24, "burnout": 0.22, "loneliness": 0.12, "substance_abuse": 0.08},
+    "disgust": {"depression": 0.22, "anxiety": 0.28, "stress": 0.56, "sleep_disorder": 0.18, "burnout": 0.42, "loneliness": 0.1, "substance_abuse": 0.18},
+    "surprise": {"depression": 0.12, "anxiety": 0.42, "stress": 0.36, "sleep_disorder": 0.14, "burnout": 0.12, "loneliness": 0.08, "substance_abuse": 0.05},
+}
+
 SLEEP_KEYWORDS = {
     "sleep",
     "slept",
@@ -161,6 +220,41 @@ def _discover_file(root: Path, name: str) -> Path | None:
     return matches[0] if matches else None
 
 
+def _detect_emotion_from_name(stem: str, aliases: dict[str, str]) -> str | None:
+    normalized = stem.replace("-", "_").lower()
+    tokens = [token for token in normalized.split("_") if token]
+    for token in tokens:
+        if token in aliases:
+            return aliases[token]
+    for token in tokens:
+        for alias, emotion in aliases.items():
+            if token.startswith(alias):
+                return emotion
+    for alias, emotion in aliases.items():
+        if f"_{alias}_" in f"_{normalized}_":
+            return emotion
+    return None
+
+
+def _parse_source_weights(values: list[str] | None) -> dict[str, int]:
+    weights: dict[str, int] = {}
+    for value in values or []:
+        if "=" not in value:
+            raise ValueError(f"Invalid source weight '{value}'. Expected SOURCE=WEIGHT.")
+        source, raw_weight = value.split("=", 1)
+        source_name = source.strip().lower()
+        if not source_name:
+            raise ValueError(f"Invalid source weight '{value}'. Source name cannot be empty.")
+        try:
+            weight = int(float(raw_weight.strip()))
+        except ValueError as exc:
+            raise ValueError(f"Invalid source weight '{value}'. Weight must be numeric.") from exc
+        if weight <= 0:
+            raise ValueError(f"Invalid source weight '{value}'. Weight must be positive.")
+        weights[source_name] = weight
+    return weights
+
+
 def _write_manifest(rows: list[dict], output_path: str | Path) -> Path:
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -170,6 +264,37 @@ def _write_manifest(rows: list[dict], output_path: str | Path) -> Path:
         for row in rows:
             writer.writerow({column: row.get(column, "") for column in MANIFEST_COLUMNS})
     return output_path
+
+
+def merge_manifests(
+    source_manifest_paths: list[str | Path],
+    output_path: str | Path,
+    dedupe: bool = True,
+    source_weights: dict[str, int] | None = None,
+) -> Path:
+    rows: list[dict] = []
+    seen_sample_ids: set[str] = set()
+    normalized_weights = {str(key).strip().lower(): max(int(value), 1) for key, value in (source_weights or {}).items()}
+    for manifest_path in source_manifest_paths:
+        with Path(manifest_path).open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            for row in reader:
+                source_name = str(row.get("source_dataset", "")).strip().lower()
+                repeat_count = normalized_weights.get(source_name, 1)
+                if repeat_count <= 0:
+                    continue
+                if dedupe:
+                    sample_id = str(row.get("sample_id", "")).strip()
+                    if sample_id and sample_id in seen_sample_ids:
+                        continue
+                    if sample_id:
+                        seen_sample_ids.add(sample_id)
+                normalized_row = {column: row.get(column, "") for column in MANIFEST_COLUMNS}
+                rows.extend([normalized_row] * repeat_count)
+
+    if not rows:
+        raise ValueError("No rows were found when merging manifests.")
+    return _write_manifest(rows, output_path)
 
 
 def _cardinality_bucket(row: dict) -> int:
@@ -459,6 +584,64 @@ def build_ravdess_manifest(
     return _write_manifest(rows, output_path)
 
 
+def build_crema_d_manifest(dataset_root: str | Path, output_path: str | Path) -> Path:
+    dataset_root = Path(dataset_root)
+    rows: list[dict] = []
+
+    for path in dataset_root.rglob("*.wav"):
+        emotion = _detect_emotion_from_name(path.stem, CREMA_D_EMOTION_ALIASES)
+        if emotion is None:
+            continue
+
+        row = _empty_row()
+        row.update(
+            {
+                "source_dataset": "CREMA-D",
+                "source_split": "full",
+                "sample_id": f"crema-d-{path.stem}",
+                "label_source": "crema_d_emotion_proxy",
+                "audio_path": str(path.resolve()),
+                "text": f"CREMA-D {emotion} speech clip {path.stem}",
+            }
+        )
+        row.update(CREMA_D_PROXY_SCORES.get(emotion, CREMA_D_PROXY_SCORES["neutral"]))
+        rows.append(row)
+
+    if not rows:
+        raise ValueError("No usable CREMA-D audio samples were found.")
+
+    return _write_manifest(rows, output_path)
+
+
+def build_tess_manifest(dataset_root: str | Path, output_path: str | Path) -> Path:
+    dataset_root = Path(dataset_root)
+    rows: list[dict] = []
+
+    for path in dataset_root.rglob("*.wav"):
+        emotion = _detect_emotion_from_name(path.stem, TESS_EMOTION_ALIASES)
+        if emotion is None:
+            continue
+
+        row = _empty_row()
+        row.update(
+            {
+                "source_dataset": "TESS",
+                "source_split": "full",
+                "sample_id": f"tess-{path.stem}",
+                "label_source": "tess_emotion_proxy",
+                "audio_path": str(path.resolve()),
+                "text": f"TESS {emotion} speech clip {path.stem}",
+            }
+        )
+        row.update(TESS_PROXY_SCORES.get(emotion, TESS_PROXY_SCORES["neutral"]))
+        rows.append(row)
+
+    if not rows:
+        raise ValueError("No usable TESS audio samples were found.")
+
+    return _write_manifest(rows, output_path)
+
+
 def _find_row_value(record: dict, exact_names: tuple[str, ...] = (), contains_any: tuple[str, ...] = ()) -> float | None:
     normalized = {str(key).strip().lower(): value for key, value in record.items()}
     for name in exact_names:
@@ -630,6 +813,40 @@ def main() -> None:
         help="Include song clips in addition to speech clips.",
     )
 
+    crema_d_parser = subparsers.add_parser("crema-d", help="Build a proxy-label audio manifest from CREMA-D.")
+    crema_d_parser.add_argument("dataset_root", help="Path to the CREMA-D dataset root.")
+    crema_d_parser.add_argument("output_path", help="Where to write the generated manifest CSV.")
+
+    tess_parser = subparsers.add_parser("tess", help="Build a proxy-label audio manifest from TESS.")
+    tess_parser.add_argument("dataset_root", help="Path to the TESS dataset root.")
+    tess_parser.add_argument("output_path", help="Where to write the generated manifest CSV.")
+
+    merge_parser = subparsers.add_parser(
+        "combine-manifests",
+        help="Concatenate multiple manifests into one audio-ready manifest.",
+    )
+    merge_parser.add_argument(
+        "source_manifests",
+        nargs="+",
+        help="One or more source manifests to combine.",
+    )
+    merge_parser.add_argument(
+        "--output-path",
+        required=True,
+        help="Where to write the combined manifest CSV.",
+    )
+    merge_parser.add_argument(
+        "--no-dedupe",
+        action="store_true",
+        help="Keep duplicate sample IDs instead of removing them.",
+    )
+    merge_parser.add_argument(
+        "--source-weight",
+        action="append",
+        default=None,
+        help="Optional source weighting in SOURCE=WEIGHT form, for example TESS=3 or CREMA-D=2.",
+    )
+
     daic_parser = subparsers.add_parser("daic-woz", help="Build a clinically labeled text/audio manifest from DAIC-WOZ.")
     daic_parser.add_argument("dataset_root", help="Path to the DAIC-WOZ dataset root.")
     daic_parser.add_argument("output_path", help="Where to write the generated manifest CSV.")
@@ -702,6 +919,10 @@ def main() -> None:
             frame_output_dir=args.extract_frames,
             speech_only=not args.include_song,
         )
+    elif args.dataset == "crema-d":
+        output_path = build_crema_d_manifest(args.dataset_root, args.output_path)
+    elif args.dataset == "tess":
+        output_path = build_tess_manifest(args.dataset_root, args.output_path)
     elif args.dataset == "comorbidity-balance":
         output_path = build_comorbidity_balanced_manifest(
             source_manifest_paths=args.source_manifests,
@@ -716,6 +937,13 @@ def main() -> None:
             target_rows=args.target_rows,
             bucket_targets=_parse_bucket_targets(args.bucket_targets),
             random_state=args.random_state,
+        )
+    elif args.dataset == "combine-manifests":
+        output_path = merge_manifests(
+            source_manifest_paths=args.source_manifests,
+            output_path=args.output_path,
+            dedupe=not args.no_dedupe,
+            source_weights=_parse_source_weights(args.source_weight),
         )
     else:
         output_path = build_daic_woz_manifest(args.dataset_root, args.output_path)

@@ -43,6 +43,67 @@ except ImportError:
 
 analyzer = SentimentIntensityAnalyzer() if SentimentIntensityAnalyzer is not None else None
 
+ENGLISH_ANXIETY_KEYWORDS = {
+    "anxious",
+    "anxiety",
+    "worried",
+    "worry",
+    "worries",
+    "worrying",
+    "nervous",
+    "restless",
+    "panic",
+    "panicking",
+    "afraid",
+    "afraid of",
+    "on edge",
+    "racing heart",
+    "trembling",
+    "can't breathe",
+    "cant breathe",
+    "short of breath",
+    "frozen",
+    "shaking",
+    "chest tight",
+    "chest feels tight",
+    "spiraling",
+    "overthinking",
+    "terrified",
+}
+
+ENGLISH_SUBSTANCE_KEYWORDS = {
+    "alcohol",
+    "drink",
+    "drinking",
+    "drunk",
+    "beer",
+    "wine",
+    "liquor",
+    "whiskey",
+    "vodka",
+    "rum",
+    "drug",
+    "drugs",
+    "weed",
+    "cannabis",
+    "smoking",
+    "smoke",
+    "pills",
+    "opioid",
+    "cocaine",
+    "craving",
+    "cravings",
+    "binge",
+    "binging",
+    "intoxicated",
+    "withdrawal",
+    "withdrawing",
+    "relapse",
+    "high",
+    "stoned",
+    "buzzed",
+}
+
 LANGUAGE_TEXT_RULES = {
     "english": {
         "negative_words": {
@@ -785,6 +846,18 @@ def _agrarian_distress_features(text: str, language: str = "english") -> dict:
     }
 
 
+def _keyword_domain_features(text: str, keywords: set[str], prefix: str) -> dict:
+    lowered = text.lower()
+    matches = [keyword for keyword in keywords if keyword in lowered]
+    severity = min(1.0, len(matches) / 2.0) if matches else 0.0
+    return {
+        f"{prefix}_keyword_count": len(matches),
+        f"{prefix}_keyword_matches": matches,
+        f"{prefix}_keyword_detected": bool(matches),
+        f"{prefix}_keyword_risk_score": severity,
+    }
+
+
 def extract_text_features(
     text: str,
     language: str = "english",
@@ -808,6 +881,8 @@ def extract_text_features(
     positive = sum(1 for w in lowered_words if w in language_rules["positive_words"])
     distress_phrase_features = _distress_phrase_features(text, language=normalized_language)
     agrarian_distress_features = _agrarian_distress_features(text, language=normalized_language)
+    anxiety_keyword_features = _keyword_domain_features(text, ENGLISH_ANXIETY_KEYWORDS, "anxiety")
+    substance_keyword_features = _keyword_domain_features(text, ENGLISH_SUBSTANCE_KEYWORDS, "substance")
     distress_phrase_bonus = len(distress_phrase_features["distress_phrase_matches"]) * 2
     agrarian_distress_bonus = len(agrarian_distress_features["agrarian_distress_matches"])
     heuristic_compound = np.clip(
@@ -850,6 +925,8 @@ def extract_text_features(
         "distress_phrase_detected": distress_phrase_features["distress_phrase_detected"],
         "distress_phrase_risk_score": distress_phrase_features["distress_phrase_risk_score"],
         **agrarian_distress_features,
+        **anxiety_keyword_features,
+        **substance_keyword_features,
         "question_ratio": question_count / max(1, len(words)),
         "exclamation_ratio": exclamation_count / max(1, len(words)),
         "emotion_intensity": min(1.0, abs(sentiment_features["sentiment_compound"]) + distress_phrase_features["distress_phrase_risk_score"]),
@@ -874,6 +951,7 @@ def extract_text_features(
     return features
 
 
+@lru_cache(maxsize=8192)
 def extract_audio_features(audio_path: str, include_pitch_features: bool = True) -> dict:
     if not audio_path or not os.path.exists(audio_path):
         return {"available": False}
@@ -901,18 +979,35 @@ def extract_audio_features(audio_path: str, include_pitch_features: bool = True)
     tempo, _ = librosa.beat.beat_track(y=signal, sr=sr)
     zcr = float(np.mean(librosa.feature.zero_crossing_rate(signal)))
     rms = float(np.mean(librosa.feature.rms(y=signal)))
+    try:
+        spectral_centroid = float(np.mean(librosa.feature.spectral_centroid(y=signal, sr=sr)))
+        spectral_bandwidth = float(np.mean(librosa.feature.spectral_bandwidth(y=signal, sr=sr)))
+        spectral_rolloff = float(np.mean(librosa.feature.spectral_rolloff(y=signal, sr=sr)))
+        spectral_flatness = float(np.mean(librosa.feature.spectral_flatness(y=signal)))
+        mfcc = librosa.feature.mfcc(y=signal, sr=sr, n_mfcc=6)
+        mfcc_means = np.mean(mfcc, axis=1).astype(float)
+        mfcc_stds = np.std(mfcc, axis=1).astype(float)
+    except Exception:
+        spectral_centroid = 0.0
+        spectral_bandwidth = 0.0
+        spectral_rolloff = 0.0
+        spectral_flatness = 0.0
+        mfcc_means = np.zeros(6, dtype=float)
+        mfcc_stds = np.zeros(6, dtype=float)
     if include_pitch_features:
         try:
-            pitch, voiced_flags, _ = librosa.pyin(
+            pitch = librosa.yin(
                 signal,
                 sr=sr,
                 fmin=librosa.note_to_hz("C2"),
                 fmax=librosa.note_to_hz("C7"),
             )
-            valid_pitch = pitch[~np.isnan(pitch)] if pitch is not None else np.array([])
-            voiced_ratio = float(np.mean(voiced_flags)) if voiced_flags is not None else 0.0
-            pitch_mean = float(np.mean(valid_pitch)) if valid_pitch.size else 0.0
-            pitch_std = float(np.std(valid_pitch)) if valid_pitch.size else 0.0
+            valid_pitch = np.asarray(pitch, dtype=float)
+            voiced_mask = np.isfinite(valid_pitch) & (valid_pitch > 0.0)
+            voiced_values = valid_pitch[voiced_mask]
+            voiced_ratio = float(np.mean(voiced_mask)) if valid_pitch.size else 0.0
+            pitch_mean = float(np.mean(voiced_values)) if voiced_values.size else 0.0
+            pitch_std = float(np.std(voiced_values)) if voiced_values.size else 0.0
         except Exception:
             voiced_ratio = 0.0
             pitch_mean = 0.0
@@ -930,9 +1025,25 @@ def extract_audio_features(audio_path: str, include_pitch_features: bool = True)
         "zero_crossing_rate": zcr,
         "rms": rms,
         "energy": energy,
+        "spectral_centroid": spectral_centroid,
+        "spectral_bandwidth": spectral_bandwidth,
+        "spectral_rolloff": spectral_rolloff,
+        "spectral_flatness": spectral_flatness,
         "pitch_mean": pitch_mean,
         "pitch_std": pitch_std,
         "voiced_ratio": voiced_ratio,
+        "mfcc_mean_1": float(mfcc_means[0]),
+        "mfcc_mean_2": float(mfcc_means[1]),
+        "mfcc_mean_3": float(mfcc_means[2]),
+        "mfcc_mean_4": float(mfcc_means[3]),
+        "mfcc_mean_5": float(mfcc_means[4]),
+        "mfcc_mean_6": float(mfcc_means[5]),
+        "mfcc_std_1": float(mfcc_stds[0]),
+        "mfcc_std_2": float(mfcc_stds[1]),
+        "mfcc_std_3": float(mfcc_stds[2]),
+        "mfcc_std_4": float(mfcc_stds[3]),
+        "mfcc_std_5": float(mfcc_stds[4]),
+        "mfcc_std_6": float(mfcc_stds[5]),
     }
 
 
@@ -974,6 +1085,7 @@ def extract_audio_sequence_features(
     frame_count = int(min(max_frames, max(12, len(signal) // max(loaded_sr // 4, 1))))
     chunks = np.array_split(signal, frame_count)
     sequence_rows: list[list[float]] = []
+    previous_row: list[float] | None = None
     for chunk in chunks:
         if chunk.size == 0:
             continue
@@ -997,11 +1109,20 @@ def extract_audio_sequence_features(
             spectral_centroid = float(np.sum(freqs * spectrum) / spectral_total) if spectral_total > 0 else 0.0
             spectral_bandwidth = float(np.sqrt(np.sum(((freqs - spectral_centroid) ** 2) * spectrum) / spectral_total)) if spectral_total > 0 else 0.0
             spectral_flatness = float(np.exp(np.mean(np.log(spectrum))) / np.mean(spectrum)) if np.mean(spectrum) > 0 else 0.0
+            try:
+                chunk_mfcc = librosa.feature.mfcc(y=chunk.astype(np.float32), sr=loaded_sr or sr, n_mfcc=6)
+                mfcc_means = np.mean(chunk_mfcc, axis=1).astype(float)
+                mfcc_stds = np.std(chunk_mfcc, axis=1).astype(float)
+            except Exception:
+                mfcc_means = np.zeros(6, dtype=float)
+                mfcc_stds = np.zeros(6, dtype=float)
         else:
             spectral_centroid = 0.0
             spectral_bandwidth = 0.0
             spectral_flatness = 0.0
-        sequence_rows.append([
+            mfcc_means = np.zeros(6, dtype=float)
+            mfcc_stds = np.zeros(6, dtype=float)
+        current_row = [
             chunk_mean,
             chunk_std,
             chunk_max,
@@ -1013,7 +1134,15 @@ def extract_audio_sequence_features(
             spectral_centroid,
             spectral_bandwidth,
             spectral_flatness,
-        ])
+            *mfcc_means.tolist(),
+            *mfcc_stds.tolist(),
+        ]
+        if previous_row is None:
+            delta_row = [0.0] * len(current_row)
+        else:
+            delta_row = [float(current - previous) for current, previous in zip(current_row, previous_row, strict=False)]
+        sequence_rows.append(current_row + delta_row)
+        previous_row = current_row
 
     if not sequence_rows:
         return {"available": False, "reason": "empty_sequence"}
@@ -1040,6 +1169,41 @@ def extract_audio_sequence_features(
             "chunk_spectral_centroid",
             "chunk_spectral_bandwidth",
             "chunk_spectral_flatness",
+            "chunk_mfcc_mean_1",
+            "chunk_mfcc_mean_2",
+            "chunk_mfcc_mean_3",
+            "chunk_mfcc_mean_4",
+            "chunk_mfcc_mean_5",
+            "chunk_mfcc_mean_6",
+            "chunk_mfcc_std_1",
+            "chunk_mfcc_std_2",
+            "chunk_mfcc_std_3",
+            "chunk_mfcc_std_4",
+            "chunk_mfcc_std_5",
+            "chunk_mfcc_std_6",
+            "delta_chunk_mean",
+            "delta_chunk_std",
+            "delta_chunk_max",
+            "delta_chunk_min",
+            "delta_chunk_energy",
+            "delta_chunk_rms",
+            "delta_chunk_zero_crossing",
+            "delta_chunk_abs_mean",
+            "delta_chunk_spectral_centroid",
+            "delta_chunk_spectral_bandwidth",
+            "delta_chunk_spectral_flatness",
+            "delta_chunk_mfcc_mean_1",
+            "delta_chunk_mfcc_mean_2",
+            "delta_chunk_mfcc_mean_3",
+            "delta_chunk_mfcc_mean_4",
+            "delta_chunk_mfcc_mean_5",
+            "delta_chunk_mfcc_mean_6",
+            "delta_chunk_mfcc_std_1",
+            "delta_chunk_mfcc_std_2",
+            "delta_chunk_mfcc_std_3",
+            "delta_chunk_mfcc_std_4",
+            "delta_chunk_mfcc_std_5",
+            "delta_chunk_mfcc_std_6",
         ],
     }
 
@@ -1056,9 +1220,16 @@ def extract_audio_summary_sequence_features(
     ordered_values = np.asarray(
         [
             float(summary.get("duration", 0.0)),
+            float(summary.get("tempo", 0.0)),
             float(summary.get("zero_crossing_rate", 0.0)),
             float(summary.get("rms", 0.0)),
             float(summary.get("energy", 0.0)),
+            float(summary.get("spectral_centroid", 0.0)),
+            float(summary.get("spectral_bandwidth", 0.0)),
+            float(summary.get("spectral_rolloff", 0.0)),
+            float(summary.get("spectral_flatness", 0.0)),
+            float(summary.get("pitch_mean", 0.0)),
+            float(summary.get("pitch_std", 0.0)),
             float(summary.get("voiced_ratio", 0.0)),
         ],
         dtype=np.float32,
@@ -1074,6 +1245,73 @@ def extract_audio_summary_sequence_features(
         "feature_count": int(sequence.shape[1]) if sequence.ndim == 2 else 0,
         "sequence_features": sequence.astype(np.float32),
         "feature_names": ["summary_scalar"],
+    }
+
+
+def extract_audio_spectrogram_features(
+    audio_path: str,
+    sr: int = 16000,
+    n_mels: int = 64,
+    max_frames: int = 128,
+) -> dict:
+    if not audio_path or not os.path.exists(audio_path):
+        return {"available": False}
+    if librosa is None:
+        return {"available": False, "reason": "librosa_not_installed"}
+
+    try:
+        signal, loaded_sr = librosa.load(audio_path, sr=sr, mono=True)
+    except Exception:
+        return {"available": False, "reason": "audio_unreadable"}
+
+    if signal is None or len(signal) == 0:
+        return {"available": False, "reason": "audio_invalid"}
+
+    duration = float(len(signal)) / float(loaded_sr or sr)
+    if duration < AUDIO_MIN_DURATION_SECONDS:
+        return {
+            "available": False,
+            "reason": "audio_too_short",
+            "duration": duration,
+            "minimum_duration": AUDIO_MIN_DURATION_SECONDS,
+        }
+
+    try:
+        mel = librosa.feature.melspectrogram(
+            y=signal,
+            sr=loaded_sr or sr,
+            n_mels=n_mels,
+            n_fft=1024,
+            hop_length=256,
+            power=2.0,
+        )
+        mel_db = librosa.power_to_db(mel, ref=np.max)
+    except Exception:
+        return {"available": False, "reason": "spectrogram_failed"}
+
+    if mel_db.ndim != 2 or mel_db.size == 0:
+        return {"available": False, "reason": "spectrogram_invalid"}
+
+    mel_db = np.asarray(mel_db, dtype=np.float32)
+    if mel_db.shape[1] < max_frames:
+        pad_width = max_frames - mel_db.shape[1]
+        mel_db = np.pad(mel_db, ((0, 0), (0, pad_width)), mode="constant", constant_values=float(mel_db.min()))
+    elif mel_db.shape[1] > max_frames:
+        mel_db = mel_db[:, :max_frames]
+
+    mean = float(np.mean(mel_db))
+    std = float(np.std(mel_db))
+    normalized = (mel_db - mean) / max(std, 1e-6)
+
+    return {
+        "available": True,
+        "audio_path": audio_path,
+        "duration": duration,
+        "spectrogram": normalized.astype(np.float32),
+        "shape": [int(normalized.shape[0]), int(normalized.shape[1])],
+        "feature_names": [f"mel_{index + 1}" for index in range(int(normalized.shape[0]))],
+        "mean": mean,
+        "std": std,
     }
 
 
@@ -1113,6 +1351,7 @@ def extract_image_features(image_path: str) -> dict:
         return {
             "available": True,
             "face_detected": True,
+            "image_path": image_path,
             "smile_ratio": smile_ratio,
             "mouth_width": float(w),
             "mouth_height": float(max(1.0, h * 0.35)),
@@ -1157,10 +1396,15 @@ def extract_image_features(image_path: str) -> dict:
     return {
         "available": True,
         "face_detected": True,
+        "image_path": image_path,
         "smile_ratio": float(smile_ratio),
         "mouth_width": float(mouth_width),
         "mouth_height": float(mouth_height),
         "eye_openness": eye_openness,
         "face_height": float(face_height),
+        "mouth_aspect_ratio": float(mouth_height / max(1e-6, mouth_width)),
+        "eye_to_face_ratio": float(eye_openness / max(1e-6, face_height)),
+        "mouth_to_face_ratio": float(mouth_width / max(1e-6, face_height)),
+        "brow_chin_ratio": float(np.linalg.norm(np.subtract(chin, brow_center)) / max(1e-6, np.linalg.norm(np.subtract(right_mouth, left_mouth)))),
         "vision_backend": "mediapipe_face_mesh",
     }

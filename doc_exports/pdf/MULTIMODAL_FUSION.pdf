@@ -1,0 +1,195 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 1899 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Multimodal Fusion Guide) Tj
+T*
+() Tj
+T*
+(This document summarizes the current bundle priorities and fusion logic used by the screening runtime.) Tj
+T*
+() Tj
+T*
+(## 1. Bundle Priorities) Tj
+T*
+() Tj
+T*
+(The current runtime preference order is:) Tj
+T*
+() Tj
+T*
+(- Text: text_transformer primary, text fallback) Tj
+T*
+(- Audio: audio primary, audio_spectrogram and audio_sequence secondary) Tj
+T*
+(- Image: image_dl primary, image fallback) Tj
+T*
+(- Comorbidity: classifier-chain ensemble blended with upstream text, audio, and image consensus) Tj
+T*
+() Tj
+T*
+(These priorities are intentional. The project keeps the strongest trained bundle in front for each modality and uses the other bundles as stabilizers or fallback signals.) Tj
+T*
+() Tj
+T*
+(## 2. Why The Priorities Matter) Tj
+T*
+() Tj
+T*
+(The system is designed to be robust in field use:) Tj
+T*
+() Tj
+T*
+(- strong modality bundles carry most of the final signal,) Tj
+T*
+(- auxiliary branches help when the primary bundle is uncertain,) Tj
+T*
+(- weaker bundle families do not overrule the stronger ones,) Tj
+T*
+(- the final score remains stable even when one modality is missing.) Tj
+T*
+() Tj
+T*
+(## 3. Audio Fusion) Tj
+T*
+() Tj
+T*
+(Audio uses:) Tj
+T*
+() Tj
+T*
+(- the main audio bundle as the primary scorer,) Tj
+T*
+(- audio_spectrogram as a secondary stabilizer,) Tj
+T*
+(- audio_sequence as a fallback stabilizer.) Tj
+T*
+() Tj
+T*
+(The runtime gives mood-heavy domains like depression, loneliness, anxiety, sleep disorder, and burnout slightly more room to move than the stronger substance-abuse domain.) Tj
+T*
+() Tj
+T*
+(## 4. Image Fusion) Tj
+T*
+() Tj
+T*
+(Image uses:) Tj
+T*
+() Tj
+T*
+(- image_dl as the primary scorer,) Tj
+T*
+(- the classical image bundle as a stabilizer.) Tj
+T*
+() Tj
+T*
+(The DL model gets a slightly higher influence when both are available.) Tj
+T*
+() Tj
+T*
+(## 5. Text Fusion) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 1167 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+() Tj
+T*
+(Text uses:) Tj
+T*
+() Tj
+T*
+(- text_transformer when installed and available,) Tj
+T*
+(- the classical text bundle as fallback,) Tj
+T*
+(- small label-specific retuning for weaker text domains such as depression, loneliness, anxiety, substance abuse, sleep disorder, and stress.) Tj
+T*
+() Tj
+T*
+(The stronger labels are left mostly unchanged.) Tj
+T*
+() Tj
+T*
+(## 6. Comorbidity Fusion) Tj
+T*
+() Tj
+T*
+(The comorbidity head combines:) Tj
+T*
+() Tj
+T*
+(- classifier-chain ensemble probabilities,) Tj
+T*
+(- upstream modality consensus from text, audio, and image,) Tj
+T*
+(- calibration and pairwise lift metadata.) Tj
+T*
+() Tj
+T*
+(This helps the weakest bundle benefit more from stabilized upstream predictions instead of relying only on deeper chain tuning.) Tj
+T*
+() Tj
+T*
+(## 7. Related Files) Tj
+T*
+() Tj
+T*
+(- README.md \(../README.md\)) Tj
+T*
+(- docs/ARCHITECTURE.md \(ARCHITECTURE.md\)) Tj
+T*
+(- docs/MODEL_COMPARISON_MATRIX.md \(MODEL_COMPARISON_MATRIX.md\)) Tj
+T*
+(- docs/PROJECT_DOCUMENTATION.md \(PROJECT_DOCUMENTATION.md\)) Tj
+T*
+(- docs/DEEP_LEARNING_MODEL_GUIDE.md \(DEEP_LEARNING_MODEL_GUIDE.md\)) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R ] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+8 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Multimodal Fusion) /Creator (Codex) >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002030 00000 n 
+0000002156 00000 n 
+0000003375 00000 n 
+0000003501 00000 n 
+0000003566 00000 n 
+0000003615 00000 n 
+trailer
+<< /Size 9 /Root 7 0 R /Info 8 0 R >>
+startxref
+3716
+%%EOF

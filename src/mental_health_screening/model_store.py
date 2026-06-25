@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import pickle
+import importlib
+import sys
 from functools import lru_cache
 from pathlib import Path
 
@@ -16,13 +18,22 @@ TMP_MODEL_DIR = Path(__file__).resolve().parents[2] / "tmp_datasets"
 ONNX_DIR = MODEL_DIR / "onnx"
 
 
+def _ensure_legacy_module_alias() -> None:
+    if "mental_health_screening" in sys.modules:
+        return
+    try:
+        sys.modules["mental_health_screening"] = importlib.import_module("src.mental_health_screening")
+    except Exception:
+        pass
+
+
 def ensure_model_dir() -> Path:
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     return MODEL_DIR
 
 
 def get_model_bundle_path(modality: str) -> Path:
-    if modality in {"text_transformer", "audio_sequence"}:
+    if modality in {"text_transformer", "audio_sequence", "audio_spectrogram", "image_dl"}:
         TMP_MODEL_DIR.mkdir(parents=True, exist_ok=True)
         return TMP_MODEL_DIR / f"{modality}_bundle.pkl"
     return ensure_model_dir() / f"{modality}_bundle.pkl"
@@ -60,6 +71,7 @@ def load_model_bundle(modality: str) -> dict | None:
     path = get_model_bundle_path(modality)
     if not path.exists():
         return None
+    _ensure_legacy_module_alias()
     with path.open("rb") as handle:
         return pickle.load(handle)
 
@@ -77,6 +89,7 @@ def bundle_summary(modality: str) -> dict | None:
         "training_strategy": bundle.get("training_strategy", "centralized"),
         "federated": dict(bundle.get("federated", {}) or {}),
         "confidence_hint": float(bundle.get("confidence_hint", 0.0)),
+        "label_thresholds": dict(bundle.get("label_thresholds", {}) or {}),
         "sample_count": int(bundle.get("sample_count", 0)),
         "sample_counts": dict(bundle.get("sample_counts", {}) or {}),
         "train_counts": dict(bundle.get("train_counts", {}) or {}),
@@ -157,7 +170,7 @@ def bundle_summary(modality: str) -> dict | None:
 
 def summarize_all_bundles() -> dict[str, dict]:
     summaries: dict[str, dict] = {}
-    for modality in ("text", "text_transformer", "audio", "audio_sequence", "image", "comorbidity"):
+    for modality in ("text", "text_transformer", "audio", "audio_sequence", "audio_spectrogram", "image", "image_dl", "comorbidity"):
         summary = bundle_summary(modality)
         if summary is not None:
             summaries[modality] = summary

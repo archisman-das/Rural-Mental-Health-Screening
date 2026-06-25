@@ -1,0 +1,149 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 2063 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(# Configuration Examples) Tj
+T*
+() Tj
+T*
+(The repository includes a few example JSON files under examples/ to help you get the training pipeline running quickly.) Tj
+T*
+() Tj
+T*
+(## dataset_roots.example.json) Tj
+T*
+() Tj
+T*
+(Use this as the starting point for local training runs. It includes:) Tj
+T*
+() Tj
+T*
+(- daic_woz_root) Tj
+T*
+(- meld_root) Tj
+T*
+(- ravdess_root) Tj
+T*
+(- manifest_dir) Tj
+T*
+(- ravdess_frames_dir) Tj
+T*
+(- comorbidity_balanced_manifest) Tj
+T*
+(- comorbidity_target_rows) Tj
+T*
+() Tj
+T*
+(The comorbidity bootstrapped manifest now defaults to tmp_datasets/comorbidity_60k.csv, with comorbidity_target_rows set to 60000 and a balanced bucket target mix.) Tj
+T*
+() Tj
+T*
+(Why that path:) Tj
+T*
+() Tj
+T*
+(- the repository had a locked data/manifests/comorbidity_balanced.csv file in this workspace) Tj
+T*
+(- tmp_datasets/ is writable and safe for regenerated pipeline artifacts) Tj
+T*
+(- the training pipeline and README now both point to that writable location by default) Tj
+T*
+() Tj
+T*
+(## dataset_roots_and_federated.example.json) Tj
+T*
+() Tj
+T*
+(Use this when you want the same dataset roots plus a federated training example.) Tj
+T*
+() Tj
+T*
+(It includes the same writable manifest path so federated and non-federated runs stay aligned.) Tj
+T*
+() Tj
+T*
+(## Local Copies) Tj
+T*
+() Tj
+T*
+(When you copy the examples to a local file, you can adjust the dataset roots and leave the writable manifest path as-is:) Tj
+T*
+() Tj
+T*
+(Copy-Item examples\\dataset_roots.example.json examples\\dataset_roots.local.json) Tj
+T*
+(Copy-Item examples\\dataset_roots_and_federated.example.json examples\\dataset_roots_and_federated.local.json) Tj
+T*
+() Tj
+T*
+(If the locked CSV issue is resolved later, you can point comorbidity_balanced_manifest back to data/manifests/comorbidity_balanced.csv, but that is no longer the default.) Tj
+T*
+() Tj
+T*
+(## Notes on Current Training Priorities) Tj
+T*
+() Tj
+T*
+(The training pipeline currently treats:) Tj
+T*
+() Tj
+T*
+(- text_transformer as the primary text bundle,) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+4 0 obj
+<< /Length 247 >>
+stream
+BT
+/F1 10 Tf
+1 0 0 1 54 738 Tm
+13 TL
+(- audio as the primary audio bundle,) Tj
+T*
+(- image_dl as the primary image bundle,) Tj
+T*
+(- comorbidity as a downstream head that should be retrained after the upstream modalities stabilize.) Tj
+T*
+() Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 6 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+6 0 obj
+<< /Type /Pages /Kids [ 3 0 R 5 0 R ] /Count 2 >>
+endobj
+7 0 obj
+<< /Type /Catalog /Pages 6 0 R >>
+endobj
+8 0 obj
+<< /Producer (Codex Markdown Exporter) /Title (Config Examples) /Creator (Codex) >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000002194 00000 n 
+0000002320 00000 n 
+0000002618 00000 n 
+0000002744 00000 n 
+0000002809 00000 n 
+0000002858 00000 n 
+trailer
+<< /Size 9 /Root 7 0 R /Info 8 0 R >>
+startxref
+2957
+%%EOF

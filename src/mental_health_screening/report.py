@@ -33,6 +33,9 @@ REPORT_TRANSLATIONS = {
         "no_sdoh_data": "No agrarian distress cues were available in the exported record.",
         "recommendation": "Recommendation",
         "disclaimer": "Disclaimer",
+        "screening_mode": "Screening mode",
+        "review_required": "Review required",
+        "model_version": "Model version",
         "validated_instrument": "Validated instrument",
         "questionnaire_suffix": "Questionnaire",
         "multimodal_suffix": "Multimodal",
@@ -529,6 +532,10 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
                 f"{_report_text(language, 'comorbidity_confidence')}: "
                 f"{float(comorbidity.get('confidence', 0.0) or 0.0):.2f}"
             )
+        governance = (record.get("model_stats") or {}).get("screening_governance") or record.get("screening_governance") or {}
+        if governance:
+            lines.append(f"{_report_text(language, 'screening_mode')}: {governance.get('screening_mode', 'screening_only')}")
+            lines.append(f"{_report_text(language, 'review_required')}: {bool(governance.get('review_required', False))}")
         lines.append(f"{_report_text(language, 'recommendation')}: {record['multimodal']['recommendation']}")
         text_stream = ["BT", "/F1 11 Tf", "40 800 Td"]
         for line in lines:
@@ -659,6 +666,26 @@ def create_assessment_pdf_bytes(record: dict) -> bytes:
             11,
         )
         y -= 4
+    governance = (record.get("model_stats") or {}).get("screening_governance") or record.get("screening_governance") or {}
+    if governance:
+        y = _write_line(
+            pdf,
+            f"{_report_text(language, 'screening_mode')}: {governance.get('screening_mode', 'screening_only')}",
+            margin,
+            y,
+            width - (2 * margin),
+            body_font,
+            11,
+        )
+        y = _write_line(
+            pdf,
+            f"{_report_text(language, 'review_required')}: {bool(governance.get('review_required', False))}",
+            margin,
+            y,
+            width - (2 * margin),
+            body_font,
+            11,
+        )
     y = _write_line(
         pdf,
         f"{_report_text(language, 'recommendation')}: {record['multimodal']['recommendation']}",

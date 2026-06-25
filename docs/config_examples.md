@@ -38,3 +38,12 @@ Copy-Item examples\dataset_roots_and_federated.example.json examples\dataset_roo
 ```
 
 If the locked CSV issue is resolved later, you can point `comorbidity_balanced_manifest` back to `data/manifests/comorbidity_balanced.csv`, but that is no longer the default.
+
+## Notes on Current Training Priorities
+
+The training pipeline currently treats:
+
+- `text_transformer` as the primary text bundle,
+- `audio` as the primary audio bundle,
+- `image_dl` as the primary image bundle,
+- `comorbidity` as a downstream head that should be retrained after the upstream modalities stabilize.

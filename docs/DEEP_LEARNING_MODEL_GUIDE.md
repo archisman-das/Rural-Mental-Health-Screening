@@ -17,6 +17,13 @@ The project uses a multimodal screening pipeline:
 3. Face images are processed with MediaPipe Face Mesh and an OpenCV fallback when needed.
 4. The extracted representations are passed into downstream screening heads for depression, anxiety, stress, sleep disorder, burnout, loneliness, and substance abuse risk estimation.
 
+Current runtime priority:
+
+- `text_transformer` is the primary text scorer when available
+- `audio` is the primary audio scorer, with `audio_spectrogram` and `audio_sequence` as secondary support
+- `image_dl` is the primary image scorer, with the classical `image` bundle as fallback
+- `comorbidity` blends the chain ensemble with upstream modality consensus
+
 The deep learning models are not used as isolated black boxes. They are part of a larger workflow that combines multilingual NLP, speech understanding, and visual feature extraction.
 
 ## 2. Text Models
@@ -240,6 +247,13 @@ Important note:
 - these downstream bundles are not themselves deep learning models
 - they are usually classical estimators or lightweight classifier heads
 - they consume embeddings, transcript features, and modality summaries
+
+The project now uses the stronger bundles as the first choice for each modality:
+
+- `text_transformer` before classical text
+- `audio` before the auxiliary audio branches
+- `image_dl` before classical image
+- `comorbidity` after the improved upstream modality outputs have been stabilized
 
 In other words, the deep learning models do the representation learning, and the screening heads do the final risk estimation and aggregation.
 

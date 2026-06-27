@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Records and Reports</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260626v">
+</head>
+<body class="module-page">
+  <div class="page-shell">
+    <header class="hero panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Records and Reports</p>
+        <h1>Results Archive</h1>
+        <p class="hero-text">A dedicated page for search, record review, and PDF export in a focused reporting route.</p>
+        <div class="language-switcher">
+          <label for="recordsDashboardLanguage">Preferred language</label>
+          <div class="language-switcher-row">
+            <select id="recordsDashboardLanguage">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Bengali">Bengali</option>
+            </select>
+          </div>
+        </div>
+        <div class="action-row wizard-nav-row">
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/index.html'">Dashboard</button>
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/adaptive.html'">Adaptive Test</button>
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/analytics.html'">Analytics Hub</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel" style="padding: 16px;">
+      <iframe id="recordsFrame" class="module-frame" src="/web/index.html#recordsView" title="Records and Reports dashboard section"></iframe>
+    </section>
+  </div>
+  <script>
+    const recordsFrame = document.getElementById("recordsFrame");
+    const recordsLanguage = document.getElementById("recordsDashboardLanguage");
+    function syncRecordsLanguage() {
+      const doc = recordsFrame?.contentWindow?.document;
+      const select = doc?.getElementById("dashboardLanguage");
+      if (select && recordsLanguage) {
+        select.value = recordsLanguage.value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    recordsLanguage?.addEventListener("change", syncRecordsLanguage);
+    recordsFrame?.addEventListener("load", syncRecordsLanguage);
+  </script>
+</body>
+</html>

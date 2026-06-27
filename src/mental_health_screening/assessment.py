@@ -11,253 +11,253 @@ QUESTION_BANK = [
     {
         "id": "dep_interest",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have you had little interest or pleasure in daily activities?",
+        "prompt": "During the last two weeks, how often have you had little interest or pleasure in doing things?",
         "domain": "depression",
     },
     {
         "id": "dep_down",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have you felt down, hopeless, or emotionally low?",
+        "prompt": "During the last two weeks, how often have you felt down, depressed, or hopeless?",
         "domain": "depression",
     },
     {
         "id": "dep_sleep",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have sleep problems made your days harder?",
+        "prompt": "During the last two weeks, how often have sleep problems interfered with your daily life?",
         "domain": "depression",
     },
     {
         "id": "dep_energy",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have you felt low in energy or slowed down during the day?",
+        "prompt": "During the last two weeks, how often have you felt low in energy or slowed down?",
         "domain": "depression",
     },
     {
         "id": "dep_guilt",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have you felt like a burden, a failure, or blamed yourself too much?",
+        "prompt": "During the last two weeks, how often have you felt like a burden, a failure, or blamed yourself too much?",
         "domain": "depression",
     },
     {
         "id": "dep_focus",
         "section": "Depression",
-        "prompt": "In the last two weeks, how often have you had trouble focusing, remembering, or making simple decisions?",
+        "prompt": "During the last two weeks, how often have you had trouble concentrating, remembering, or making simple decisions?",
         "domain": "depression",
     },
     {
         "id": "anx_worry",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you found it hard to control worrying?",
+        "prompt": "During the last two weeks, how often have you found it hard to control worrying?",
         "domain": "anxiety",
     },
     {
         "id": "anx_restless",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you felt nervous, restless, or on edge?",
+        "prompt": "During the last two weeks, how often have you felt nervous, restless, or on edge?",
         "domain": "anxiety",
     },
     {
         "id": "anx_fear",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you felt afraid that something bad may happen?",
+        "prompt": "During the last two weeks, how often have you felt afraid that something bad might happen?",
         "domain": "anxiety",
     },
     {
         "id": "anx_body",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you had physical anxiety signs such as a racing heart, trembling, or sweating?",
+        "prompt": "During the last two weeks, how often have you had physical anxiety symptoms such as a racing heart, trembling, or sweating?",
         "domain": "anxiety",
     },
     {
         "id": "anx_avoid",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you avoided people, places, or tasks because they increased your anxiety?",
+        "prompt": "During the last two weeks, how often have you avoided people, places, or tasks because of anxiety?",
         "domain": "anxiety",
     },
     {
         "id": "anx_reassure",
         "section": "Anxiety",
-        "prompt": "In the last two weeks, how often have you needed repeated reassurance before doing ordinary daily activities?",
+        "prompt": "During the last two weeks, how often have you needed repeated reassurance before everyday activities?",
         "domain": "anxiety",
     },
     {
         "id": "str_overload",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often have daily responsibilities felt too overwhelming to manage?",
+        "prompt": "During the last two weeks, how often have daily responsibilities felt overwhelming?",
         "domain": "stress",
     },
     {
         "id": "str_irritable",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often have you felt irritable, tense, or unable to relax?",
+        "prompt": "During the last two weeks, how often have you felt irritable, tense, or unable to relax?",
         "domain": "stress",
     },
     {
         "id": "str_function",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often have stress symptoms affected your work, home life, or relationships?",
+        "prompt": "During the last two weeks, how often have stress symptoms affected your work, home life, or relationships?",
         "domain": "stress",
     },
     {
         "id": "str_pressure",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often have you felt under constant pressure with too little time or support?",
+        "prompt": "During the last two weeks, how often have you felt under constant pressure with too little time or support?",
         "domain": "stress",
     },
     {
         "id": "str_recovery",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often have you found it hard to calm down or recover after stressful events?",
+        "prompt": "During the last two weeks, how often have you found it hard to calm down after stressful events?",
         "domain": "stress",
     },
     {
         "id": "str_headaches",
         "section": "Stress",
-        "prompt": "In the last two weeks, how often has stress shown up as headaches, body pain, or stomach discomfort?",
+        "prompt": "During the last two weeks, how often has stress shown up as headaches, body pain, or stomach discomfort?",
         "domain": "stress",
     },
     {
         "id": "sleep_quality",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often have you had trouble falling asleep, staying asleep, or waking too early?",
+        "prompt": "During the last two weeks, how often have you had trouble falling asleep, staying asleep, or waking too early?",
         "domain": "sleep_disorder",
     },
     {
         "id": "sleep_daytime",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often have poor sleep symptoms made you tired or sleepy during the day?",
+        "prompt": "During the last two weeks, how often has poor sleep made you tired or sleepy during the day?",
         "domain": "sleep_disorder",
     },
     {
         "id": "sleep_routine",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often has your sleep schedule felt irregular or difficult to control?",
+        "prompt": "During the last two weeks, how often has your sleep schedule felt irregular or hard to keep stable?",
         "domain": "sleep_disorder",
     },
     {
         "id": "sleep_refresh",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often have you woken up feeling unrefreshed even after enough hours in bed?",
+        "prompt": "During the last two weeks, how often have you woken up feeling unrefreshed even after enough time in bed?",
         "domain": "sleep_disorder",
     },
     {
         "id": "sleep_worry",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often has worrying about sleep made it harder for you to rest?",
+        "prompt": "During the last two weeks, how often has worrying about sleep made it harder to rest?",
         "domain": "sleep_disorder",
     },
     {
         "id": "sleep_interrupt",
         "section": "Sleep Disorder",
-        "prompt": "In the last two weeks, how often has your sleep been interrupted by dreams, worry, pain, or restlessness?",
+        "prompt": "During the last two weeks, how often has your sleep been interrupted by dreams, worry, pain, or restlessness?",
         "domain": "sleep_disorder",
     },
     {
         "id": "burnout_exhaustion",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often have you felt emotionally or physically exhausted by daily responsibilities?",
+        "prompt": "During the last two weeks, how often have you felt emotionally or physically exhausted by daily responsibilities?",
         "domain": "burnout",
     },
     {
         "id": "burnout_detachment",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often have you felt detached, numb, or less motivated toward work or caregiving duties?",
+        "prompt": "During the last two weeks, how often have you felt detached, numb, or less motivated toward work or caregiving duties?",
         "domain": "burnout",
     },
     {
         "id": "burnout_capacity",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often have you felt that you could no longer keep up with your usual responsibilities?",
+        "prompt": "During the last two weeks, how often have you felt unable to keep up with your usual responsibilities?",
         "domain": "burnout",
     },
     {
         "id": "burnout_cynical",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often have you felt frustrated, cynical, or emotionally distant from your work or caregiving role?",
+        "prompt": "During the last two weeks, how often have you felt frustrated, cynical, or emotionally distant from your work or caregiving role?",
         "domain": "burnout",
     },
     {
         "id": "burnout_reward",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often has your effort felt high while appreciation, return, or support felt low?",
+        "prompt": "During the last two weeks, how often has your effort felt high while appreciation, return, or support felt low?",
         "domain": "burnout",
     },
     {
         "id": "burnout_recovery",
         "section": "Burnout",
-        "prompt": "In the last two weeks, how often have you still felt drained even after taking rest?",
+        "prompt": "During the last two weeks, how often have you still felt drained even after resting?",
         "domain": "burnout",
     },
     {
         "id": "lonely_isolated",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you felt alone or isolated even when other people were nearby?",
+        "prompt": "During the last two weeks, how often have you felt alone or isolated even when other people were nearby?",
         "domain": "loneliness",
     },
     {
         "id": "lonely_support",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you felt that you lacked emotional support from family or friends?",
+        "prompt": "During the last two weeks, how often have you felt that you lacked emotional support from family or friends?",
         "domain": "loneliness",
     },
     {
         "id": "lonely_connection",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you found it hard to feel connected to people around you?",
+        "prompt": "During the last two weeks, how often have you found it hard to feel connected to people around you?",
         "domain": "loneliness",
     },
     {
         "id": "lonely_belong",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you felt that you did not fully belong in your family, workplace, or community?",
+        "prompt": "During the last two weeks, how often have you felt that you did not fully belong in your family, workplace, or community?",
         "domain": "loneliness",
     },
     {
         "id": "lonely_share",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you felt you had few people to openly share worries or emotions with?",
+        "prompt": "During the last two weeks, how often have you felt you had few people to openly share worries or emotions with?",
         "domain": "loneliness",
     },
     {
         "id": "lonely_withdraw",
         "section": "Loneliness",
-        "prompt": "In the last two weeks, how often have you withdrawn from conversations, gatherings, or relationships more than before?",
+        "prompt": "During the last two weeks, how often have you withdrawn from conversations, gatherings, or relationships more than before?",
         "domain": "loneliness",
     },
     {
         "id": "substance_frequency",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often have alcohol, tobacco, or other substances been used to cope with emotions or stress?",
+        "prompt": "During the last two weeks, how often have alcohol, tobacco, or other substances been used to cope with emotions or stress?",
         "domain": "substance_abuse",
     },
     {
         "id": "substance_control",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often have you found it difficult to reduce or control substance use?",
+        "prompt": "During the last two weeks, how often have you found it difficult to reduce or control substance use?",
         "domain": "substance_abuse",
     },
     {
         "id": "substance_impact",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often has substance use affected your health, relationships, or daily responsibilities?",
+        "prompt": "During the last two weeks, how often has substance use affected your health, relationships, or daily responsibilities?",
         "domain": "substance_abuse",
     },
     {
         "id": "substance_craving",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often have you had strong urges or cravings that were difficult to ignore?",
+        "prompt": "During the last two weeks, how often have you had strong urges or cravings that were difficult to ignore?",
         "domain": "substance_abuse",
     },
     {
         "id": "substance_tolerance",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often have you needed more of a substance than before to get the same effect?",
+        "prompt": "During the last two weeks, how often have you needed more of a substance than before to get the same effect?",
         "domain": "substance_abuse",
     },
     {
         "id": "substance_withdrawal",
         "section": "Substance Abuse",
-        "prompt": "In the last two weeks, how often have you felt unwell, irritable, or restless when trying not to use the substance?",
+        "prompt": "During the last two weeks, how often have you felt unwell, irritable, or restless when trying not to use the substance?",
         "domain": "substance_abuse",
     },
 ]
@@ -376,10 +376,10 @@ VALIDATED_INSTRUMENTS = {
         "label": "SDOH-Agrarian Distress",
         "description": "Culturally adapted screening for crop loss, debt, food insecurity, and migration pressure",
         "items": {
-            "s1": "In the last two weeks, how often have you worried that the crop may fail or the harvest may be lost?",
-            "s2": "In the last two weeks, how often have you worried about debt, loans, or repayment pressure?",
-            "s3": "In the last two weeks, how often have you worried that there may not be enough food at home?",
-            "s4": "In the last two weeks, how often have you felt forced to leave farming or look for outside work because of stress?",
+            "s1": "During the last two weeks, how often have you worried that the crop may fail or the harvest may be lost?",
+            "s2": "During the last two weeks, how often have you worried about debt, loans, or repayment pressure?",
+            "s3": "During the last two weeks, how often have you worried that there may not be enough food at home?",
+            "s4": "During the last two weeks, how often have you felt forced to leave farming or look for outside work because of stress?",
         },
     },
     "sdoh_agri-hi": {
@@ -577,11 +577,66 @@ ADAPTIVE_QUESTION_TRANSLATIONS = {
     "substance_withdrawal": {"Hindi": "उपयोग कम करने पर बेचैनी, चिड़चिड़ापन या अस्वस्थता महसूस होना।", "Bengali": "ব্যবহার কমালে অস্বস্তি, খিটখিটে ভাব বা অস্থিরতা অনুভव করা।"},
 }
 
-ADAPTIVE_MIN_ITEMS = 4
+ADAPTIVE_MIN_ITEMS = 5
+ADAPTIVE_SECTION_TRANSLATIONS_OVERRIDES = {
+    "Depression": {"Hindi": "अवसाद", "Bengali": "বিষণ্নতা"},
+    "Anxiety": {"Hindi": "चिंता", "Bengali": "উদ্বেগ"},
+    "Stress": {"Hindi": "तनाव", "Bengali": "স্ট্রেস"},
+    "Sleep Disorder": {"Hindi": "नींद संबंधी समस्या", "Bengali": "ঘুমের সমস্যা"},
+    "Burnout": {"Hindi": "बर्नआउट", "Bengali": "বার্নআউট"},
+    "Loneliness": {"Hindi": "अकेलापन", "Bengali": "একাকীত্ব"},
+    "Substance Abuse": {"Hindi": "पदार्थ दुरुपयोग", "Bengali": "পদার্থের অপব্যবহার"},
+}
+
+ADAPTIVE_QUESTION_TRANSLATIONS_OVERRIDES = {
+    "dep_interest": {"Hindi": "पिछले दो हफ्तों में, कामों में रुचि या आनंद कितनी बार कम महसूस हुआ?", "Bengali": "গত দুই সপ্তাহে, কাজকর্মে আগ্রহ বা আনন্দ কতবার কম অনুভব করেছেন?"},
+    "dep_down": {"Hindi": "पिछले दो हफ्तों में, आप कितनी बार उदास, निराश, या मन से बहुत नीचे महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, আপনি কতবার মন খারাপ, হতাশ বা ভীষণভাবে মনমরা বোধ করেছেন?"},
+    "dep_sleep": {"Hindi": "पिछले दो हफ्तों में, नींद की समस्या ने आपकी रोज़मर्रा की ज़िंदगी में कितनी बार बाधा डाली?", "Bengali": "গত দুই সপ্তাহে, ঘুমের समस्या আপনার দৈনন্দিন জীবনে কতবার বাধা দিয়েছে?"},
+    "dep_energy": {"Hindi": "पिछले दो हफ्तों में, आप कितनी बार कम ऊर्जा या सुस्ती महसूस करते रहे?", "Bengali": "গত দুই সপ্তাহে, আপনি কতবার শক্তি কম বা ধীর-থের অনুভব করেছেন?"},
+    "dep_guilt": {"Hindi": "पिछले दो हफ्तों में, आपने खुद को बोझ, असफल, या बहुत अधिक दोषी कितनी बार महसूस किया?", "Bengali": "গত দুই সপ্তাহে, নিজেকে বোঝা, ব্যর্থ, বা অতিরিক্ত দোষী কতবার মনে হয়েছে?"},
+    "dep_focus": {"Hindi": "पिछले दो हफ्तों में, ध्यान केंद्रित करने, याद रखने, या सरल निर्णय लेने में कितनी बार कठिनाई हुई?", "Bengali": "গত দুই সপ্তাহে, মনোযোগ দিতে, মনে রাখতে, বা সহজ সিদ্ধান্ত নিতে কতবার অসুবিধা হয়েছে?"},
+    "anx_worry": {"Hindi": "पिछले दो हफ्तों में, चिंता को नियंत्रित करना आपको कितनी बार कठिन लगा?", "Bengali": "গত দুই সপ্তাহে, দুশ্চিন্তা নিয়ন্ত্রণ করা কতবার কঠিন লেগেছে?"},
+    "anx_restless": {"Hindi": "पिछले दो हफ्तों में, आप कितनी बार घबराए हुए, बेचैन, या तनावग्रस्त महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, আপনি কতবার নার্ভাস, অস্থির বা চাপে থাকা অনুভব করেছেন?"},
+    "anx_fear": {"Hindi": "पिछले दो हफ्तों में, आपको कितनी बार लगा कि कुछ बुरा हो सकता है?", "Bengali": "গত দুই সপ্তাহে, কতবার মনে হয়েছে যে কিছু খারাপ হতে পারে?"},
+    "anx_body": {"Hindi": "पिछले दो हफ्तों में, तेज़ धड़कन, कंपकंपी, या पसीना जैसे शारीरिक चिंता लक्षण कितनी बार हुए?", "Bengali": "গত দুই সপ্তাহে, হৃদস্পন্দন বেড়ে যাওয়া, কাঁপুনি, বা ঘাম হওয়ার মতো শারীরিক উদ্বেগের লক্ষণ কতবার হয়েছে?"},
+    "anx_avoid": {"Hindi": "पिछले दो हफ्तों में, चिंता की वजह से आपने लोगों, जगहों, या कामों से कितनी बार बचाव किया?", "Bengali": "গত দুই সপ্তাহে, উদ্বেগের কারণে আপনি কতবার মানুষ, জায়গা, বা কাজ এড়িয়ে গেছেন?"},
+    "anx_reassure": {"Hindi": "पिछले दो हफ्तों में, रोज़मर्रा के काम शुरू करने से पहले आपको बार-बार आश्वासन की कितनी बार ज़रूरत पड़ी?", "Bengali": "গত দুই সপ্তাহে, দৈনন্দিন কাজ শুরু করার আগে বারবার আশ্বাসের কতবার প্রয়োজন হয়েছে?"},
+    "str_overload": {"Hindi": "पिछले दो हफ्तों में, दैनिक ज़िम्मेदारियाँ कितनी बार बहुत भारी लगीं?", "Bengali": "গত দুই সপ্তাহে, দৈনন্দিন দায়িত্ব কতবার খুব ভারী মনে হয়েছে?"},
+    "str_irritable": {"Hindi": "पिछले दो हफ्तों में, आप कितनी बार चिड़चिड़े, तनावग्रस्त, या आराम न कर पाने वाले महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, আপনি কতবার খিটখিটে, টানটান বা আরাম করতে না পারার মতো অনুভব করেছেন?"},
+    "str_function": {"Hindi": "पिछले दो हफ्तों में, तनाव ने आपके काम, घर, या रिश्तों को कितनी बार प्रभावित किया?", "Bengali": "গত দুই সপ্তাহে, চাপ আপনার কাজ, বাড়ি বা সম্পর্ককে কতবার প্রভাবিত করেছে?"},
+    "str_pressure": {"Hindi": "पिछले दो हफ्तों में, आपको कितनी बार लगातार दबाव, कम समय, या कम सहारे का अनुभव हुआ?", "Bengali": "গত দুই সপ্তাহে, আপনি কতবার অবিরাম চাপ, কম সময়, বা কম সহায়তার অনুভব করেছেন?"},
+    "str_recovery": {"Hindi": "पिछले दो हफ्तों में, तनावपूर्ण घटनाओं के बाद शांत होने में कितनी बार कठिनाई हुई?", "Bengali": "গত দুই সপ্তাহে, চাপযুক্ত ঘটনার পর শান্ত হতে কতবার অসুবিধা হয়েছে?"},
+    "str_headaches": {"Hindi": "पिछले दो हफ्तों में, तनाव सिरदर्द, शरीर दर्द, या पेट की तकलीफ़ के रूप में कितनी बार दिखा?", "Bengali": "গত দুই সপ্তাহে, চাপ কতবার মাথাব্যথা, শরীরব্যথা, বা পেটের অস্বস্তি হিসেবে প্রকাশ পেয়েছে?"},
+    "sleep_quality": {"Hindi": "पिछले दो हफ्तों में, सोने में, नींद बनाए रखने में, या बहुत जल्दी जागने में कितनी बार कठिनाई हुई?", "Bengali": "গত দুই সপ্তাহে, ঘুম আসা, ঘুম ধরে রাখা, বা খুব তাড়াতাড়ি জেগে ওঠার সমস্যা কতবার হয়েছে?"},
+    "sleep_daytime": {"Hindi": "पिछले दो हफ्तों में, खराब नींद ने आपको दिन में कितनी बार थका हुआ या नींद-सा महसूस कराया?", "Bengali": "গত দুই সপ্তাহে, খারাপ ঘুমের কারণে দিনে কতবার ক্লান্ত বা ঘুম ঘুম লেগেছে?"},
+    "sleep_routine": {"Hindi": "पिछले दो हफ्तों में, आपकी नींद की दिनचर्या कितनी बार अनियमित या स्थिर रखना कठिन लगी?", "Bengali": "গত দুই সপ্তাহে, আপনার ঘুমের সময়সূচি কতবার অনিয়মিত বা স্থির রাখা কঠিন লেগেছে?"},
+    "sleep_refresh": {"Hindi": "पिछले दो हफ्तों में, बिस्तर पर पर्याप्त समय रहने के बाद भी आप कितनी बार तरोताज़ा महसूस नहीं किए?", "Bengali": "গত দুই সপ্তাহে, বিছানায় যথেষ্ট সময় থাকার পরও কতবার সতেজ অনুভব করেননি?"},
+    "sleep_worry": {"Hindi": "पिछले दो हफ्तों में, नींद को लेकर चिंता ने आराम करना कितनी बार कठिन किया?", "Bengali": "গত দুই সপ্তাহে, ঘুম নিয়ে দুশ্চিন্তা কতবার বিশ্রাম নেওয়া কঠিন করেছে?"},
+    "sleep_interrupt": {"Hindi": "पिछले दो हफ्तों में, सपनों, चिंता, दर्द, या बेचैनी से आपकी नींद कितनी बार टूटी?", "Bengali": "গত দুই সপ্তাহে, স্বপ্ন, দুশ্চিন্তা, ব্যথা বা অস্থিরতার কারণে আপনার ঘুম কতবার ভেঙেছে?"},
+    "burnout_exhaustion": {"Hindi": "पिछले दो हफ्तों में, आपने दैनिक ज़िम्मेदारियों के कारण कितनी बार भावनात्मक या शारीरिक थकान महसूस की?", "Bengali": "গত দুই সপ্তাহে, দৈনন্দিন দায়িত্বের কারণে কতবার মানসিক বা শারীরিক ক্লান্তি অনুভব করেছেন?"},
+    "burnout_detachment": {"Hindi": "पिछले दो हफ्तों में, काम या देखभाल की भूमिका के प्रति आप कितनी बार अलग-थलग, सुन्न, या कम प्रेरित महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, কাজ বা যত্নের ভূমিকায় আপনি কতবার বিচ্ছিন্ন, নিরুত্তাপ বা কম অনুপ্রাণিত অনুভব করেছেন?"},
+    "burnout_capacity": {"Hindi": "पिछले दो हफ्तों में, अपनी सामान्य ज़िम्मेदारियों को निभाना आपको कितनी बार असंभव-सा लगा?", "Bengali": "গত দুই সপ্তাহে, নিজের সাধারণ দায়িত্ব সামলানো কতবার অসম্ভব মনে হয়েছে?"},
+    "burnout_cynical": {"Hindi": "पिछले दो हफ्तों में, अपने काम या देखभाल की भूमिका के प्रति आप कितनी बार निराश, नकारात्मक, या भावनात्मक रूप से दूर महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, নিজের কাজ বা যত্নের ভূমিকার প্রতি কতবার হতাশ, নেতিবাচক বা মানসিকভাবে দূরে অনুভব করেছেন?"},
+    "burnout_reward": {"Hindi": "पिछले दो हफ्तों में, आपको कितनी बार लगा कि मेहनत तो बहुत है, लेकिन सराहना, लाभ, या सहारा कम है?", "Bengali": "গত দুই সপ্তাহে, কতবার মনে হয়েছে পরিশ্রম অনেক, কিন্তু স্বীকৃতি, ফল বা সহায়তা কম?"},
+    "burnout_recovery": {"Hindi": "पिछले दो हफ्तों में, आराम करने के बाद भी आप कितनी बार थके हुए ही रहे?", "Bengali": "গত দুই সপ্তাহে, বিশ্রাম নেওয়ার পরও কতবার ক্লান্তই রয়ে গেছেন?"},
+    "lonely_isolated": {"Hindi": "पिछले दो हफ्तों में, लोगों के बीच होने पर भी आप कितनी बार अकेला या अलग-थलग महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, মানুষজনের মধ্যে থাকলেও কতবার একা বা বিচ্ছিন্ন অনুভব করেছেন?"},
+    "lonely_support": {"Hindi": "पिछले दो हफ्तों में, परिवार या दोस्तों से भावनात्मक सहारा न मिलने का एहसास आपको कितनी बार हुआ?", "Bengali": "গত দুই সপ্তাহে, পরিবার বা বন্ধুদের কাছ থেকে মানসিক সহায়তা না পাওয়ার অনুভব কতবার হয়েছে?"},
+    "lonely_connection": {"Hindi": "पिछले दो हफ्तों में, आसपास के लोगों से जुड़ाव महसूस करना आपको कितनी बार कठिन लगा?", "Bengali": "গত দুই সপ্তাহে, আশেপাশের মানুষের সঙ্গে সংযোগ অনুভব করা কতবার কঠিন লেগেছে?"},
+    "lonely_belong": {"Hindi": "पिछले दो हफ्तों में, आपको अपने परिवार, काम, या समुदाय में अपनापन कम कितनी बार महसूस हुआ?", "Bengali": "গত দুই সপ্তাহে, পরিবার, কাজ বা সমাজে নিজের জায়গা কম কতবার অনুভব করেছেন?"},
+    "lonely_share": {"Hindi": "पिछले दो हफ्तों में, अपनी चिंता या भावनाएँ खुलकर बाँटने के लिए लोग कम कितनी बार लगे?", "Bengali": "গত দুই সপ্তাহে, দুশ্চিন্তা বা অনুভূতি খোলাখুলি ভাগ করার মতো মানুষ কম কতবার মনে হয়েছে?"},
+    "lonely_withdraw": {"Hindi": "पिछले दो हफ्तों में, आप कितनी बार बातचीत, मिलन-जुलन, या रिश्तों से पहले से ज़्यादा दूर हुए?", "Bengali": "গত দুই সপ্তাহে, আড্ডা, মেলামেশা বা সম্পর্ক থেকে আগের চেয়ে বেশি কতবার সরে গেছেন?"},
+    "substance_frequency": {"Hindi": "पिछले दो हफ्तों में, भावनाओं या तनाव को संभालने के लिए शराब, तंबाकू, या अन्य पदार्थों का उपयोग कितनी बार किया?", "Bengali": "গত দুই সপ্তাহে, আবেগ বা চাপ সামলাতে মদ, তামাক, বা অন্য পদার্থ কতবার ব্যবহার করেছেন?"},
+    "substance_control": {"Hindi": "पिछले दो हफ्तों में, पदार्थ के उपयोग को कम या नियंत्रित करना आपको कितनी बार कठिन लगा?", "Bengali": "গত দুই সপ্তাহে, পদার্থের ব্যবহার কমানো বা নিয়ন্ত্রণ করা কতবার কঠিন লেগেছে?"},
+    "substance_impact": {"Hindi": "पिछले दो हफ्तों में, पदार्थ उपयोग ने आपके स्वास्थ्य, रिश्तों, या दैनिक ज़िम्मेदारियों को कितनी बार प्रभावित किया?", "Bengali": "গত দুই সপ্তাহে, পদার্থ ব্যবহারের কারণে স্বাস্থ্য, সম্পর্ক বা দৈনন্দিন দায়িত্ব কতবার প্রভাবিত হয়েছে?"},
+    "substance_craving": {"Hindi": "पिछले दो हफ्तों में, आपको कितनी बार तेज़ इच्छा या craving हुई जिसे नज़रअंदाज़ करना कठिन था?", "Bengali": "গত দুই সপ্তাহে, কতবার তীব্র চাহিদা বা ক্রেভিং হয়েছে যা উপেক্ষা করা কঠিন ছিল?"},
+    "substance_tolerance": {"Hindi": "पिछले दो हफ्तों में, पहले जैसा असर पाने के लिए आपको पहले से ज़्यादा मात्रा की कितनी बार ज़रूरत पड़ी?", "Bengali": "গত দুই সপ্তাহে, আগের মতো প্রভাব পেতে আগের চেয়ে বেশি পরিমাণ কতবার দরকার হয়েছে?"},
+    "substance_withdrawal": {"Hindi": "पिछले दो हफ्तों में, उपयोग कम करने की कोशिश करते समय आप कितनी बार अस्वस्थ, चिड़चिड़े, या बेचैन महसूस हुए?", "Bengali": "গত দুই সপ্তাহে, ব্যবহার কমানোর চেষ্টা করার সময় কতবার অস্বস্তি, খিটখিটে ভাব বা অস্থিরতা অনুভব করেছেন?"},
+}
+
 ADAPTIVE_MAX_ITEMS = 10
-ADAPTIVE_INFO_THRESHOLD = 0.18
-ADAPTIVE_DOMAIN_BALANCE_WEIGHT = 0.18
-ADAPTIVE_THETA_PRIOR_SD = 1.5
+ADAPTIVE_INFO_THRESHOLD = 0.22
+ADAPTIVE_DOMAIN_BALANCE_WEIGHT = 0.24
+ADAPTIVE_THETA_PRIOR_SD = 1.35
 ADAPTIVE_THETA_GRID_MIN = -3.0
 ADAPTIVE_THETA_GRID_MAX = 3.0
 ADAPTIVE_THETA_GRID_STEP = 0.05
@@ -608,7 +663,10 @@ def _normalize_language(value: str | None) -> str:
 def _localize_adaptive_section(section: str, language: str) -> str:
     if language == "English":
         return section
-    return ADAPTIVE_SECTION_TRANSLATIONS.get(section, {}).get(language, section)
+    return ADAPTIVE_SECTION_TRANSLATIONS_OVERRIDES.get(section, {}).get(
+        language,
+        ADAPTIVE_SECTION_TRANSLATIONS.get(section, {}).get(language, section),
+    )
 
 
 def _localize_adaptive_question(question: dict, language: str) -> dict:
@@ -616,9 +674,10 @@ def _localize_adaptive_question(question: dict, language: str) -> dict:
     localized["prompt_en"] = question.get("prompt", "")
     localized["section_label"] = _localize_adaptive_section(str(question.get("section", "")), language)
     if language != "English":
-        localized["prompt"] = ADAPTIVE_QUESTION_TRANSLATIONS.get(str(question.get("id", "")), {}).get(
+        question_id = str(question.get("id", ""))
+        localized["prompt"] = ADAPTIVE_QUESTION_TRANSLATIONS_OVERRIDES.get(question_id, {}).get(
             language,
-            question.get("prompt", ""),
+            ADAPTIVE_QUESTION_TRANSLATIONS.get(question_id, {}).get(language, question.get("prompt", "")),
         )
     localized["language"] = language
     return localized
@@ -629,9 +688,10 @@ def _localize_question(question: dict, language: str) -> dict:
     localized["prompt_en"] = question.get("prompt", "")
     localized["section_label"] = _localize_adaptive_section(str(question.get("section", "")), language)
     if language != "English":
-        localized["prompt"] = ADAPTIVE_QUESTION_TRANSLATIONS.get(str(question.get("id", "")), {}).get(
+        question_id = str(question.get("id", ""))
+        localized["prompt"] = ADAPTIVE_QUESTION_TRANSLATIONS_OVERRIDES.get(question_id, {}).get(
             language,
-            question.get("prompt", ""),
+            ADAPTIVE_QUESTION_TRANSLATIONS.get(question_id, {}).get(language, question.get("prompt", "")),
         )
     localized["language"] = language
     return localized
@@ -650,7 +710,7 @@ def get_response_options(language: str | None = None) -> dict[str, int]:
 
 def get_validated_instruments(language: str | None = None) -> list[dict]:
     normalized_language = _normalize_language(language)
-    excluded_ids = {"gad7", "gad7-hi", "gad7-bn", "gad2", "gad2-hi", "gad2-bn"}
+    allowed_ids = {"phq9", "phq9-h", "phq9-b"}
     localized_labels = {
         "phq9": {
             "English": "PHQ-9",
@@ -850,14 +910,72 @@ def get_validated_instruments(language: str | None = None) -> list[dict]:
             "Bengali": "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, বাংলা অনুবাদ",
         },
     }
+    item_text_overrides = {
+        "phq9": {
+            "English": {
+                "p1": "Little interest or pleasure in doing things",
+                "p2": "Feeling down, depressed, or hopeless",
+                "p3": "Trouble falling asleep, staying asleep, or sleeping too much",
+                "p4": "Feeling tired or having little energy",
+                "p5": "Poor appetite or overeating",
+                "p6": "Feeling bad about yourself, or that you are a failure, or that you have let yourself or your family down",
+                "p7": "Trouble concentrating on things, such as reading or watching television",
+                "p8": "Moving or speaking so slowly that other people could have noticed, or being so fidgety or restless that you have been moving around more than usual",
+                "p9": "Thoughts that you would be better off dead or of hurting yourself in some way",
+            },
+            "Hindi": {
+                "p1": "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना",
+                "p2": "उदास, निराश, या मन बहुत नीचे महसूस होना",
+                "p3": "नींद आने, नींद बनी रहने, या बहुत अधिक सोने में परेशानी होना",
+                "p4": "थका हुआ महसूस होना या ऊर्जा बहुत कम होना",
+                "p5": "भूख कम लगना या बहुत अधिक खाना",
+                "p6": "अपने बारे में बुरा महसूस होना, असफल लगना, या स्वयं अथवा परिवार को निराश करना",
+                "p7": "पढ़ने या टेलीविजन देखने जैसी गतिविधियों पर ध्यान लगाने में परेशानी होना",
+                "p8": "बहुत धीरे चलना या बोलना, या इसके विपरीत बहुत बेचैन या अस्थिर होना और सामान्य से अधिक घूमते रहना",
+                "p9": "ऐसा लगना कि मर जाना बेहतर होगा, या किसी तरह स्वयं को नुकसान पहुँचाने के विचार आना",
+            },
+            "Bengali": {
+                "p1": "কাজকর্মে কম আগ্রহ বা আনন্দ অনুভব করা",
+                "p2": "মন খারাপ, বিষণ্ন, বা খুব নিরাশ বোধ করা",
+                "p3": "ঘুমাতে, ঘুম ধরে রাখতে, বা অতিরিক্ত ঘুমাতে সমস্যা হওয়া",
+                "p4": "ক্লান্ত লাগা বা শক্তি খুব কম থাকা",
+                "p5": "ক্ষুধা কমে যাওয়া বা অতিরিক্ত খাওয়া",
+                "p6": "নিজের সম্পর্কে খারাপ লাগা, ব্যর্থ মনে হওয়া, বা নিজে কিংবা পরিবারকে হতাশ করা",
+                "p7": "পড়া বা টেলিভিশন দেখার মতো কাজে মনোযোগ দিতে সমস্যা হওয়া",
+                "p8": "খুব ধীরে হাঁটা বা কথা বলা, অথবা তার উল্টোভাবে খুব অস্থির বা অচঞ্চল হয়ে স্বাভাবিকের চেয়ে বেশি নড়াচড়া করা",
+                "p9": "মনে হওয়া যে মারা গেলে ভালো, বা কোনোভাবে নিজেকে আঘাত করার চিন্তা আসা",
+            },
+        },
+        "sdoh_agri": {
+            "English": {
+                "s1": "During the past two weeks, how often have you worried that your crop may fail or that your harvest may be lost?",
+                "s2": "During the past two weeks, how often have you worried about debt, loans, or repayment pressure?",
+                "s3": "During the past two weeks, how often have you worried that your household may not have enough food?",
+                "s4": "During the past two weeks, how often have you felt compelled to leave farming or seek outside work because of financial or emotional strain?",
+            },
+            "Hindi": {
+                "s1": "पिछले दो हफ्तों में, अपनी फसल खराब होने या उपज नष्ट होने की चिंता कितनी बार हुई?",
+                "s2": "पिछले दो हफ्तों में, कर्ज, ऋण, या पुनर्भुगतान के दबाव की चिंता कितनी बार हुई?",
+                "s3": "पिछले दो हफ्तों में, घर में पर्याप्त भोजन न होने की चिंता कितनी बार हुई?",
+                "s4": "पिछले दो हफ्तों में, आर्थिक या भावनात्मक दबाव के कारण खेती छोड़ने या बाहर काम खोजने की आवश्यकता कितनी बार महसूस हुई?",
+            },
+            "Bengali": {
+                "s1": "গত দুই সপ্তাহে, ফসল নষ্ট হয়ে যেতে পারে বা ফলন হারিয়ে যেতে পারে বলে কতবার দুশ্চিন্তা করেছেন?",
+                "s2": "গত দুই সপ্তাহে, দেনা, ঋণ, বা পরিশোধের চাপ নিয়ে কতবার দুশ্চিন্তা করেছেন?",
+                "s3": "গত দুই সপ্তাহে, বাড়িতে পর্যাপ্ত খাবার না থাকার দুশ্চিন্তা কতবার করেছেন?",
+                "s4": "গত দুই সপ্তাহে, আর্থিক বা মানসিক চাপের কারণে কৃষিকাজ ছেড়ে বাইরে কাজ খুঁজতে বাধ্য মনে হয়েছে কতবার?",
+            },
+        },
+    }
     instruments = []
     for instrument_id, instrument in VALIDATED_INSTRUMENTS.items():
-        if instrument_id in excluded_ids:
+        if instrument_id not in allowed_ids:
             continue
+        item_map = item_text_overrides.get(instrument_id, {}).get(normalized_language, instrument["items"])
         items = [
             {
                 "id": item_id,
-                "prompt": prompt,
+                "prompt": item_map.get(item_id, prompt),
                 "prompt_en": prompt,
             }
             for item_id, prompt in instrument["items"].items()
@@ -901,8 +1019,23 @@ def _load_adaptive_item_overrides() -> dict[str, dict]:
     except Exception:
         return {}
 
-    overrides: dict[str, dict] = {}
+    overrides: dict[str, dict] = {
+        "_section_defaults": {},
+        "_domain_defaults": {},
+    }
     if isinstance(payload, dict):
+        section_defaults = payload.get("section_defaults")
+        if isinstance(section_defaults, dict):
+            overrides["_section_defaults"] = {
+                str(section).strip(): dict(values) if isinstance(values, dict) else {}
+                for section, values in section_defaults.items()
+            }
+        domain_defaults = payload.get("domain_defaults")
+        if isinstance(domain_defaults, dict):
+            overrides["_domain_defaults"] = {
+                str(domain).strip(): dict(values) if isinstance(values, dict) else {}
+                for domain, values in domain_defaults.items()
+            }
         items = payload.get("items") if isinstance(payload.get("items"), list) else payload.get("questions")
         if isinstance(items, list):
             candidates = items
@@ -999,11 +1132,11 @@ def _adaptive_tuning() -> dict:
         overall_spread = 0.0
         pilot_size = 0
 
-    info_threshold = 0.16 + (0.08 * (0.45 - overall_mean)) + (0.05 * domain_balance) + (0.01 * overall_spread)
-    info_threshold = max(0.12, min(info_threshold, 0.24))
+    info_threshold = 0.18 + (0.10 * (0.5 - overall_mean)) + (0.07 * domain_balance) + (0.02 * overall_spread)
+    info_threshold = max(0.16, min(info_threshold, 0.30))
 
-    coverage_weight = 0.18 + (0.35 * domain_balance) + (0.02 * min(pilot_size, 20) / 20.0) + (0.03 * overall_spread)
-    coverage_weight = max(0.14, min(coverage_weight, 0.38))
+    coverage_weight = 0.22 + (0.40 * domain_balance) + (0.03 * min(pilot_size, 20) / 20.0) + (0.04 * overall_spread)
+    coverage_weight = max(0.18, min(coverage_weight, 0.44))
 
     return {
         "info_threshold": round(info_threshold, 3),
@@ -1059,6 +1192,24 @@ def _domain_coverage_bonus(domain: str, answered_counts: dict[str, int], balance
     return 1.0 + (weight * coverage_gap)
 
 
+def _adaptive_rotation_bonus(domain: str, answered_count: int) -> float:
+    if not PREDICTION_DOMAINS:
+        return 1.0
+    early_stage = max(0.0, 1.0 - (float(answered_count) / max(len(PREDICTION_DOMAINS), 1)))
+    if early_stage <= 0.0:
+        return 1.0
+    target_index = answered_count % len(PREDICTION_DOMAINS)
+    domain_index = PREDICTION_DOMAINS.index(domain) if domain in PREDICTION_DOMAINS else 0
+    distance = abs(domain_index - target_index)
+    wrap_distance = len(PREDICTION_DOMAINS) - distance
+    circular_distance = min(distance, wrap_distance)
+    if circular_distance == 0:
+        return 1.0 + (0.18 * early_stage)
+    if circular_distance == 1:
+        return 1.0 + (0.08 * early_stage)
+    return 1.0 + (0.03 * early_stage)
+
+
 def _estimate_theta_grid(responses: dict[str, int]) -> float:
     best_theta = 0.0
     best_score = float("-inf")
@@ -1109,14 +1260,25 @@ def score_questionnaire(responses: dict[str, int]) -> dict:
 
 def _question_parameters(question: dict, index: int) -> dict:
     section = str(question.get("section", "")).strip()
+    domain = str(question.get("domain", "")).strip()
     section_offset = SECTION_BASE_DIFFICULTY.get(section, 0.0)
     within_section_step = 0.12 * (index % 3)
     discrimination = 1.0 + 0.15 * (index % 4)
-    if question.get("domain") in {"depression", "anxiety", "stress"}:
+    if domain in {"depression", "anxiety", "stress"}:
         discrimination += 0.1
     override = _load_adaptive_item_overrides().get(question.get("id"), {})
+    section_defaults = _load_adaptive_item_overrides().get("_section_defaults", {}).get(section, {})
+    domain_defaults = _load_adaptive_item_overrides().get("_domain_defaults", {}).get(domain, {})
+    if domain_defaults.get("a") is not None:
+        discrimination = float(domain_defaults["a"])
+    if section_defaults.get("a") is not None:
+        discrimination = float(section_defaults["a"])
     if override.get("a") is not None:
         discrimination = float(override["a"])
+    if domain_defaults.get("b") is not None:
+        section_offset = float(domain_defaults["b"])
+    if section_defaults.get("b") is not None:
+        section_offset = float(section_defaults["b"])
     if override.get("b") is not None:
         section_offset = float(override["b"])
         within_section_step = 0.0
@@ -1168,6 +1330,7 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
     for question in QUESTION_BANK:
         if question["id"] in answered_ids:
             answered_counts[question["domain"]] += 1
+    answered_count = len(answered_ids)
     scored_questions = []
     for index, question in enumerate(QUESTION_BANK):
         if question["id"] in answered_ids:
@@ -1175,7 +1338,8 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
         params = _question_parameters(question, index)
         information = _irt_information(theta, params["a"], params["b"])
         coverage_bonus = _domain_coverage_bonus(question["domain"], answered_counts, tuning["coverage_weight"])
-        selection_score = information * coverage_bonus
+        rotation_bonus = _adaptive_rotation_bonus(question["domain"], answered_count)
+        selection_score = information * coverage_bonus * rotation_bonus
         scored_questions.append(
             {
                 **_localize_adaptive_question(question, normalized_language),
@@ -1187,6 +1351,7 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
                 "adaptive": {
                     "selection_score": round(selection_score, 6),
                     "coverage_bonus": round(coverage_bonus, 6),
+                    "rotation_bonus": round(rotation_bonus, 6),
                     "answered_in_domain": answered_counts[question["domain"]],
                 },
             }
@@ -1215,6 +1380,7 @@ def get_adaptive_question_bank(responses: dict[str, int] | None = None, language
         "should_stop": should_stop,
         "max_information": round(max_information, 6),
         "selected_information": round(selected_information, 6),
+        "answered_domains": {domain: answered_counts[domain] for domain in PREDICTION_DOMAINS},
         "tuning": tuning,
         "remaining_questions": scored_questions,
         "response_options": response_options,

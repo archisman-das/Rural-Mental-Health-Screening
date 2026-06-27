@@ -1052,6 +1052,7 @@ def extract_audio_sequence_features(
     max_frames: int = 160,
     n_mfcc: int = 16,
     sr: int = 8000,
+    include_mfcc: bool = True,
 ) -> dict:
     if not audio_path or not os.path.exists(audio_path):
         return {"available": False}
@@ -1109,11 +1110,15 @@ def extract_audio_sequence_features(
             spectral_centroid = float(np.sum(freqs * spectrum) / spectral_total) if spectral_total > 0 else 0.0
             spectral_bandwidth = float(np.sqrt(np.sum(((freqs - spectral_centroid) ** 2) * spectrum) / spectral_total)) if spectral_total > 0 else 0.0
             spectral_flatness = float(np.exp(np.mean(np.log(spectrum))) / np.mean(spectrum)) if np.mean(spectrum) > 0 else 0.0
-            try:
-                chunk_mfcc = librosa.feature.mfcc(y=chunk.astype(np.float32), sr=loaded_sr or sr, n_mfcc=6)
-                mfcc_means = np.mean(chunk_mfcc, axis=1).astype(float)
-                mfcc_stds = np.std(chunk_mfcc, axis=1).astype(float)
-            except Exception:
+            if include_mfcc:
+                try:
+                    chunk_mfcc = librosa.feature.mfcc(y=chunk.astype(np.float32), sr=loaded_sr or sr, n_mfcc=6)
+                    mfcc_means = np.mean(chunk_mfcc, axis=1).astype(float)
+                    mfcc_stds = np.std(chunk_mfcc, axis=1).astype(float)
+                except Exception:
+                    mfcc_means = np.zeros(6, dtype=float)
+                    mfcc_stds = np.zeros(6, dtype=float)
+            else:
                 mfcc_means = np.zeros(6, dtype=float)
                 mfcc_stds = np.zeros(6, dtype=float)
         else:
@@ -1150,25 +1155,21 @@ def extract_audio_sequence_features(
     sequence = np.asarray(sequence_rows, dtype=np.float32)
     frame_count = int(len(sequence))
     feature_count = int(sequence.shape[1]) if sequence.ndim == 2 else 0
-    return {
-        "available": True,
-        "audio_path": audio_path,
-        "duration": duration,
-        "frame_count": frame_count,
-        "feature_count": feature_count,
-        "sequence_features": sequence.astype(np.float32),
-        "feature_names": [
-            "chunk_mean",
-            "chunk_std",
-            "chunk_max",
-            "chunk_min",
-            "chunk_energy",
-            "chunk_rms",
-            "chunk_zero_crossing",
-            "chunk_abs_mean",
-            "chunk_spectral_centroid",
-            "chunk_spectral_bandwidth",
-            "chunk_spectral_flatness",
+    feature_names = [
+        "chunk_mean",
+        "chunk_std",
+        "chunk_max",
+        "chunk_min",
+        "chunk_energy",
+        "chunk_rms",
+        "chunk_zero_crossing",
+        "chunk_abs_mean",
+        "chunk_spectral_centroid",
+        "chunk_spectral_bandwidth",
+        "chunk_spectral_flatness",
+    ]
+    if include_mfcc:
+        feature_names.extend([
             "chunk_mfcc_mean_1",
             "chunk_mfcc_mean_2",
             "chunk_mfcc_mean_3",
@@ -1181,17 +1182,22 @@ def extract_audio_sequence_features(
             "chunk_mfcc_std_4",
             "chunk_mfcc_std_5",
             "chunk_mfcc_std_6",
-            "delta_chunk_mean",
-            "delta_chunk_std",
-            "delta_chunk_max",
-            "delta_chunk_min",
-            "delta_chunk_energy",
-            "delta_chunk_rms",
-            "delta_chunk_zero_crossing",
-            "delta_chunk_abs_mean",
-            "delta_chunk_spectral_centroid",
-            "delta_chunk_spectral_bandwidth",
-            "delta_chunk_spectral_flatness",
+        ])
+    feature_names.extend([
+        "delta_chunk_mean",
+        "delta_chunk_std",
+        "delta_chunk_max",
+        "delta_chunk_min",
+        "delta_chunk_energy",
+        "delta_chunk_rms",
+        "delta_chunk_zero_crossing",
+        "delta_chunk_abs_mean",
+        "delta_chunk_spectral_centroid",
+        "delta_chunk_spectral_bandwidth",
+        "delta_chunk_spectral_flatness",
+    ])
+    if include_mfcc:
+        feature_names.extend([
             "delta_chunk_mfcc_mean_1",
             "delta_chunk_mfcc_mean_2",
             "delta_chunk_mfcc_mean_3",
@@ -1204,7 +1210,17 @@ def extract_audio_sequence_features(
             "delta_chunk_mfcc_std_4",
             "delta_chunk_mfcc_std_5",
             "delta_chunk_mfcc_std_6",
-        ],
+        ])
+
+    return {
+        "available": True,
+        "audio_path": audio_path,
+        "duration": duration,
+        "frame_count": frame_count,
+        "feature_count": feature_count,
+        "sequence_features": sequence.astype(np.float32),
+        "feature_names": feature_names,
+        "feature_mode": "mfcc" if include_mfcc else "fast",
     }
 
 

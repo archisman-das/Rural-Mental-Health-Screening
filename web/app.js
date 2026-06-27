@@ -1,4 +1,4 @@
-const DOMAINS = [
+﻿const DOMAINS = [
   "depression",
   "anxiety",
   "stress",
@@ -30,6 +30,7 @@ const OFFLINE_DB_VERSION = 1;
 const OFFLINE_RECORDS_STORE = "records";
 const OFFLINE_PENDING_STORE = "pending_assessments";
 const HIDDEN_REPORTS_STORAGE_KEY = "mh-dashboard-hidden-report-ids";
+const LANGUAGE_STORAGE_KEY = "mh-dashboard-language";
 
 const RESPONSE_OPTION_TRANSLATIONS = {
   English: ["Not at all", "Several days", "More than half the days", "Nearly every day"],
@@ -131,9 +132,9 @@ const TRAJECTORY_SUMMARY_TEXTS = {
 };
 
 const MODALITY_LABELS = {
-  English: { text: "Text", audio: "Audio", image: "Image", passive_biomarkers: "Passive Biomarkers" },
-  Hindi: { text: "पाठ", audio: "ऑडियो", image: "छवि", passive_biomarkers: "निष्क्रिय संकेत" },
-  Bengali: { text: "পাঠ্য", audio: "অডিও", image: "ছবি", passive_biomarkers: "নিষ্ক্রিয় সংকেত" },
+  English: { text: "Text", audio: "Audio", image: "Image" },
+  Hindi: { text: "पाठ", audio: "ऑडियो", image: "छवि" },
+  Bengali: { text: "পাঠ্য", audio: "অডিও", image: "ছবি" },
 };
 
 const RECOMMENDATION_SOURCE_SUMMARIES = {
@@ -152,7 +153,7 @@ const RECOMMENDATION_SOURCE_SUMMARIES = {
   Bengali: {
     builtFrom: "এটি {signals} থেকে তৈরি।",
     builtFromSummary: "এটি সংরক্ষিত স্ক্রিনিং সারাংশের উপর ভিত্তি করে।",
-    narrativeAvailable: "স্ক্রিনিংয়ের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল।",
+    narrativeAvailable: "স্ক্রিনিংয়ের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল।",
     narrativeUnavailable: "এই রেকর্ডের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল না।",
   },
 };
@@ -163,27 +164,27 @@ const PASSIVE_MODALITY_STATUS = {
     savedRecord: "analyzed in the saved record",
     analyzedFromVideo: "analyzed successfully from {source}",
     analyzedWithTyping: "analyzed successfully from {source} with typing rhythm input",
-    readyVideo: "Passive biomarker input ready: {source}{typing}",
+    readyVideo: "Additional input ready: {source}{typing}",
     readyTyping: "typing rhythm captured",
-    notCaptured: "No passive biomarker input captured yet.",
+    notCaptured: "No additional input captured yet.",
   },
   Hindi: {
     optionalInput: "वैकल्पिक इनपुट नहीं दिया गया",
     savedRecord: "सहेजे गए रिकॉर्ड में विश्लेषित",
     analyzedFromVideo: "{source} से सफलतापूर्वक विश्लेषित",
     analyzedWithTyping: "{source} से सफलतापूर्वक विश्लेषित, साथ में टाइपिंग रिद्म इनपुट",
-    readyVideo: "निष्क्रिय संकेत इनपुट तैयार है: {source}{typing}",
+    readyVideo: "अतिरिक्त इनपुट तैयार है: {source}{typing}",
     readyTyping: "टाइपिंग रिद्म दर्ज हो गया",
-    notCaptured: "अभी तक कोई निष्क्रिय संकेत इनपुट नहीं मिला है।",
+    notCaptured: "अभी तक कोई अतिरिक्त इनपुट नहीं मिला है।",
   },
   Bengali: {
-    optionalInput: "ঐচ্ছিক ইনপুট দেওয়া হয়নি",
-    savedRecord: "সংরক্ষিত রেকর্ডে বিশ্লেষণ করা হয়েছে",
-    analyzedFromVideo: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে",
-    analyzedWithTyping: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে, টাইপিং রিদম ইনপুটসহ",
-    readyVideo: "নিষ্ক্রিয় সংকেত ইনপুট প্রস্তুত: {source}{typing}",
-    readyTyping: "টাইপিং রিদম সংগ্রহ করা হয়েছে",
-    notCaptured: "এখনও কোনো নিষ্ক্রিয় সংকেত ইনপুট পাওয়া যায়নি।",
+    optionalInput: "ঐচ্ছিক ইনপুট দেওয়া হয়নি",
+    savedRecord: "সংরক্ষিত রেকর্ডে বিশ্লেষণ করা হয়েছে",
+    analyzedFromVideo: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে",
+    analyzedWithTyping: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে, টাইপিং রিদম ইনপুটসহ",
+    readyVideo: "অতিরিক্ত ইনপুট প্রস্তুত: {source}{typing}",
+    readyTyping: "টাইপিং রিদম সংগ্রহ করা হয়েছে",
+    notCaptured: "এখনও কোনো অতিরিক্ত ইনপুট পাওয়া যায়নি।",
   },
 };
 
@@ -193,7 +194,6 @@ const ANALYTICS_SUMMARY_HINTS = {
     narrativeAnalyzed: "Narrative text was analyzed.",
     narrativeMissing: "Narrative text was not available.",
     noTrainedCoverage: "No trained bundle coverage matched this assessment yet.",
-    modelStatsUnavailable: "No model statistics available yet.",
     builtFromSavedSummary: "Built from the saved screening summary.",
   },
   Hindi: {
@@ -201,15 +201,13 @@ const ANALYTICS_SUMMARY_HINTS = {
     narrativeAnalyzed: "वर्णन पाठ का विश्लेषण किया गया।",
     narrativeMissing: "वर्णन पाठ उपलब्ध नहीं था।",
     noTrainedCoverage: "इस आकलन से अभी कोई प्रशिक्षित बंडल कवरेज मेल नहीं खाती।",
-    modelStatsUnavailable: "अभी तक कोई मॉडल सांख्यिकी उपलब्ध नहीं है।",
     builtFromSavedSummary: "यह सहेजे गए स्क्रीनिंग सारांश पर आधारित है।",
   },
   Bengali: {
-    fallbackHidden: "সংরক্ষিত প্রশিক্ষিত বান্ডেল পরিসংখ্যান উপলব্ধ থাকায় fallback মডালিটি সারিগুলি লুকানো হয়েছে।",
-    narrativeAnalyzed: "বর্ণনামূলক পাঠ্য বিশ্লেষণ করা হয়েছে।",
-    narrativeMissing: "বর্ণনামূলক পাঠ্য পাওয়া যায়নি।",
+    fallbackHidden: "সংরক্ষিত প্রশিক্ষিত বান্ডেল পরিসংখ্যান উপলব্ধ থাকায় fallback মডালিটি সারিগুলি লুকানো হয়েছে।",
+    narrativeAnalyzed: "বর্ণনামূলক পাঠ্য বিশ্লেষণ করা হয়েছে।",
+    narrativeMissing: "বর্ণনামূলক পাঠ্য পাওয়া যায়নি।",
     noTrainedCoverage: "এই মূল্যায়নের সাথে এখনো কোনো প্রশিক্ষিত বান্ডেল কভারেজ মেলেনি।",
-    modelStatsUnavailable: "এখনও কোনো মডেল পরিসংখ্যান পাওয়া যায়নি।",
     builtFromSavedSummary: "এটি সংরক্ষিত স্ক্রিনিং সারাংশের উপর ভিত্তি করে।",
   },
 };
@@ -367,9 +365,9 @@ const ADAPTIVE_UI_TRANSLATIONS = {
 
 const UI_TRANSLATIONS = {
   English: {
-    workspaceTab: "Assessment Workspace",
+    workspaceTab: "Screening Wizard",
     heroEyebrow: "Start Screening",
-    heroTitle: "Rural Mental Health Screening",
+    heroTitle: "Rural Mental Health Detection",
     heroText: "Begin one diagnostic screening session at a time, save the result, and view the current assessment without loading background records.",
     heroMetricsLabel: "At a glance",
     appTitle: "Rural Mental Health Dashboard",
@@ -377,35 +375,47 @@ const UI_TRANSLATIONS = {
     heroMetricModalities: "modalities blended",
     heroMetricOffline: "offline capture support",
     dashboardLanguageLabel: "Dashboard language",
-    workspaceText: "Create a new screening record directly from the dashboard.",
+    workspaceText: "Use the three linked pages below instead of one long intake screen.",
+    wizardLaunchKicker: "Screening Wizard",
+    wizardLaunchHeading: "Move page by page",
+    wizardLaunchText: "Open each step on its own screen so the workflow stays short, clear, and easier to use.",
+    wizardLaunchStep1Label: "Step 1",
+    wizardLaunchStep1Title: "Screening Card",
+    wizardLaunchStep1Text: "Start with identity, consent, and preferred language.",
+    wizardLaunchOpenPage: "Open page",
+    wizardLaunchStep2Label: "Step 2",
+    wizardLaunchStep2Title: "Questionnaire",
+    wizardLaunchStep2Text: "Fill the symptom questions on a separate page.",
+    wizardLaunchStep3Label: "Step 3",
+    wizardLaunchStep3Title: "Review and Save",
+    wizardLaunchStep3Text: "Review the completed screening before saving it to Analytics Hub.",
     adaptiveTab: "Adaptive Test",
     analyticsTab: "Analytics Hub",
     recordsTab: "Records and Reports",
-    applyLanguageBtn: "Apply Language",
     intakeFlowTitle: "Complete one screening from start to finish",
-    intakeFlowText: "Enter the person's details, capture their responses, review the live preview, and save one finalized assessment for analysis.",
+    intakeFlowText: "Enter the person's details, capture their responses, review the screening summary, and save one finalized assessment for analysis.",
     step1Title: "Capture profile and consent",
     step1Text: "Start with identity, village, assessor, language, and consent so the screening record is complete.",
     step2Title: "Collect symptoms and narrative",
     step2Text: "Use the questionnaire, written response, and optional speech or face inputs to build a stronger assessment.",
     step3Title: "Provide supporting inputs",
     step3Text: "Add either a written response or a speech recording. For the image input, you can capture a live photo or upload an image file.",
-    step4Title: "Review and save for analysis",
-    step4Text: "Once saved, the result moves into Analytics Hub and Records and Reports for visualization and follow-up.",
+    step4Title: "Review, save, and open Analytics Hub",
+    step4Text: "Once saved, the result opens in Analytics Hub for visualization and follow-up, and also appears in Records and Reports.",
     questionnaireTitle: "Questionnaire",
     questionnaireSubtitle: "Rate how often each symptom appeared in the last two weeks.",
     questionnaireNotes: "Dashboard questionnaire scoring reflects symptom frequency over the last two weeks.",
     validatedInstrumentsTitle: "Validated instruments",
-    validatedInstrumentsText: "Tap PHQ-9, PHQ-4, GAD-7, or GAD-2 to open the full screening details.",
+    validatedInstrumentsText: "Tap PHQ-9 to open the full screening details.",
     validatedInstrumentLabel: "Validated instrument",
     validatedInstrumentLanguageLabel: "Language",
     validatedInstrumentInfoBtn: "About this instrument",
     validatedInstrumentInfoHideBtn: "Hide details",
-    validatedInstrumentInfoTitle: "What these validated instruments are",
-    validatedInstrumentInfoText: "This section shows the validated PHQ, GAD, PHQ-4, and SDOH screens for the selected language. The short PHQ-2, GAD-2, combined PHQ-4, and agrarian distress screen sit alongside PHQ-9 and GAD-7, with wording tuned for crop loss, debt, food insecurity, and migration pressure.",
-    validatedInstrumentInfoPoint1: "English shows PHQ-9, PHQ-2, PHQ-4, GAD-7, GAD-2, and SDOH-Agrarian Distress.",
-    validatedInstrumentInfoPoint2: "Hindi shows PHQ-9-H, PHQ-2-H, PHQ-4-H, GAD-7-H, GAD-2-H, and SDOH-कृषि तनाव, while Bengali shows PHQ-9-B, PHQ-2-B, PHQ-4-B, GAD-7-B, GAD-2-B, and SDOH-কৃষি চাপ.",
-    validatedInstrumentInfoPoint3: "The instrument is shown for reference and report clarity, not as a standalone diagnosis.",
+    validatedInstrumentInfoTitle: "What this validated instrument is",
+    validatedInstrumentInfoText: "This section shows the localized PHQ-9 screening for the selected language.",
+    validatedInstrumentInfoPoint1: "English shows PHQ-9, Hindi shows PHQ-9-H, and Bengali shows PHQ-9-B.",
+    validatedInstrumentInfoPoint2: "The instrument is shown for reference and report clarity, not as a standalone diagnosis.",
+    validatedInstrumentInfoPoint3: "",
     recordsTableInstrumentHeader: "Validated instrument",
     adaptiveTitle: "Adaptive Test",
     adaptiveSubtitle: "Ask one question at a time using the backend IRT selector and reuse the workspace uploads.",
@@ -436,12 +446,18 @@ const UI_TRANSLATIONS = {
     ageLabel: "Age",
     genderLabel: "Gender",
     villageLabel: "Village / Local area",
+    districtLabel: "District",
+    blockLabel: "Block / Subdivision",
+    occupationLabel: "Occupation",
     phoneLabel: "Phone / reference number",
     assessorLabel: "Assessor name",
     languageLabel: "Preferred language",
     consentLabel: "Consent received for screening",
     fullNamePlaceholder: "Enter full name",
     villagePlaceholder: "Village or locality",
+    districtPlaceholder: "District name",
+    blockPlaceholder: "Block or subdivision",
+    occupationPlaceholder: "Current occupation",
     assessorPlaceholder: "Health worker or counselor",
     narrativeLabel: "Describe how the person has been feeling",
     narrativePlaceholder: "Example: I have been feeling tired, disconnected, anxious, and unable to sleep well.",
@@ -462,23 +478,21 @@ const UI_TRANSLATIONS = {
     signalFaceLabel: "Face snapshot",
     signalFaceStrong: "Expression support",
     signalFaceText: "Image-based cues enrich the multimodal picture for field workers.",
-    passiveVideoTitle: "Passive Biomarkers",
-    passiveVideoTopic: "Upload a short front-camera video and type naturally to include passive biomarker analysis.",
-    passiveVideoLabel: "Phone-camera video",
-    passiveVideoStatus: "No passive biomarker input captured yet.",
     signalPulseLabel: "Live risk pulse",
     signalPulseStatus: "updated",
     imageFileLabel: "Face image",
-    saveAssessmentBtn: "Save Assessment",
+    saveAssessmentBtn: "Save and open Analytics Hub",
     resetAssessmentBtn: "Reset Form",
+    reviewTitle: "Review and Save",
+    reviewText: "Review the completed screening before saving it to Analytics Hub.",
     workspaceStatusDefault: "Complete the assessment and save it to generate the result.",
-    workspacePredictionEmpty: "Start a new assessment to generate a fresh live prediction preview.",
-    workspaceNlpEmpty: "Start a new assessment to see fresh NLP insights from the narrative text.",
+    workspacePredictionEmpty: "Start a new assessment to generate a fresh screening preview.",
+    workspaceNlpEmpty: "Start a new assessment to review narrative signals from the text.",
     workspaceReadinessEmpty: "Fill in candidate details, consent, questionnaire, and narrative to see readiness feedback.",
-    workspacePredictionTitle: "Live Prediction Preview",
-    workspacePredictionText: "Combined questionnaire and NLP preview before save",
-    workspaceNlpTitle: "Live NLP Insights",
-    workspaceNlpText: "Sentiment, emotions, and safety indicators from the narrative text",
+    workspacePredictionTitle: "Readiness Preview",
+    workspacePredictionText: "Simple snapshot of how complete the assessment looks before save",
+    workspaceNlpTitle: "Narrative Review",
+    workspaceNlpText: "Plain-language review of the narrative, safety signals, and supporting inputs",
     sdohLayerTitle: "SDOH and agrarian distress",
     sdohLayerText: "Crop failure, debt pressure, and food security cues from the narrative text",
     sdohLayerClearText: "No agrarian distress cues detected in the narrative.",
@@ -487,15 +501,12 @@ const UI_TRANSLATIONS = {
     foodSecurityLabel: "Food security",
     sdohRiskLabel: "Agrarian distress risk",
     workspaceReadinessTitle: "Intake Readiness",
-    workspaceReadinessText: "Checks whether the record is ready to save and analyze",
-    passiveInputLabel: "Passive biomarkers",
-    passiveInputReadyLabel: "Passive biomarker input ready: {details}.",
-    passiveInputMissingLabel: "No passive biomarker input captured yet.",
-    passiveInputOptionalLabel: "Passive biomarkers: optional input not provided.",
-    passiveInputSavedLabel: "Passive biomarkers: analyzed in the saved record.",
-    passiveInputAnalyzedLabel: "Passive biomarkers: analyzed successfully from {source}{typing}.",
-    passiveTypingOnlyLabel: "typing rhythm captured",
-    passiveTypingSuffixLabel: " with typing rhythm input",
+    workspaceReadinessText: "Clear checklist showing what is complete before sending to Analytics Hub",
+    workspaceInsightHint: "Save to open Analytics Hub.",
+    analyticsInsightSummaryTitle: "Analytics Hub summary",
+    analyticsInsightSummaryText: "The latest saved assessment summary appears here before you open Records and Reports.",
+    analyticsInsightSummaryEmpty: "Save an assessment to populate this summary.",
+    analyticsInsightSummaryNext: "Open Records and Reports for the full analysis.",
     recommendationBuiltFromLabel: "Built from {signals}.",
     recommendationBuiltFromSummaryLabel: "Built from the saved screening summary.",
     recommendationNarrativeAvailableLabel: "Narrative text was available for the screening.",
@@ -504,18 +515,17 @@ const UI_TRANSLATIONS = {
     narrativeAnalyzedLabel: "Narrative text was analyzed.",
     narrativeMissingLabel: "Narrative text was not available.",
     noTrainedCoverageLabel: "No trained bundle coverage matched this assessment yet.",
-    modelStatsUnavailableLabel: "No model statistics available yet.",
     analyticsBannerDefault: "Complete and save an assessment to open detailed analysis here.",
     recordsBannerDefault: "Fetch a saved assessment by ID when you want to review or download an older report.",
     analyticsReady: "detailed component-wise analysis is ready.",
     savedMessage: "saved through the backend API.",
+    savedReturnLabel: "Saved. Opening Analytics Hub...",
     analyticsShowing: "Analytics Hub is now showing assessment",
     saveInProgress: "Saving assessment through the Python NLP backend...",
-    previewRefreshing: "Refreshing the live preview from the Python NLP backend...",
+    previewRefreshing: "Refreshing the screening summary from the Python NLP backend...",
     noRecordSelected: "No assessment selected.",
     assessmentIdLabel: "Assessment ID",
     overallConfidenceLabel: "Calibrated Confidence",
-    confidenceLiftText: "Calibration strengthens the combined confidence signal.",
     evidenceStrengthLabel: "Evidence Strength",
     overallRiskLabel: "Overall Risk",
     candidateLabel: "Candidate",
@@ -529,14 +539,22 @@ const UI_TRANSLATIONS = {
     analyticsIntroScope: "Prediction Scope",
     analyticsIntroScopeText: "Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.",
     analyticsIntroInstrumentKicker: "Validated instrument",
-    analyticsIntroInstrumentTitle: "PHQ-9 / PHQ-4",
+    analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "The saved record includes the localized validated instrument used during screening.",
     strongestSignalLabel: "Strongest Signal",
     modalitiesUsedLabel: "Modalities Used",
     submissionTimeLabel: "Submission Time",
-    trajectoryLabel: "Trajectory",
+    analyticsNextPageBtn: "Next to Records and Reports",
     detailAnalysisTitle: "Detailed component-wise analysis for the current assessment.",
     recordsHeadingText: "Fetch records, inspect individual predictions, and export a PDF report.",
+    recordsLoadedLabel: "Loaded records",
+    recordsLoadedText: "Records available in the dashboard cache and backend list.",
+    recordsSelectedLabel: "Selected record",
+    recordsSelectedText: "Choose a row to open the report details.",
+    recordsLatestLabel: "Latest record",
+    recordsLatestText: "Most recent assessment from the loaded dataset.",
+    refreshRecordsBtn: "Refresh Records",
+    exportFilteredRecordsBtn: "Export Filtered JSON",
     recordLookupPlaceholder: "Enter assessment ID to fetch",
     fetchRecordBtn: "Fetch Record",
     downloadPdfBtn: "Download Selected PDF",
@@ -549,13 +567,10 @@ const UI_TRANSLATIONS = {
     domainAnalysisText: "Questionnaire versus combined AI score for each prediction domain",
     componentContributionTitle: "Component Contribution",
     componentContributionText: "How text, audio, and image influenced the final assessment",
-    modelStatisticsTitle: "Model Statistics",
-    modelStatisticsText: "Deep learning and NLP model details used in this assessment",
     qualityCheckButton: "Run Quality Check",
     exportQualityCheckButton: "Export Report",
     exportQualityCheckCsvButton: "Export CSV",
     exportQualityCheckPdfButton: "Export PDF",
-    qualityCheckHelperText: "Compare saved assessments against the dashboard result and surface mismatches.",
     qualityCheckTitle: "Saved Assessment Quality Check",
     qualityCheckText: "Proxy metrics generated from the current saved assessments.",
     qualityCheckEmpty: "Run the quality check to review agreement, calibration, and mismatch examples.",
@@ -616,7 +631,6 @@ const UI_TRANSLATIONS = {
     noComponentBreakdown: "No component breakdown available yet.",
     noModalityQuality: "No modality quality information available yet.",
     noRecommendationDetails: "No recommendation details available yet.",
-    noModelStats: "No model statistics available yet.",
     noNlpSummary: "No NLP signal summary available yet.",
     sentimentLabel: "Sentiment",
     emotionLabel: "Emotion",
@@ -670,48 +684,25 @@ const UI_TRANSLATIONS = {
     noRecommendationText: "No recommendation available.",
     noDisclaimerText: "No disclaimer available.",
     recommendationOverviewText: "This area gives the end user the screening interpretation and the appropriate follow-up note.",
-    overallRiskTrajectoryTitle: "Overall Risk Trajectory",
-    trajectoryModelTitle: "Longitudinal Trajectory",
-    trajectoryModelText: "Trend modeling across repeated screenings for the same person",
     screeningCountLabel: "{status} across {count} screenings",
-    trendSummaryTitle: "Trend Summary",
-    trajectorySummaryTitle: "Trend Summary",
-    trajectorySummaryText: "Change since baseline, recent change, and domain movement",
     statusTitle: "Status",
-    trajectoryMetricsTitle: "Trajectory Metrics",
-    baselineToCurrentLabel: "Baseline {baseline} to current {current}",
-    changeSinceBaselineLabel: "Change since baseline",
-    recentChangeLabel: "Recent change",
-    volatilityLabel: "Volatility",
-    noTrajectoryLabel: "No longitudinal trajectory available yet.",
-    noTrendSummaryLabel: "No trend summary available yet.",
     noMoreDataLabel: "Need more data",
-    noTrainedModelStatsLabel: "No trained model bundle statistics are available for this assessment yet.",
-    liveModelStatsFallbackLabel: "Showing live bundle-wide model statistics because this assessment does not have saved model statistics yet.",
     offlinePreviewBadgeLabel: "Offline preview",
-    trainedBundleComparisonTitle: "Trained Bundle Comparison",
-    macroR2CoverageText: "Macro R2 and sample coverage by modality",
-    trainedBundleDescription: "This compares the locally trained bundle quality for text, audio, and image using the current saved model metadata.",
     textTransformerLabel: "Text transformer",
     transformerModelFamilyLabel: "Loaded model family",
     transformerFamilyLabel: "Preferred native family",
     trainedModalitiesLabel: "Trained modalities",
     confidenceHintLabel: "Confidence Hint",
     trainedBundleLabel: "Trained bundle",
-    fallbackLabel: "Fallback",
-    trainedAtLabel: "Trained at",
     safetyKeywordsLabel: "Safety keywords",
     keywordMatchesLabel: "Keyword matches",
     narrativeWordCountLabel: "Narrative word count",
     emotionIntensityLabel: "Emotion intensity",
     domainCoverageLabel: "Domain coverage",
     analysisEngineLabel: "engine",
-    macroR2Label: "Macro R2",
-    samplesLabel: "Samples",
     domainsLabel: "Domains",
     manifestLabel: "Manifest",
     datasetRootLabel: "Dataset root",
-    trendModelDescription: "Trend modeling combines repeated visits, slope, and volatility so health workers can see whether risk is rising, falling, or fluctuating.",
     noFilteredExportLabel: "There are no filtered records to export.",
     exportedFilteredLabel: "Exported {count} filtered records.",
     backendApiLabel: "the backend API",
@@ -749,7 +740,7 @@ const UI_TRANSLATIONS = {
   },
   Hindi: {
     adaptiveTab: "अनुकूली परीक्षण",
-    workspaceTab: "आकलन कार्यक्षेत्र",
+    workspaceTab: "स्क्रीनिंग विज़ार्ड",
     heroEyebrow: "स्क्रीनिंग शुरू करें",
     heroTitle: "ग्रामीण मानसिक स्वास्थ्य स्क्रीनिंग",
     heroText: "एक समय में एक नैदानिक स्क्रीनिंग सत्र शुरू करें, परिणाम सहेजें, और बैकग्राउंड रिकॉर्ड लोड किए बिना वर्तमान आकलन देखें।",
@@ -759,34 +750,46 @@ const UI_TRANSLATIONS = {
     dashboardLanguageLabel: "डैशबोर्ड भाषा",
     heroMetricsLabel: "एक नज़र में",
     appTitle: "ग्रामीण मानसिक स्वास्थ्य डैशबोर्ड",
-    workspaceText: "डैशबोर्ड से सीधे नया स्क्रीनिंग रिकॉर्ड बनाएं।",
-    analyticsTab: "विश्लेषण केंद्र",
+    workspaceText: "एक लंबे स्क्रीन की बजाय नीचे दिए गए तीन जुड़े पृष्ठों का उपयोग करें।",
+    wizardLaunchKicker: "स्क्रीनिंग विज़ार्ड",
+    wizardLaunchHeading: "पृष्ठ दर पृष्ठ आगे बढ़ें",
+    wizardLaunchText: "हर चरण को अलग स्क्रीन पर खोलें ताकि प्रवाह छोटा, स्पष्ट और उपयोग में आसान रहे।",
+    wizardLaunchStep1Label: "चरण 1",
+    wizardLaunchStep1Title: "स्क्रीनिंग कार्ड",
+    wizardLaunchStep1Text: "पहचान, सहमति और पसंदीदा भाषा से शुरुआत करें।",
+    wizardLaunchOpenPage: "पृष्ठ खोलें",
+    wizardLaunchStep2Label: "चरण 2",
+    wizardLaunchStep2Title: "प्रश्नावली",
+    wizardLaunchStep2Text: "लक्षण प्रश्नों को अलग पृष्ठ पर भरें।",
+    wizardLaunchStep3Label: "चरण 3",
+    wizardLaunchStep3Title: "समीक्षा और सहेजें",
+    wizardLaunchStep3Text: "Analytics Hub में सहेजने से पहले पूरी स्क्रीनिंग की समीक्षा करें।",
+    analyticsTab: "विश्लेषण केंद्र (Analytics Hub)",
     recordsTab: "रिकॉर्ड और रिपोर्ट",
-    applyLanguageBtn: "भाषा लागू करें",
     intakeFlowTitle: "एक स्क्रीनिंग शुरू से अंत तक पूरी करें",
-    intakeFlowText: "व्यक्ति का विवरण भरें, उनके उत्तर दर्ज करें, लाइव प्रीव्यू देखें, और विश्लेषण के लिए अंतिम आकलन सहेजें।",
+    intakeFlowText: "व्यक्ति का विवरण भरें, उनके उत्तर दर्ज करें, स्क्रीनिंग सारांश देखें, और विश्लेषण के लिए अंतिम आकलन सहेजें।",
     step1Title: "प्रोफ़ाइल और सहमति दर्ज करें",
     step1Text: "पहचान, गाँव, आकलनकर्ता, भाषा और सहमति से शुरुआत करें ताकि रिकॉर्ड पूरा हो।",
     step2Title: "लक्षण और विवरण एकत्र करें",
     step2Text: "मजबूत आकलन के लिए प्रश्नावली, लिखित उत्तर, और वैकल्पिक आवाज़ या चेहरे का इनपुट उपयोग करें।",
     step3Title: "सहायक इनपुट जोड़ें",
     step3Text: "या तो लिखित उत्तर दें या आवाज़ रिकॉर्ड करें। छवि के लिए लाइव फ़ोटो लें या फ़ाइल अपलोड करें।",
-    step4Title: "समीक्षा करें और विश्लेषण के लिए सहेजें",
-    step4Text: "सहेजने के बाद परिणाम Analytics Hub और Records and Reports में दिखाई देगा।",
+    step4Title: "समीक्षा करें, सहेजें, और Analytics Hub खोलें",
+    step4Text: "सहेजने के बाद परिणाम Analytics Hub में खुलता है और Records and Reports में भी दिखाई देता है।",
     questionnaireTitle: "प्रश्नावली",
     questionnaireSubtitle: "पिछले दो हफ्तों में लक्षण कितनी बार दिखाई दिए, यह चुनें।",
     questionnaireNotes: "डैशबोर्ड प्रश्नावली स्कोर पिछले दो हफ्तों की लक्षण आवृत्ति पर आधारित है।",
     validatedInstrumentsTitle: "मान्यीकृत प्रश्नावलियाँ",
-    validatedInstrumentsText: "पूर्ण स्क्रीनिंग विवरण देखने के लिए PHQ-9, PHQ-4, GAD-7, या GAD-2 पर टैप करें।",
+    validatedInstrumentsText: "Tap PHQ-9 to open the full screening details.",
     validatedInstrumentLabel: "मान्यीकृत प्रश्नावली",
     validatedInstrumentLanguageLabel: "भाषा",
     validatedInstrumentInfoBtn: "इस उपकरण के बारे में",
     validatedInstrumentInfoHideBtn: "जानकारी छिपाएँ",
     validatedInstrumentInfoTitle: "ये मान्यीकृत उपकरण क्या हैं",
-    validatedInstrumentInfoText: "यह भाग चयनित भाषा के लिए मान्यीकृत PHQ, GAD, PHQ-4, और SDOH स्क्रीन दिखाता है। PHQ-2, GAD-2, संयुक्त PHQ-4, और कृषि तनाव स्क्रीन, PHQ-9 और GAD-7 के साथ स्थानीय भाषा के अनुसार दिखाई जाती हैं; सभी फ़ील्ड उपयोग के लिए स्थानीयकृत हैं।",
-    validatedInstrumentInfoPoint1: "अंग्रेज़ी में PHQ-9, PHQ-2, PHQ-4, GAD-7, GAD-2, और SDOH-Agrarian Distress दिखेंगे।",
-    validatedInstrumentInfoPoint2: "हिंदी में PHQ-9-H, PHQ-2-H, PHQ-4-H, GAD-7-H, GAD-2-H, और SDOH-कृषि तनाव, तथा बंगाली में PHQ-9-B, PHQ-2-B, PHQ-4-B, GAD-7-B, GAD-2-B, और SDOH-কৃষি চাপ दिखेंगे।",
-    validatedInstrumentInfoPoint3: "यह उपकरण संदर्भ और रिपोर्ट स्पष्टता के लिए दिखाया जाता है, अकेले निदान के रूप में नहीं।",
+    validatedInstrumentInfoText: "यह भाग निर्दिष्ट भाषा में PHQ-9 स्क्रीन दिखाता है।",
+    validatedInstrumentInfoPoint1: "English shows PHQ-9, Hindi shows PHQ-9-H, and Bengali shows PHQ-9-B.",
+    validatedInstrumentInfoPoint2: "The instrument is shown for reference and report clarity, not as a standalone diagnosis.",
+    validatedInstrumentInfoPoint3: "",
     recordsTableInstrumentHeader: "मान्यीकृत प्रश्नावली",
     adaptiveTitle: "अनुकूली परीक्षण",
     adaptiveSubtitle: "बैकएंड IRT चयनकर्ता का उपयोग करके एक समय में एक प्रश्न पूछें और कार्यक्षेत्र अपलोड का पुन: उपयोग करें।",
@@ -817,12 +820,18 @@ const UI_TRANSLATIONS = {
     ageLabel: "आयु",
     genderLabel: "लिंग",
     villageLabel: "गाँव / क्षेत्र",
+    districtLabel: "ज़िला",
+    blockLabel: "प्रखंड / उपखंड",
+    occupationLabel: "पेशा",
     phoneLabel: "फ़ोन / संदर्भ संख्या",
     assessorLabel: "आकलनकर्ता का नाम",
     languageLabel: "पसंदीदा भाषा",
     consentLabel: "स्क्रीनिंग के लिए सहमति प्राप्त हुई",
     fullNamePlaceholder: "पूरा नाम दर्ज करें",
     villagePlaceholder: "गाँव या क्षेत्र",
+    districtPlaceholder: "ज़िले का नाम",
+    blockPlaceholder: "प्रखंड या उपखंड",
+    occupationPlaceholder: "वर्तमान पेशा",
     assessorPlaceholder: "स्वास्थ्य कार्यकर्ता या परामर्शदाता",
     narrativeLabel: "व्यक्ति कैसा महसूस कर रहा है, इसका वर्णन करें",
     narrativePlaceholder: "उदाहरण: मैं थका हुआ, अलग-थलग, चिंतित और ठीक से सो नहीं पा रहा हूँ।",
@@ -843,23 +852,25 @@ const UI_TRANSLATIONS = {
     signalFaceLabel: "चेहरे का स्नैपशॉट",
     signalFaceStrong: "अभिव्यक्ति समर्थन",
     signalFaceText: "इमेज-आधारित संकेत क्षेत्रकर्मियों के लिए बहु-मोडल चित्र को समृद्ध करते हैं।",
-    passiveVideoTitle: "निष्क्रिय संकेत",
-    passiveVideoTopic: "छोटी फ्रंट-कैमरा वीडियो अपलोड करें और स्वाभाविक रूप से टाइप करें ताकि निष्क्रिय संकेत विश्लेषण शामिल हो सके।",
-    passiveVideoLabel: "फोन-कैमरा वीडियो",
-    passiveVideoStatus: "अभी तक कोई निष्क्रिय संकेत इनपुट नहीं मिला है।",
+    passiveVideoTitle: "Additional Input",
+    passiveVideoTopic: "Upload a short front-camera video or related note if you want to include extra context.",
+    passiveVideoLabel: "Video or note",
+    passiveVideoStatus: "No additional input captured yet.",
     signalPulseLabel: "लाइव जोखिम पल्स",
     signalPulseStatus: "अद्यतन",
     imageFileLabel: "चेहरे की छवि",
-    saveAssessmentBtn: "आकलन सहेजें",
+    saveAssessmentBtn: "सहेजें और Analytics Hub खोलें",
     resetAssessmentBtn: "फॉर्म रीसेट करें",
+    reviewTitle: "समीक्षा और सहेजें",
+    reviewText: "Analytics Hub में सहेजने से पहले पूरा स्क्रीनिंग परिणाम देखें।",
     workspaceStatusDefault: "परिणाम देखने के लिए आकलन पूरा करके सहेजें।",
-    workspacePredictionEmpty: "लाइव प्रेडिक्शन प्रीव्यू के लिए आकलन भरना शुरू करें।",
+    workspacePredictionEmpty: "स्क्रीनिंग पूर्वावलोकन बनाने के लिए आकलन भरना शुरू करें।",
     workspaceNlpEmpty: "वर्णन लिखते समय NLP संकेत यहाँ दिखाई देंगे।",
     workspaceReadinessEmpty: "तैयारी फीडबैक देखने के लिए विवरण, सहमति, प्रश्नावली और वर्णन भरें।",
-    workspacePredictionTitle: "लाइव प्रेडिक्शन प्रीव्यू",
-    workspacePredictionText: "सहेजने से पहले प्रश्नावली और NLP का संयुक्त प्रीव्यू",
-    workspaceNlpTitle: "लाइव NLP इनसाइट्स",
-    workspaceNlpText: "वर्णन पाठ से भाव, भावना और सुरक्षा संकेत",
+    workspacePredictionTitle: "तैयारी पूर्वावलोकन",
+    workspacePredictionText: "सहेजने से पहले आकलन कितना तैयार है, इसका सरल सारांश",
+    workspaceNlpTitle: "वर्णन समीक्षा",
+    workspaceNlpText: "वर्णन, सुरक्षा संकेत, और सहायक इनपुट का सरल सारांश",
     sdohLayerTitle: "SDOH और कृषि संकट",
     sdohLayerText: "वर्णन पाठ से फसल खराबी, कर्ज़ का दबाव और खाद्य सुरक्षा के संकेत",
     sdohLayerClearText: "वर्णन में कृषि संकट के संकेत नहीं मिले।",
@@ -868,13 +879,18 @@ const UI_TRANSLATIONS = {
     foodSecurityLabel: "खाद्य सुरक्षा",
     sdohRiskLabel: "कृषि संकट जोखिम",
     workspaceReadinessTitle: "इनटेक तैयारी",
-    workspaceReadinessText: "जाँचता है कि रिकॉर्ड सहेजने और विश्लेषण के लिए तैयार है या नहीं",
-    passiveInputLabel: "निष्क्रिय संकेत",
-    passiveInputReadyLabel: "निष्क्रिय संकेत इनपुट तैयार है: {details}.",
-    passiveInputMissingLabel: "अभी तक कोई निष्क्रिय संकेत इनपुट नहीं मिला है।",
-    passiveInputOptionalLabel: "निष्क्रिय संकेत: वैकल्पिक इनपुट नहीं दिया गया।",
-    passiveInputSavedLabel: "निष्क्रिय संकेत: सहेजे गए रिकॉर्ड में विश्लेषित।",
-    passiveInputAnalyzedLabel: "निष्क्रिय संकेत: {source}{typing} से सफलतापूर्वक विश्लेषित।",
+    workspaceReadinessText: "Analytics Hub में भेजने से पहले क्या पूरा है, इसका स्पष्ट चेकलिस्ट",
+    workspaceInsightHint: "Analytics Hub खोलने के लिए सहेजें।",
+    analyticsInsightSummaryTitle: "Analytics Hub सारांश",
+    analyticsInsightSummaryText: "नवीनतम सहेजा गया आकलन सारांश यहाँ दिखेगा, फिर आप Records and Reports खोल सकते हैं।",
+    analyticsInsightSummaryEmpty: "इस सारांश को भरने के लिए आकलन सहेजें।",
+    analyticsInsightSummaryNext: "पूरे विश्लेषण के लिए Records and Reports खोलें।",
+    passiveInputLabel: "Additional input",
+    passiveInputReadyLabel: "Additional input ready: {details}.",
+    passiveInputMissingLabel: "No additional input captured yet.",
+    passiveInputOptionalLabel: "Additional input: optional input not provided.",
+    passiveInputSavedLabel: "Additional input: analyzed in the saved record.",
+    passiveInputAnalyzedLabel: "Additional input: analyzed successfully from {source}{typing}.",
     passiveTypingOnlyLabel: "टाइपिंग रिद्म दर्ज हो गया",
     passiveTypingSuffixLabel: " साथ में टाइपिंग रिद्म इनपुट",
     recommendationBuiltFromLabel: "{signals} पर आधारित है।",
@@ -885,18 +901,23 @@ const UI_TRANSLATIONS = {
     narrativeAnalyzedLabel: "वर्णन पाठ का विश्लेषण किया गया।",
     narrativeMissingLabel: "वर्णन पाठ उपलब्ध नहीं था।",
     noTrainedCoverageLabel: "इस आकलन से अभी कोई प्रशिक्षित बंडल कवरेज मेल नहीं खाती।",
-    modelStatsUnavailableLabel: "अभी तक कोई मॉडल सांख्यिकी उपलब्ध नहीं है।",
     analyticsBannerDefault: "विस्तृत विश्लेषण देखने के लिए आकलन पूरा करके सहेजें।",
+    passiveRetrainButton: "Retrain Additional Input",
+    passiveRetrainLoading: "Retraining additional-input bundle...",
+    passiveRetrainReady: "Additional input records are collected automatically when assessments are saved. The bundle auto-retrains after 5 new labeled rows accumulate.",
+    passiveRetrainSuccess: "Additional input bundle retrained successfully.",
+    passiveRetrainEmpty: "No labeled additional-input records are available yet. Save more assessments first.",
+    passiveRetrainError: "Additional-input retraining could not be completed.",
     recordsBannerDefault: "पुरानी रिपोर्ट देखने या डाउनलोड करने के लिए आकलन ID से रिकॉर्ड खोजें।",
     analyticsReady: "का विस्तृत घटक-आधारित विश्लेषण तैयार है।",
     savedMessage: "बैकएंड API के माध्यम से सहेजा गया।",
+    savedReturnLabel: "सहेज लिया गया। Analytics Hub खोल रहे हैं...",
     analyticsShowing: "Analytics Hub अब यह आकलन दिखा रहा है",
     saveInProgress: "Python NLP बैकएंड के माध्यम से आकलन सहेजा जा रहा है...",
-    previewRefreshing: "Python NLP बैकएंड से लाइव प्रीव्यू ताज़ा किया जा रहा है...",
+    previewRefreshing: "Python NLP बैकएंड से स्क्रीनिंग सारांश ताज़ा किया जा रहा है...",
     noRecordSelected: "कोई आकलन चुना नहीं गया है।",
     assessmentIdLabel: "आकलन आईडी",
     overallConfidenceLabel: "कैलिब्रेटेड कॉन्फिडेंस",
-    confidenceLiftText: "कैलिब्रेशन संयुक्त कॉन्फिडेंस सिग्नल को मजबूत करता है।",
     evidenceStrengthLabel: "साक्ष्य शक्ति",
     overallRiskLabel: "कुल जोखिम",
     candidateLabel: "उम्मीदवार",
@@ -910,12 +931,12 @@ const UI_TRANSLATIONS = {
     analyticsIntroScope: "पूर्वानुमान क्षेत्र",
     analyticsIntroScopeText: "डिप्रेशन, एंग्जायटी, तनाव, नींद संबंधी समस्या, बर्नआउट, अकेलापन और पदार्थ दुरुपयोग।",
     analyticsIntroInstrumentKicker: "मान्यीकृत प्रश्नावली",
-    analyticsIntroInstrumentTitle: "रोगी स्वास्थ्य प्रश्नावली-9 / रोगी स्वास्थ्य प्रश्नावली-4",
+    analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "सहेजे गए रिकॉर्ड में स्क्रीनिंग के दौरान उपयोग की गई स्थानीयकृत मान्यीकृत प्रश्नावली शामिल है।",
     strongestSignalLabel: "सबसे मजबूत संकेत",
     modalitiesUsedLabel: "उपयोग की गई विधियाँ",
     submissionTimeLabel: "जमा करने का समय",
-    trajectoryLabel: "रुझान",
+    analyticsNextPageBtn: "रिकॉर्ड और रिपोर्ट पर जाएँ",
     detailAnalysisTitle: "वर्तमान आकलन का विस्तृत घटक-आधारित विश्लेषण।",
     recordsHeadingText: "रिकॉर्ड खोजें, व्यक्तिगत परिणाम देखें और PDF रिपोर्ट निर्यात करें।",
     recordLookupPlaceholder: "खोजने के लिए आकलन ID दर्ज करें",
@@ -929,9 +950,7 @@ const UI_TRANSLATIONS = {
     domainAnalysisTitle: "डोमेन विश्लेषण",
     domainAnalysisText: "हर पूर्वानुमान क्षेत्र के लिए प्रश्नावली बनाम संयुक्त AI स्कोर",
     componentContributionTitle: "घटक योगदान",
-    componentContributionText: "टेक्स्ट, ऑडियो और इमेज ने अंतिम आकलन को कैसे प्रभावित किया",
-    modelStatisticsTitle: "मॉडल सांख्यिकी",
-    modelStatisticsText: "इस आकलन में उपयोग किए गए डीप लर्निंग और NLP मॉडल विवरण",
+    componentContributionText: "टेक्स्ट, ऑडियो, इमेज और निष्क्रिय संकेत ने अंतिम आकलन को कैसे प्रभावित किया",
     exportQualityCheckButton: "रिपोर्ट निर्यात करें",
     exportQualityCheckCsvButton: "CSV निर्यात करें",
     exportQualityCheckPdfButton: "PDF निर्यात करें",
@@ -979,7 +998,6 @@ const UI_TRANSLATIONS = {
     noComponentBreakdown: "अभी तक कोई घटक-विश्लेषण उपलब्ध नहीं है।",
     noModalityQuality: "अभी तक मॉडेलिटी गुणवत्ता जानकारी उपलब्ध नहीं है।",
     noRecommendationDetails: "अभी तक कोई सिफारिश विवरण उपलब्ध नहीं है।",
-    noModelStats: "अभी तक कोई मॉडल सांख्यिकी उपलब्ध नहीं है।",
     noNlpSummary: "अभी तक कोई NLP संकेत सारांश उपलब्ध नहीं है।",
     sentimentLabel: "भाव",
     emotionLabel: "भावना",
@@ -1002,8 +1020,8 @@ const UI_TRANSLATIONS = {
     deleteRecord: "रिकॉर्ड हटाएँ",
     deleteReport: "रिपोर्ट हटाएँ",
     deleteRecordReport: "रिकॉर्ड/रिपोर्ट हटाएँ",
-    deleteRecordConfirm: "क्या इस आकलन को स्थायी रूप से हटाना है?",
-    deleteReportConfirm: "क्या इस आकलन को Records and Reports पैनल से हटाना है?",
+    deleteRecordConfirm: "\u0915\u094d\u092f\u093e \u0907\u0938 \u0906\u0915\u0932\u0928 \u0915\u094b \u0938\u094d\u0925\u093e\u092f\u0940 \u0930\u0942\u092a \u0938\u0947 \u0939\u091f\u093e\u0928\u093e \u0939\u0948?",
+    deleteReportConfirm: "\u0915\u094d\u092f\u093e \u0907\u0938 \u0906\u0915\u0932\u0928 \u0915\u094b Records and Reports \u092a\u0948\u0928\u0932 \u0938\u0947 \u0939\u091f\u093e\u0928\u093e \u0939\u0948?",
     deleteRecordSuccess: "आकलन {id} हटा दिया गया।",
     deleteRecordFailed: "{id} आकलन हटाया नहीं जा सका।",
     deleteRecordRequiresOnline: "सिंक किए गए रिकॉर्ड को हटाने के लिए ऑनलाइन कनेक्शन चाहिए।",
@@ -1033,48 +1051,25 @@ const UI_TRANSLATIONS = {
     noRecommendationText: "कोई सिफारिश उपलब्ध नहीं है।",
     noDisclaimerText: "कोई अस्वीकरण उपलब्ध नहीं है।",
     recommendationOverviewText: "यह क्षेत्र उपयोगकर्ता को स्क्रीनिंग व्याख्या और उचित फॉलो-अप नोट देता है।",
-    overallRiskTrajectoryTitle: "कुल जोखिम रुझान",
-    trajectoryModelTitle: "अनुदैर्ध्य रुझान",
-    trajectoryModelText: "एक ही व्यक्ति की बार-बार स्क्रीनिंग के बीच रुझान मॉडलिंग",
     screeningCountLabel: "{status} - {count} स्क्रीनिंग",
-    trendSummaryTitle: "रुझान सारांश",
-    trajectorySummaryTitle: "रुझान सारांश",
-    trajectorySummaryText: "आधार से परिवर्तन, हाल का परिवर्तन और डोमेन गति",
     statusTitle: "स्थिति",
-    trajectoryMetricsTitle: "रुझान मीट्रिक्स",
-    baselineToCurrentLabel: "आधार {baseline} से वर्तमान {current} तक",
-    changeSinceBaselineLabel: "आधार से परिवर्तन",
-    recentChangeLabel: "हाल का परिवर्तन",
-    volatilityLabel: "अस्थिरता",
-    noTrajectoryLabel: "अभी तक कोई दीर्घकालिक रुझान उपलब्ध नहीं है।",
-    noTrendSummaryLabel: "अभी तक कोई रुझान सारांश उपलब्ध नहीं है।",
     noMoreDataLabel: "और डेटा चाहिए",
-    noTrainedModelStatsLabel: "इस आकलन के लिए अभी कोई प्रशिक्षित मॉडल आँकड़े उपलब्ध नहीं हैं।",
-    liveModelStatsFallbackLabel: "यह आकलन अभी सहेजे गए मॉडल आँकड़ों के बिना है, इसलिए लाइव बंडल-स्तरीय आँकड़े दिखाए जा रहे हैं।",
     offlinePreviewBadgeLabel: "ऑफलाइन प्रीव्यू",
-    trainedBundleComparisonTitle: "प्रशिक्षित बंडल तुलना",
-    macroR2CoverageText: "मॉडेलिटी के अनुसार Macro R2 और सैंपल कवरेज",
-    trainedBundleDescription: "यह मौजूदा सहेजे गए मॉडल मेटाडेटा का उपयोग करके टेक्स्ट, ऑडियो और इमेज के स्थानीय रूप से प्रशिक्षित बंडल की गुणवत्ता की तुलना करता है।",
     textTransformerLabel: "पाठ ट्रांसफॉर्मर",
     transformerModelFamilyLabel: "लोड किया गया मॉडल परिवार",
     transformerFamilyLabel: "पसंदीदा देशी परिवार",
     trainedModalitiesLabel: "प्रशिक्षित मॉडेलिटियाँ",
     confidenceHintLabel: "विश्वास संकेत",
     trainedBundleLabel: "प्रशिक्षित बंडल",
-    fallbackLabel: "विकल्प",
-    trainedAtLabel: "प्रशिक्षण समय",
     safetyKeywordsLabel: "सुरक्षा शब्द",
     keywordMatchesLabel: "मिलान शब्द",
     narrativeWordCountLabel: "विवरण शब्द गणना",
     emotionIntensityLabel: "भाव तीव्रता",
     domainCoverageLabel: "डोमेन कवरेज",
     analysisEngineLabel: "इंजन",
-    macroR2Label: "Macro R2",
-    samplesLabel: "नमूने",
     domainsLabel: "डोमेन",
     manifestLabel: "मैनिफेस्ट",
     datasetRootLabel: "डेटासेट रूट",
-    trendModelDescription: "रुझान मॉडलिंग में बार-बार हुई स्क्रीनिंग, ढलान और अस्थिरता को मिलाकर यह देखा जाता है कि जोखिम बढ़ रहा है, घट रहा है या उतार-चढ़ाव कर रहा है।",
     noFilteredExportLabel: "निर्यात करने के लिए कोई फ़िल्टर किया गया रिकॉर्ड नहीं है।",
     exportedFilteredLabel: "{count} फ़िल्टर किए गए रिकॉर्ड निर्यात किए गए।",
     backendApiLabel: "बैकएंड API",
@@ -1112,44 +1107,56 @@ const UI_TRANSLATIONS = {
   },
   Bengali: {
     adaptiveTab: "অভিযোজিত পরীক্ষা",
-    workspaceTab: "মূল্যায়ন কর্মক্ষেত্র",
-    heroEyebrow: "স্ক্রিনিং শুরু করুন",
-    heroTitle: "গ্রামীণ মানসিক স্বাস্থ্য স্ক্রিনিং",
-    heroText: "একবারে একটি ডায়াগনস্টিক স্ক্রিনিং সেশন শুরু করুন, ফলাফল সংরক্ষণ করুন, এবং ব্যাকগ্রাউন্ড রেকর্ড লোড না করেই বর্তমান মূল্যায়ন দেখুন।",
+    workspaceTab: "স্ক্রিনিং উইজার্ড",
+    heroEyebrow: "\u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09a8\u09bf\u0982 \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09c1\u09a8",
+    heroTitle: "\u0997\u09cd\u09b0\u09be\u09ae\u09c0\u09a3 \u09ae\u09be\u09a8\u09b8\u09bf\u0995 \u09b8\u09cd\u09ac\u09be\u09b8\u09cd\u09a5\u09cd\u09af \u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09a8\u09bf\u0982",
+    heroText: "\u098f\u0995\u09ac\u09be\u09b0\u09c7 \u098f\u0995\u099f\u09bf \u09a1\u09be\u09af\u09bc\u09be\u0997\u09a8\u09b8\u09cd\u099f\u09bf\u0995 \u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09a8\u09bf\u0982 \u09b8\u09c7\u09b6\u09a8 \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09c1\u09a8, \u09ab\u09b2\u09cb\u0986\u09aa \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09a3 \u0995\u09b0\u09c1\u09a8, \u098f\u09ac\u0982 \u09ac\u09cd\u09af\u09be\u0995\u0997\u09cd\u09b0\u09be\u0989\u09a8\u09cd\u09a1 \u09b0\u09c7\u0995\u09b0\u09cd\u09a1 \u09b2\u09cb\u09a1 \u09a8\u09be \u0995\u09b0\u09c7\u0987 \u09ac\u09b0\u09cd\u09a4\u09ae\u09be\u09a8 \u09ae\u09c2\u09b2\u09cd\u09af\u09be\u09af\u09bc\u09a8 \u09a6\u09c7\u0996\u09c1\u09a8\u0964",
     heroMetricRisk: "ঝুঁকির ডোমেইন ট্র্যাক করা হয়",
     heroMetricModalities: "মডালিটি মিশ্রিত",
     heroMetricOffline: "অফলাইন ক্যাপচার সহায়তা",
     dashboardLanguageLabel: "ড্যাশবোর্ড ভাষা",
     heroMetricsLabel: "এক নজরে",
-    appTitle: "গ্রামীণ মানসিক স্বাস্থ্য ড্যাশবোর্ড",
-    workspaceText: "ড্যাশবোর্ড থেকেই নতুন স্ক্রিনিং রেকর্ড তৈরি করুন।",
-    analyticsTab: "বিশ্লেষণ কেন্দ্র",
+    appTitle: "\u0997\u09cd\u09b0\u09be\u09ae\u09c0\u09a3 \u09ae\u09be\u09a8\u09b8\u09bf\u0995 \u09b8\u09cd\u09ac\u09be\u09b8\u09cd\u09a5\u09cd\u09af \u09a1\u09cd\u09af\u09be\u09b6\u09ac\u09cb\u09b0\u09cd\u09a1",
+    workspaceText: "একটি দীর্ঘ ইনটেক স্ক্রিনের বদলে নিচের তিনটি সংযুক্ত পৃষ্ঠা ব্যবহার করুন।",
+    wizardLaunchKicker: "স্ক্রিনিং উইজার্ড",
+    wizardLaunchHeading: "পৃষ্ঠা ধরে এগিয়ে যান",
+    wizardLaunchText: "প্রতিটি ধাপ আলাদা স্ক্রিনে খুলুন যাতে প্রবাহ ছোট, স্পষ্ট এবং ব্যবহার করা সহজ হয়।",
+    wizardLaunchStep1Label: "ধাপ 1",
+    wizardLaunchStep1Title: "স্ক্রিনিং কার্ড",
+    wizardLaunchStep1Text: "পরিচয়, সম্মতি এবং পছন্দের ভাষা দিয়ে শুরু করুন।",
+    wizardLaunchOpenPage: "পৃষ্ঠা খুলুন",
+    wizardLaunchStep2Label: "ধাপ 2",
+    wizardLaunchStep2Title: "প্রশ্নমালা",
+    wizardLaunchStep2Text: "উপসর্গ প্রশ্নগুলো আলাদা পৃষ্ঠায় পূরণ করুন।",
+    wizardLaunchStep3Label: "ধাপ 3",
+    wizardLaunchStep3Title: "পর্যালোচনা ও সংরক্ষণ",
+    wizardLaunchStep3Text: "Analytics Hub-এ সংরক্ষণ করার আগে সম্পূর্ণ মূল্যায়ন পর্যালোচনা করুন।",
+    analyticsTab: "বিশ্লেষণ কেন্দ্র (Analytics Hub)",
     recordsTab: "রেকর্ড ও রিপোর্ট",
-    applyLanguageBtn: "ভাষা প্রয়োগ করুন",
     intakeFlowTitle: "শুরু থেকে শেষ পর্যন্ত একটি স্ক্রিনিং সম্পূর্ণ করুন",
-    intakeFlowText: "ব্যক্তির তথ্য পূরণ করুন, প্রতিক্রিয়া নিন, লাইভ প্রিভিউ দেখুন, এবং বিশ্লেষণের জন্য চূড়ান্ত মূল্যায়ন সংরক্ষণ করুন।",
+    intakeFlowText: "ব্যক্তির তথ্য পূরণ করুন, প্রতিক্রিয়া নিন, স্ক্রিনিং সারাংশ দেখুন, এবং বিশ্লেষণের জন্য চূড়ান্ত মূল্যায়ন সংরক্ষণ করুন।",
     step1Title: "প্রোফাইল ও সম্মতি নিন",
     step1Text: "পরিচয়, গ্রাম, মূল্যায়নকারী, ভাষা ও সম্মতি দিয়ে শুরু করুন যাতে রেকর্ড সম্পূর্ণ হয়।",
     step2Title: "উপসর্গ ও বর্ণনা সংগ্রহ করুন",
     step2Text: "শক্তিশালী মূল্যায়নের জন্য প্রশ্নমালা, লিখিত উত্তর, এবং ঐচ্ছিক কণ্ঠ বা মুখের ইনপুট ব্যবহার করুন।",
     step3Title: "সহায়ক ইনপুট যোগ করুন",
     step3Text: "লিখিত উত্তর দিন অথবা কণ্ঠ রেকর্ড করুন। ছবির জন্য লাইভ ছবি তুলুন বা ফাইল আপলোড করুন।",
-    step4Title: "রিভিউ করে বিশ্লেষণের জন্য সংরক্ষণ করুন",
-    step4Text: "সংরক্ষণ করার পর ফলাফল Analytics Hub এবং Records and Reports-এ দেখা যাবে।",
+    step4Title: "রিভিউ করে Analytics Hub খুলুন",
+    step4Text: "সংরক্ষণ করার পর ফলাফল Analytics Hub-এ খুলবে এবং Records and Reports-এও দেখা যাবে।",
     questionnaireTitle: "প্রশ্নমালা",
     questionnaireSubtitle: "গত দুই সপ্তাহে উপসর্গ কতবার দেখা গেছে তা নির্বাচন করুন।",
     questionnaireNotes: "ড্যাশবোর্ড প্রশ্নমালার স্কোর গত দুই সপ্তাহের উপসর্গের ঘনত্বের উপর ভিত্তি করে।",
     validatedInstrumentsTitle: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
-    validatedInstrumentsText: "সম্পূর্ণ স্ক্রিনিং বিস্তারিত দেখতে PHQ-9, PHQ-4, GAD-7, বা GAD-2 ট্যাপ করুন।",
+    validatedInstrumentsText: "Tap PHQ-9 to open the full screening details.",
     validatedInstrumentLabel: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
     validatedInstrumentLanguageLabel: "ভাষা",
     validatedInstrumentInfoBtn: "এই উপকরণ সম্পর্কে",
     validatedInstrumentInfoHideBtn: "তথ্য লুকান",
     validatedInstrumentInfoTitle: "এই মান্যতাপ্রাপ্ত উপকরণগুলি কী",
-    validatedInstrumentInfoText: "এই অংশটি নির্বাচিত ভাষার জন্য মান্যতাপ্রাপ্ত PHQ, GAD, PHQ-4, এবং SDOH স্ক্রিন দেখায়। PHQ-2, GAD-2, যৌথ PHQ-4, এবং কৃষি-সম্পর্কিত চাপের স্ক্রিন, PHQ-9 এবং GAD-7-এর সঙ্গে ভাষা অনুযায়ী দেখানো হয়; সবকটি মাঠপর্যায়ে ব্যবহার সহজ করার জন্য স্থানীয়কৃত।",
-    validatedInstrumentInfoPoint1: "ইংরেজিতে PHQ-9, PHQ-2, PHQ-4, GAD-7, GAD-2, এবং SDOH-Agrarian Distress দেখাবে।",
-    validatedInstrumentInfoPoint2: "হিন্দিতে PHQ-9-H, PHQ-2-H, PHQ-4-H, GAD-7-H, GAD-2-H, এবং SDOH-কৃষি চাপ, আর বাংলায় PHQ-9-B, PHQ-2-B, PHQ-4-B, GAD-7-B, GAD-2-B, এবং SDOH-কৃষি চাপ দেখাবে।",
-    validatedInstrumentInfoPoint3: "এটি রেফারেন্স ও রিপোর্টের স্বচ্ছতার জন্য দেখানো হয়, একক নির্ণয় হিসেবে নয়।",
+    validatedInstrumentInfoText: "এই অংশটি নির্দিষ্ট ভাষায় PHQ-9 স্ক্রিন দেখায়।",
+    validatedInstrumentInfoPoint1: "English shows PHQ-9, Hindi shows PHQ-9-H, and Bengali shows PHQ-9-B.",
+    validatedInstrumentInfoPoint2: "The instrument is shown for reference and report clarity, not as a standalone diagnosis.",
+    validatedInstrumentInfoPoint3: "",
     recordsTableInstrumentHeader: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
     adaptiveTitle: "অ্যাডাপটিভ পরীক্ষা",
     adaptiveSubtitle: "ব্যাকএন্ড IRT selector ব্যবহার করে একবারে একটি প্রশ্ন করুন এবং workspace uploads পুনরায় ব্যবহার করুন।",
@@ -1180,12 +1187,18 @@ const UI_TRANSLATIONS = {
     ageLabel: "বয়স",
     genderLabel: "লিঙ্গ",
     villageLabel: "গ্রাম / এলাকা",
+    districtLabel: "জেলা",
+    blockLabel: "ব্লক / উপবিভাগ",
+    occupationLabel: "পেশা",
     phoneLabel: "ফোন / রেফারেন্স নম্বর",
     assessorLabel: "মূল্যায়নকারীর নাম",
     languageLabel: "পছন্দের ভাষা",
     consentLabel: "স্ক্রিনিং-এর জন্য সম্মতি পাওয়া গেছে",
     fullNamePlaceholder: "পূর্ণ নাম লিখুন",
     villagePlaceholder: "গ্রাম বা এলাকা",
+    districtPlaceholder: "জেলার নাম",
+    blockPlaceholder: "ব্লক বা উপবিভাগ",
+    occupationPlaceholder: "বর্তমান পেশা",
     assessorPlaceholder: "স্বাস্থ্যকর্মী বা পরামর্শদাতা",
     narrativeLabel: "ব্যক্তি কেমন অনুভব করছেন তা বর্ণনা করুন",
     narrativePlaceholder: "উদাহরণ: আমি ক্লান্ত, বিচ্ছিন্ন, উদ্বিগ্ন এবং ঠিকমতো ঘুমাতে পারছি না।",
@@ -1206,23 +1219,25 @@ const UI_TRANSLATIONS = {
     signalFaceLabel: "মুখের স্ন্যাপশট",
     signalFaceStrong: "অভিব্যক্তি সহায়তা",
     signalFaceText: "ছবিভিত্তিক সংকেত মাঠকর্মীদের জন্য মাল্টিমোডাল চিত্রকে সমৃদ্ধ করে।",
-    passiveVideoTitle: "নিষ্ক্রিয় সংকেত",
-    passiveVideoTopic: "সংক্ষিপ্ত ফ্রন্ট-ক্যামেরার ভিডিও আপলোড করুন এবং স্বাভাবিকভাবে টাইপ করুন, যাতে প্যাসিভ বায়োমার্কার বিশ্লেষণ অন্তর্ভুক্ত হয়।",
-    passiveVideoLabel: "ফোন-ক্যামেরার ভিডিও",
-    passiveVideoStatus: "এখনও কোনো নিষ্ক্রিয় সংকেত ইনপুট পাওয়া যায়নি।",
+    passiveVideoTitle: "অতিরিক্ত ইনপুট",
+    passiveVideoTopic: "আপনি চাইলে একটি ছোট ফ্রন্ট-ক্যামেরার ভিডিও বা সম্পর্কিত নোট আপলোড করতে পারেন।",
+    passiveVideoLabel: "ভিডিও বা নোট",
+    passiveVideoStatus: "এখনও কোনো অতিরিক্ত ইনপুট পাওয়া যায়নি।",
     signalPulseLabel: "লাইভ ঝুঁকির পালস",
     signalPulseStatus: "আপডেটেড",
     imageFileLabel: "মুখের ছবি",
-    saveAssessmentBtn: "মূল্যায়ন সংরক্ষণ করুন",
+    saveAssessmentBtn: "সংরক্ষণ করে Analytics Hub খুলুন",
     resetAssessmentBtn: "ফর্ম রিসেট করুন",
+    reviewTitle: "পর্যালোচনা ও সংরক্ষণ",
+    reviewText: "Analytics Hub-এ সংরক্ষণ করার আগে সম্পূর্ণ মূল্যায়ন দেখুন।",
     workspaceStatusDefault: "ফলাফল দেখতে মূল্যায়ন সম্পূর্ণ করে সংরক্ষণ করুন।",
-    workspacePredictionEmpty: "লাইভ প্রেডিকশন প্রিভিউ পেতে মূল্যায়ন পূরণ শুরু করুন।",
+    workspacePredictionEmpty: "স্ক্রিনিং প্রিভিউ পেতে মূল্যায়ন পূরণ শুরু করুন।",
     workspaceNlpEmpty: "বর্ণনা লিখতে থাকলে NLP সংকেত এখানে দেখা যাবে।",
     workspaceReadinessEmpty: "প্রস্তুতির বার্তা দেখতে বিবরণ, সম্মতি, প্রশ্নমালা ও বর্ণনা পূরণ করুন।",
-    workspacePredictionTitle: "লাইভ প্রেডিকশন প্রিভিউ",
-    workspacePredictionText: "সংরক্ষণের আগে প্রশ্নমালা ও NLP-এর যৌথ প্রিভিউ",
-    workspaceNlpTitle: "লাইভ NLP ইনসাইটস",
-    workspaceNlpText: "বর্ণনা পাঠ থেকে সেন্টিমেন্ট, আবেগ ও নিরাপত্তা সংকেত",
+    workspacePredictionTitle: "প্রস্তুতি প্রিভিউ",
+    workspacePredictionText: "সংরক্ষণের আগে মূল্যায়ন কতটা প্রস্তুত, তার সহজ সারাংশ",
+    workspaceNlpTitle: "বর্ণনা পর্যালোচনা",
+    workspaceNlpText: "বর্ণনা, নিরাপত্তা সংকেত, এবং সহায়ক ইনপুটের সহজ সারাংশ",
     sdohLayerTitle: "SDOH ও কৃষিজ সংকট",
     sdohLayerText: "বর্ণনা পাঠ থেকে ফসলহানি, ঋণের চাপ ও খাদ্য নিরাপত্তার সংকেত",
     sdohLayerClearText: "বর্ণনায় কৃষিজ সংকটের কোনো সংকেত পাওয়া যায়নি।",
@@ -1231,35 +1246,45 @@ const UI_TRANSLATIONS = {
     foodSecurityLabel: "খাদ্য নিরাপত্তা",
     sdohRiskLabel: "কৃষিজ সংকট ঝুঁকি",
     workspaceReadinessTitle: "ইনটেক প্রস্তুতি",
-    workspaceReadinessText: "রেকর্ডটি সংরক্ষণ ও বিশ্লেষণের জন্য প্রস্তুত কি না তা যাচাই করে",
-    passiveInputLabel: "নিষ্ক্রিয় সংকেত",
-    passiveInputReadyLabel: "নিষ্ক্রিয় সংকেত ইনপুট প্রস্তুত: {details}.",
-    passiveInputMissingLabel: "এখনও কোনো নিষ্ক্রিয় সংকেত ইনপুট পাওয়া যায়নি।",
-    passiveInputOptionalLabel: "নিষ্ক্রিয় সংকেত: ঐচ্ছিক ইনপুট দেওয়া হয়নি।",
-    passiveInputSavedLabel: "নিষ্ক্রিয় সংকেত: সংরক্ষিত রেকর্ডে বিশ্লেষণ করা হয়েছে।",
-    passiveInputAnalyzedLabel: "নিষ্ক্রিয় সংকেত: {source}{typing} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে।",
-    passiveTypingOnlyLabel: "টাইপিং রিদম সংগ্রহ করা হয়েছে",
+    workspaceReadinessText: "Analytics Hub-এ পাঠানোর আগে কী সম্পূর্ণ আছে, তার স্পষ্ট তালিকা",
+    workspaceInsightHint: "Analytics Hub খুলতে সংরক্ষণ করুন।",
+    analyticsInsightSummaryTitle: "Analytics Hub সারাংশ",
+    analyticsInsightSummaryText: "সর্বশেষ সংরক্ষিত মূল্যায়নের সারাংশ এখানে দেখা যাবে, তারপর Records and Reports খুলতে পারবেন।",
+    analyticsInsightSummaryEmpty: "এই সারাংশ পূরণ করতে একটি মূল্যায়ন সংরক্ষণ করুন।",
+    analyticsInsightSummaryNext: "পূর্ণ বিশ্লেষণের জন্য Records and Reports খুলুন।",
+    passiveInputLabel: "অতিরিক্ত ইনপুট",
+    passiveInputReadyLabel: "অতিরিক্ত ইনপুট প্রস্তুত: {details}.",
+    passiveInputMissingLabel: "এখনও কোনো অতিরিক্ত ইনপুট পাওয়া যায়নি।",
+    passiveInputOptionalLabel: "অতিরিক্ত ইনপুট: ঐচ্ছিক ইনপুট দেওয়া হয়নি।",
+    passiveInputSavedLabel: "অতিরিক্ত ইনপুট: সংরক্ষিত রেকর্ডে বিশ্লেষণ করা হয়েছে।",
+    passiveInputAnalyzedLabel: "অতিরিক্ত ইনপুট: {source}{typing} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে।",
+    passiveTypingOnlyLabel: "টাইপিং রিদম সংগ্রহ করা হয়েছে",
     passiveTypingSuffixLabel: " টাইপিং রিদম ইনপুটসহ",
     recommendationBuiltFromLabel: "এটি {signals} থেকে তৈরি।",
     recommendationBuiltFromSummaryLabel: "এটি সংরক্ষিত স্ক্রিনিং সারাংশের উপর ভিত্তি করে।",
-    recommendationNarrativeAvailableLabel: "স্ক্রিনিংয়ের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল।",
+    recommendationNarrativeAvailableLabel: "স্ক্রিনিংয়ের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল।",
     recommendationNarrativeMissingLabel: "এই রেকর্ডের জন্য বর্ণনামূলক পাঠ্য উপলব্ধ ছিল না।",
-    fallbackRowsHiddenLabel: "সংরক্ষিত প্রশিক্ষিত বান্ডেল পরিসংখ্যান উপলব্ধ থাকায় fallback মডালিটি সারিগুলি লুকানো হয়েছে।",
-    narrativeAnalyzedLabel: "বর্ণনামূলক পাঠ্য বিশ্লেষণ করা হয়েছে।",
-    narrativeMissingLabel: "বর্ণনামূলক পাঠ্য পাওয়া যায়নি।",
+    fallbackRowsHiddenLabel: "সংরক্ষিত প্রশিক্ষিত বান্ডেল পরিসংখ্যান উপলব্ধ থাকায় fallback মডালিটি সারিগুলি লুকানো হয়েছে।",
+    narrativeAnalyzedLabel: "বর্ণনামূলক পাঠ্য বিশ্লেষণ করা হয়েছে।",
+    narrativeMissingLabel: "বর্ণনামূলক পাঠ্য পাওয়া যায়নি।",
     noTrainedCoverageLabel: "এই মূল্যায়নের সাথে এখনো কোনো প্রশিক্ষিত বান্ডেল কভারেজ মেলেনি।",
-    modelStatsUnavailableLabel: "এখনও কোনো মডেল পরিসংখ্যান পাওয়া যায়নি।",
     analyticsBannerDefault: "বিস্তারিত বিশ্লেষণ দেখতে মূল্যায়ন সম্পূর্ণ করে সংরক্ষণ করুন।",
-    recordsBannerDefault: "পুরোনো রিপোর্ট দেখতে বা ডাউনলোড করতে মূল্যায়ন আইডি দিয়ে রেকর্ড আনুন।",
+    passiveRetrainButton: "অতিরিক্ত ইনপুট পুনঃপ্রশিক্ষণ",
+    passiveRetrainLoading: "অতিরিক্ত ইনপুট বান্ডেল পুনঃপ্রশিক্ষণ চলছে...",
+    passiveRetrainReady: "মূল্যায়ন সেভ হলে অতিরিক্ত ইনপুট রেকর্ড স্বয়ংক্রিয়ভাবে সংগ্রহ হয়। 5টি নতুন লেবেলযুক্ত সারি জমলে বান্ডেল নিজে থেকেই পুনঃপ্রশিক্ষিত হয়।",
+    passiveRetrainSuccess: "অতিরিক্ত ইনপুট বান্ডেল সফলভাবে পুনঃপ্রশিক্ষিত হয়েছে।",
+    passiveRetrainEmpty: "এখনও কোনো লেবেলযুক্ত অতিরিক্ত ইনপুট রেকর্ড নেই। আগে আরও মূল্যায়ন সেভ করুন।",
+    passiveRetrainError: "অতিরিক্ত ইনপুট পুনঃপ্রশিক্ষণ সম্পন্ন করা যায়নি।",
+    recordsBannerDefault: "পুরোনো রিপোর্ট দেখতে বা ডাউনলোড করতে মূল্যায়ন আইডি দিয়ে রেকর্ড আনুন।",
     analyticsReady: "এর বিস্তারিত অংশভিত্তিক বিশ্লেষণ প্রস্তুত।",
     savedMessage: "ব্যাকএন্ড API-এর মাধ্যমে সংরক্ষিত হয়েছে।",
+    savedReturnLabel: "সংরক্ষিত হয়েছে। Analytics Hub খোলা হচ্ছে...",
     analyticsShowing: "Analytics Hub এখন এই মূল্যায়ন দেখাচ্ছে",
     saveInProgress: "Python NLP ব্যাকএন্ডের মাধ্যমে মূল্যায়ন সংরক্ষণ করা হচ্ছে...",
-    previewRefreshing: "Python NLP ব্যাকএন্ড থেকে লাইভ প্রিভিউ আপডেট করা হচ্ছে...",
+    previewRefreshing: "Python NLP ব্যাকএন্ড থেকে স্ক্রিনিং সারাংশ আপডেট করা হচ্ছে...",
     noRecordSelected: "কোনো মূল্যায়ন নির্বাচন করা হয়নি।",
     assessmentIdLabel: "মূল্যায়ন আইডি",
     overallConfidenceLabel: "ক্যালিব্রেটেড কনফিডেন্স",
-    confidenceLiftText: "ক্যালিব্রেশন সম্মিলিত কনফিডেন্স সিগন্যালকে শক্তিশালী করে।",
     evidenceStrengthLabel: "প্রমাণ শক্তি",
     overallRiskLabel: "সামগ্রিক ঝুঁকি",
     candidateLabel: "প্রার্থী",
@@ -1273,12 +1298,12 @@ const UI_TRANSLATIONS = {
     analyticsIntroScope: "পূর্বাভাসের ক্ষেত্র",
     analyticsIntroScopeText: "বিষণ্নতা, উদ্বেগ, চাপ, ঘুমের সমস্যা, বার্নআউট, একাকীত্ব এবং পদার্থের অপব্যবহার।",
     analyticsIntroInstrumentKicker: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
-    analyticsIntroInstrumentTitle: "পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-9 / পেশেন্ট হেলথ কোয়েশ্চেনেয়ার-4",
+    analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "সংরক্ষিত রেকর্ডে স্ক্রিনিংয়ের সময় ব্যবহৃত স্থানীয়কৃত মান্যতাপ্রাপ্ত প্রশ্নমালা অন্তর্ভুক্ত আছে।",
     strongestSignalLabel: "সবচেয়ে শক্তিশালী সংকেত",
     modalitiesUsedLabel: "ব্যবহৃত মোডালিটি",
     submissionTimeLabel: "জমা দেওয়ার সময়",
-    trajectoryLabel: "প্রবণতা",
+    analyticsNextPageBtn: "রেকর্ড ও রিপোর্টে যান",
     detailAnalysisTitle: "বর্তমান মূল্যায়নের বিস্তারিত অংশভিত্তিক বিশ্লেষণ।",
     recordsHeadingText: "রেকর্ড আনুন, ব্যক্তিগত ফলাফল দেখুন এবং PDF রিপোর্ট ডাউনলোড করুন।",
     recordLookupPlaceholder: "রেকর্ড আনতে মূল্যায়ন আইডি লিখুন",
@@ -1292,9 +1317,7 @@ const UI_TRANSLATIONS = {
     domainAnalysisTitle: "ডোমেইন বিশ্লেষণ",
     domainAnalysisText: "প্রতিটি পূর্বাভাস ক্ষেত্রের জন্য প্রশ্নমালা ও যৌথ AI স্কোরের তুলনা",
     componentContributionTitle: "উপাদানের অবদান",
-    componentContributionText: "টেক্সট, অডিও ও ইমেজ কীভাবে চূড়ান্ত মূল্যায়নকে প্রভাবিত করেছে",
-    modelStatisticsTitle: "মডেল পরিসংখ্যান",
-    modelStatisticsText: "এই মূল্যায়নে ব্যবহৃত ডিপ লার্নিং ও NLP মডেলের বিবরণ",
+    componentContributionText: "টেক্সট, অডিও, ইমেজ ও নিষ্ক্রিয় সংকেত কীভাবে চূড়ান্ত মূল্যায়নকে প্রভাবিত করেছে",
     exportQualityCheckButton: "রিপোর্ট রপ্তানি করুন",
     exportQualityCheckCsvButton: "CSV রপ্তানি করুন",
     exportQualityCheckPdfButton: "PDF রপ্তানি করুন",
@@ -1342,7 +1365,6 @@ const UI_TRANSLATIONS = {
     noComponentBreakdown: "এখনও কোনো উপাদানভিত্তিক বিশ্লেষণ পাওয়া যায়নি।",
     noModalityQuality: "এখনও ইনপুটের মান-সংক্রান্ত তথ্য পাওয়া যায়নি।",
     noRecommendationDetails: "এখনও কোনো পরামর্শের বিস্তারিত পাওয়া যায়নি।",
-    noModelStats: "এখনও কোনো মডেল পরিসংখ্যান পাওয়া যায়নি।",
     noNlpSummary: "এখনও কোনো NLP সংকেতের সারাংশ পাওয়া যায়নি।",
     sentimentLabel: "অনুভূতির প্রবণতা",
     emotionLabel: "প্রধান আবেগ",
@@ -1365,8 +1387,8 @@ const UI_TRANSLATIONS = {
     deleteRecord: "রেকর্ড মুছুন",
     deleteReport: "রিপোর্ট মুছুন",
     deleteRecordReport: "রেকর্ড/রিপোর্ট মুছুন",
-    deleteRecordConfirm: "এই মূল্যায়ন স্থায়ীভাবে মুছবেন?",
-    deleteReportConfirm: "এই মূল্যায়নটি Records and Reports প্যানেল থেকে সরাবেন?",
+    deleteRecordConfirm: "\u098f\u0987 \u09ae\u09c1\u09b2\u09cd\u09af\u09be\u09af\u09bc\u09a8 \u09b8\u09cd\u09a5\u09be\u09af\u09bc\u09c0\u09ad\u09be\u09ac\u09c7 \u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?",
+    deleteReportConfirm: "\u098f\u0987 \u09ae\u09c1\u09b2\u09cd\u09af\u09be\u09af\u09bc\u09a8\u099f\u09bf Records and Reports \u09aa\u09cd\u09af\u09be\u09a8\u09c7\u09b2 \u09a5\u09c7\u0995\u09c7 \u09b8\u09b0\u09be\u09ac\u09c7\u09a8?",
     deleteRecordSuccess: "মূল্যায়ন {id} মুছে ফেলা হয়েছে।",
     deleteRecordFailed: "{id} মূল্যায়ন মুছতে ব্যর্থ হয়েছে।",
     deleteRecordRequiresOnline: "সিঙ্ক করা রেকর্ড মুছতে অনলাইন সংযোগ প্রয়োজন।",
@@ -1396,48 +1418,25 @@ const UI_TRANSLATIONS = {
     noRecommendationText: "কোনো সুপারিশ নেই।",
     noDisclaimerText: "কোনো সতর্কীকরণ নেই।",
     recommendationOverviewText: "এই অংশে ব্যবহারকারীর জন্য স্ক্রিনিং ব্যাখ্যা ও উপযুক্ত ফলো-আপ নোট দেওয়া হয়।",
-    overallRiskTrajectoryTitle: "সামগ্রিক ঝুঁকির প্রবণতা",
-    trajectoryModelTitle: "দীর্ঘমেয়াদি প্রবণতা",
-    trajectoryModelText: "একই ব্যক্তির পুনরাবৃত্ত স্ক্রিনিং জুড়ে প্রবণতা মডেলিং",
     screeningCountLabel: "{status} — {count}টি স্ক্রিনিং",
-    trendSummaryTitle: "প্রবণতার সারাংশ",
-    trajectorySummaryTitle: "প্রবণতার সারাংশ",
-    trajectorySummaryText: "বেসলাইন থেকে পরিবর্তন, সাম্প্রতিক পরিবর্তন, এবং ডোমেইন গতি",
     statusTitle: "অবস্থা",
-    trajectoryMetricsTitle: "প্রবণতার মেট্রিক্স",
-    baselineToCurrentLabel: "বেসলাইন {baseline} থেকে বর্তমান {current} পর্যন্ত",
-    changeSinceBaselineLabel: "বেসলাইন থেকে পরিবর্তন",
-    recentChangeLabel: "সাম্প্রতিক পরিবর্তন",
-    volatilityLabel: "অস্থিরতা",
-    noTrajectoryLabel: "এখনও কোনো দীর্ঘমেয়াদি প্রবণতা পাওয়া যায়নি।",
-    noTrendSummaryLabel: "এখনও কোনো প্রবণতার সারাংশ পাওয়া যায়নি।",
     noMoreDataLabel: "আরও তথ্য প্রয়োজন",
-    noTrainedModelStatsLabel: "এই মূল্যায়নের জন্য এখনও কোনো প্রশিক্ষিত মডেল পরিসংখ্যান নেই।",
-    liveModelStatsFallbackLabel: "এই মূল্যায়নে সংরক্ষিত মডেল পরিসংখ্যান নেই, তাই এখন লাইভ বান্ডেল-স্তরের পরিসংখ্যান দেখানো হচ্ছে।",
     offlinePreviewBadgeLabel: "অফলাইন প্রিভিউ",
-    trainedBundleComparisonTitle: "প্রশিক্ষিত বান্ডেল তুলনা",
-    macroR2CoverageText: "মডালিটি অনুযায়ী Macro R2 এবং স্যাম্পল কভারেজ",
-    trainedBundleDescription: "এটি বর্তমান সংরক্ষিত মডেল মেটাডেটা ব্যবহার করে টেক্সট, অডিও এবং ইমেজের স্থানীয়ভাবে প্রশিক্ষিত বান্ডেলের মান তুলনা করে।",
     textTransformerLabel: "টেক্সট ট্রান্সফর্মার",
     transformerModelFamilyLabel: "লোড করা মডেল পরিবার",
     transformerFamilyLabel: "পছন্দের দেশীয় পরিবার",
     trainedModalitiesLabel: "প্রশিক্ষিত ইনপুট উৎস",
     confidenceHintLabel: "আত্মবিশ্বাস সূচক",
     trainedBundleLabel: "প্রশিক্ষিত বান্ডেল",
-    fallbackLabel: "ফলব্যাক",
-    trainedAtLabel: "প্রশিক্ষণের সময়",
     safetyKeywordsLabel: "নিরাপত্তা কীওয়ার্ড",
     keywordMatchesLabel: "মিলে যাওয়া কীওয়ার্ড",
     narrativeWordCountLabel: "বর্ণনার শব্দসংখ্যা",
     emotionIntensityLabel: "আবেগের তীব্রতা",
     domainCoverageLabel: "ডোমেইন কভারেজ",
     analysisEngineLabel: "ইঞ্জিন",
-    macroR2Label: "Macro R2",
-    samplesLabel: "নমুনা",
     domainsLabel: "ডোমেইন",
     manifestLabel: "ম্যানিফেস্ট",
     datasetRootLabel: "ডেটাসেট রুট",
-    trendModelDescription: "পুনরাবৃত্ত ভিজিট, ঢাল এবং অস্থিরতা একত্র করে ট্রেন্ড মডেলিং করা হয় যাতে স্বাস্থ্যকর্মীরা ঝুঁকি বাড়ছে, কমছে, নাকি ওঠানামা করছে তা বুঝতে পারেন।",
     noFilteredExportLabel: "রপ্তানি করার মতো কোনো ফিল্টার করা রেকর্ড নেই।",
     exportedFilteredLabel: "{count}টি ফিল্টার করা রেকর্ড রপ্তানি হয়েছে।",
     backendApiLabel: "ব্যাকএন্ড API",
@@ -1716,10 +1715,9 @@ const state = {
   hiddenReportIds: new Set(),
   currentPage: 1,
   latestCreatedRecord: null,
-  modelStats: {},
-  modelStatsSource: "api",
   qualityCheckReport: null,
   qualityCheckLoading: false,
+  passiveRetrainLoading: false,
   adaptiveResponses: {},
   adaptiveSelectedAnswer: "",
   adaptiveCurrentQuestion: null,
@@ -1735,6 +1733,7 @@ const state = {
   draftPreviewRequestId: 0,
   draftPreviewAbortController: null,
   draftPreviewSignature: "",
+  workspaceReturnTimer: null,
   assessmentSaveInFlight: false,
   recordedAudioFile: null,
   capturedImageFile: null,
@@ -1748,15 +1747,17 @@ const state = {
   selectedValidatedInstrumentId: "phq9",
   mainTypingEvents: [],
   adaptiveTypingEvents: [],
+  workspacePage: 1,
 };
 
-const APP_BUILD = "2026-06-24";
+const WIZARD_SAVED_RECORD_KEY = "mh-screening-wizard-last-record-v1";
+
+const APP_BUILD = "2026-06-27-modelstats-removed";
 
 const FINAL_SCORE_WEIGHTS = {
-  text: 0.22,
+  text: 0.46,
   audio: 0.30,
-  image: 0.40,
-  passive_biomarkers: 0.08,
+  image: 0.24,
 };
 
 const MODEL_STATS_FALLBACK_URL = "/web/model-stats.json";
@@ -1817,10 +1818,6 @@ function apiUrl(path) {
   return new URL(path, DASHBOARD_API_BASE_URL).toString();
 }
 
-function isModelStatsVisible() {
-  return true;
-}
-
 async function clearStaleAppState() {
   try {
     const cachedBuild = window.localStorage.getItem("mh-dashboard-build");
@@ -1843,12 +1840,18 @@ const elements = {
   viewSections: [...document.querySelectorAll(".view-section")],
   dashboardLanguage: document.getElementById("dashboardLanguage"),
   offlineStatus: document.getElementById("offlineStatus"),
-  applyLanguageBtn: document.getElementById("applyLanguageBtn"),
   questionnaireContainer: document.getElementById("questionnaireContainer"),
   validatedInstrumentInfoBtn: document.getElementById("validatedInstrumentInfoBtn"),
   validatedInstrumentInfo: document.getElementById("validatedInstrumentInfo"),
   validatedInstrumentPanel: document.getElementById("validatedInstrumentPanel"),
   assessmentForm: document.getElementById("assessmentForm"),
+  workspacePage1: document.getElementById("workspacePage1"),
+  workspacePage2: document.getElementById("workspacePage2"),
+  workspacePage3: document.getElementById("workspacePage3"),
+  workspacePage1NextBtn: document.getElementById("workspacePage1NextBtn"),
+  workspacePage2BackBtn: document.getElementById("workspacePage2BackBtn"),
+  workspacePage2NextBtn: document.getElementById("workspacePage2NextBtn"),
+  workspacePage3BackBtn: document.getElementById("workspacePage3BackBtn"),
   adaptiveForm: document.getElementById("adaptiveForm"),
   saveAssessmentBtn: document.getElementById("saveAssessmentBtn"),
   resetAssessmentBtn: document.getElementById("resetAssessmentBtn"),
@@ -1864,11 +1867,15 @@ const elements = {
   adaptiveAge: document.getElementById("adaptiveAge"),
   adaptiveGender: document.getElementById("adaptiveGender"),
   adaptiveVillage: document.getElementById("adaptiveVillage"),
+  adaptiveDistrict: document.getElementById("adaptiveDistrict"),
+  adaptiveBlock: document.getElementById("adaptiveBlock"),
+  adaptiveOccupation: document.getElementById("adaptiveOccupation"),
   adaptiveAssessor: document.getElementById("adaptiveAssessor"),
   adaptiveLanguage: document.getElementById("adaptiveLanguage"),
   adaptiveConsent: document.getElementById("adaptiveConsent"),
   adaptiveTextNarrative: document.getElementById("adaptiveTextNarrative"),
   workspaceStatus: document.getElementById("workspaceStatus"),
+  workspaceInsightPanels: document.getElementById("workspaceInsightPanels"),
   workspacePrediction: document.getElementById("workspacePrediction"),
   workspaceNlp: document.getElementById("workspaceNlp"),
   workspaceReadiness: document.getElementById("workspaceReadiness"),
@@ -1876,6 +1883,9 @@ const elements = {
   age: document.getElementById("age"),
   gender: document.getElementById("gender"),
   village: document.getElementById("village"),
+  district: document.getElementById("district"),
+  block: document.getElementById("block"),
+  occupation: document.getElementById("occupation"),
   phone: document.getElementById("phone"),
   assessor: document.getElementById("assessor"),
   language: document.getElementById("language"),
@@ -1897,11 +1907,14 @@ const elements = {
   imageFile: document.getElementById("imageFile"),
   passiveVideoFile: document.getElementById("passiveVideoFile"),
   analysisStatusBanner: document.getElementById("analysisStatusBanner"),
+  analyticsInsightSummary: document.getElementById("analyticsInsightSummary"),
   runQualityCheckBtn: document.getElementById("runQualityCheckBtn"),
+  analyticsNextPageBtn: document.getElementById("analyticsNextPageBtn"),
+  retrainPassiveBtn: document.getElementById("retrainPassiveBtn"),
   exportQualityCheckBtn: document.getElementById("exportQualityCheckBtn"),
   exportQualityCheckCsvBtn: document.getElementById("exportQualityCheckCsvBtn"),
   exportQualityCheckPdfBtn: document.getElementById("exportQualityCheckPdfBtn"),
-  qualityCheckHelperText: document.getElementById("qualityCheckHelperText"),
+  passiveRetrainStatus: document.getElementById("passiveRetrainStatus"),
   qualityCheckSummary: document.getElementById("qualityCheckSummary"),
   statusBanner: document.getElementById("statusBanner"),
   analysisAssessmentId: document.getElementById("analysisAssessmentId"),
@@ -1910,15 +1923,11 @@ const elements = {
   analysisStrongestDomain: document.getElementById("analysisStrongestDomain"),
   analysisCoverage: document.getElementById("analysisCoverage"),
   analysisSubmissionTime: document.getElementById("analysisSubmissionTime"),
-  analysisTrajectory: document.getElementById("analysisTrajectory"),
   analysisOverallRisk: document.getElementById("analysisOverallRisk"),
   riskDistribution: document.getElementById("riskDistribution"),
   submissionTrend: document.getElementById("submissionTrend"),
   riskHotspots: document.getElementById("riskHotspots"),
   nlpTrends: document.getElementById("nlpTrends"),
-  trajectoryModel: document.getElementById("trajectoryModel"),
-  trajectorySummary: document.getElementById("trajectorySummary"),
-  villageSummary: document.getElementById("villageSummary"),
   assessorSummary: document.getElementById("assessorSummary"),
   scoreWeightSummary: document.getElementById("scoreWeightSummary"),
   recordLookup: document.getElementById("recordLookup"),
@@ -1935,6 +1944,13 @@ const elements = {
   patientHistory: document.getElementById("patientHistory"),
   domainTrajectory: document.getElementById("domainTrajectory"),
   analyticsIntroInstrumentTitle: document.getElementById("analyticsIntroInstrumentTitle"),
+  refreshRecordsBtn: document.getElementById("refreshRecordsBtn"),
+  exportFilteredRecordsBtn: document.getElementById("exportFilteredRecordsBtn"),
+  recordsLoadedValue: document.getElementById("recordsLoadedValue"),
+  recordsSelectedValue: document.getElementById("recordsSelectedValue"),
+  recordsLatestValue: document.getElementById("recordsLatestValue"),
+  recordsSelectedText: document.getElementById("recordsSelectedText"),
+  recordsLatestText: document.getElementById("recordsLatestText"),
 };
 
 function openOfflineDb() {
@@ -2156,7 +2172,7 @@ function isVisibleUserRecord(record) {
 function visibleUserRecords(records) {
   return safeRecords(records).filter((record) => {
     if (!isVisibleUserRecord(record)) return false;
-    return String(record?.record_origin || "").toLowerCase() === "test";
+    return Boolean(record?.local_visible);
   });
 }
 
@@ -2219,6 +2235,7 @@ function normalizeRecord(record) {
     created_at: safeRecord.created_at || new Date().toISOString(),
     sync_status: safeRecord.sync_status || "synced",
     patient_key: safeRecord.patient_key || "",
+    local_visible: Boolean(safeRecord.local_visible),
     record_origin: inferredOrigin || (String(safeRecord.sync_status || "").toLowerCase() === "pending" ? "test" : "backend"),
     profile: {
       full_name: safeRecord.profile?.full_name || "",
@@ -2263,12 +2280,12 @@ function buildDashboardRecommendation(overall, language = "English") {
 
   if (resolvedLanguage === "Bengali") {
     if (highRisks.length) {
-      return `${joined(highRisks)} এর জন্য উচ্চ ঝুঁকি দেখা যাচ্ছে। যত দ্রুত সম্ভব মানসিক স্বাস্থ্য বিশেষজ্ঞ বা প্রশিক্ষিত স্বাস্থ্যকর্মীর সঙ্গে কথা বলুন। যদি এখনই নিরাপত্তার চিন্তা থাকে, আত্মক্ষতির ভাবনা থাকে, বা অবস্থা খারাপ হতে থাকে, তাহলে তাৎক্ষণিক জরুরি সহায়তা নিন।`;
+      return `${joined(highRisks)} এর জন্য উচ্চ ঝুঁকি দেখা যাচ্ছে। যত দ্রুত সম্ভব মানসিক স্বাস্থ্য বিশেষজ্ঞ বা প্রশিক্ষিত স্বাস্থ্যকর্মীর সঙ্গে কথা বলুন। যদি এখনই নিরাপত্তার চিন্তা থাকে, আত্মক্ষতির ভাবনা থাকে, বা অবস্থা খারাপ হতে থাকে, তাহলে তাৎক্ষণিক জরুরি সহায়তা নিন।`;
     }
     if (moderateRisks.length) {
       return `${joined(moderateRisks)} এর জন্য মাঝারি ঝুঁকি দেখা যাচ্ছে। শিগগিরই ফলো-আপ করুন, আবার স্ক্রিনিং করুন, এবং দরকার হলে রেফারাল বা অতিরিক্ত পর্যবেক্ষণ যোগ করুন।`;
     }
-    return "বর্তমান বহুমাত্রিক সংকেত কম ঝুঁকি দেখাচ্ছে। সাধারণ সহায়তা চালিয়ে যান, আর উপসর্গ থাকলে, বাড়লে, বা নতুন উদ্বেগ দেখা দিলে আবার স্ক্রিনিং করুন।";
+    return "বর্তমান বহুমাত্রিক সংকেত কম ঝুঁকি দেখাচ্ছে। সাধারণ সহায়তা চালিয়ে যান, আর উপসর্গ থাকলে, বাড়লে, বা নতুন উদ্বেগ দেখা দিলে আবার স্ক্রিনিং করুন।";
   }
 
   if (highRisks.length) {
@@ -2286,7 +2303,7 @@ function localizedScreeningDisclaimer(language = "English") {
     return "यह डैशबोर्ड सिर्फ प्रारंभिक स्क्रीनिंग सारांश देता है। यह निदान, आपातकालीन सहायता, या चिकित्सकीय निर्णय का विकल्प नहीं है। अगर तुरंत जोखिम या सुरक्षा की चिंता हो, तो स्थानीय आपातकालीन प्रक्रिया अपनाएँ।";
   }
   if (resolvedLanguage === "Bengali") {
-    return "এই ড্যাশবোর্ডটি শুধু প্রাথমিক স্ক্রিনিং সারাংশ দেয়। এটি নির্ণয়, জরুরি সহায়তা বা চিকিৎসকের বিচারের বিকল্প নয়। যদি তাৎক্ষণিক ঝুঁকি বা নিরাপত্তার উদ্বেগ থাকে, তাহলে স্থানীয় জরুরি প্রক্রিয়া অনুসরণ করুন।";
+    return "এই ড্যাশবোর্ডটি শুধু প্রাথমিক স্ক্রিনিং সারাংশ দেয়। এটি নির্ণয়, জরুরি সহায়তা বা চিকিৎসকের বিচারের বিকল্প নয়। যদি তাৎক্ষণিক ঝুঁকি বা নিরাপত্তার উদ্বেগ থাকে, তাহলে স্থানীয় জরুরি প্রক্রিয়া অনুসরণ করুন।";
   }
   return "This dashboard provides an early screening summary only. It does not replace diagnosis, emergency support, or clinician judgment. If there is any immediate safety concern, follow local emergency procedures.";
 }
@@ -2307,7 +2324,20 @@ function normalizeLanguage(value) {
 }
 
 function currentLanguage() {
-  return normalizeLanguage(elements.dashboardLanguage?.value || elements.language?.value || "English");
+  try {
+    const stored = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    return normalizeLanguage(elements.dashboardLanguage?.value || elements.language?.value || stored || "English");
+  } catch {
+    return normalizeLanguage(elements.dashboardLanguage?.value || elements.language?.value || "English");
+  }
+}
+
+function persistLanguageSelection(language) {
+  try {
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, normalizeLanguage(language));
+  } catch {
+    // Ignore persistence failures and keep the in-memory selection.
+  }
 }
 
 function auditTranslationCoverage() {
@@ -2595,7 +2625,7 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
       phq9hLabel: "Patient Health Questionnaire-9 (Hindi)",
       phq9hDesc: "Patient Health Questionnaire-9, Hindi translation",
       phq9Label: "PHQ-9",
-      phq9Desc: "Patient Health Questionnaire-9, original English version",
+      phq9Desc: "Patient Health Questionnaire-9, standard English instrument wording",
       phq9bLabel: "Patient Health Questionnaire-9 (Bengali)",
       phq9bDesc: "Patient Health Questionnaire-9, Bengali translation",
       phq4Label: "PHQ-4",
@@ -2605,18 +2635,18 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
       gad2Label: "GAD-2",
       gad2Desc: "Generalized Anxiety Disorder-2, original English version",
       sdohAgriLabel: "SDOH-Agrarian Distress",
-      sdohAgriDesc: "Culturally adapted screening for crop loss, debt, food insecurity, and migration pressure",
+      sdohAgriDesc: "Social determinants of health screening for agricultural distress, financial strain, food insecurity, and displacement pressure",
       items: {
         phq9: [
-          "Little interest or pleasure in doing things.",
-          "Feeling down, depressed, or hopeless.",
-          "Trouble falling or staying asleep, or sleeping too much.",
-          "Feeling tired or having little energy.",
-          "Poor appetite or overeating.",
-          "Feeling bad about yourself or that you are a failure or have let yourself or your family down.",
-          "Trouble concentrating on things, such as reading the newspaper or watching television.",
-          "Moving or speaking so slowly that other people could have noticed, or the opposite being so fidgety or restless that you have been moving around a lot more than usual.",
-          "Thoughts that you would be better off dead or of hurting yourself in some way.",
+          "Little interest or pleasure in doing things",
+          "Feeling down, depressed, or hopeless",
+          "Trouble falling asleep, staying asleep, or sleeping too much",
+          "Feeling tired or having little energy",
+          "Poor appetite or overeating",
+          "Feeling bad about yourself, or that you are a failure, or that you have let yourself or your family down",
+          "Trouble concentrating on things, such as reading or watching television",
+          "Moving or speaking so slowly that other people could have noticed, or being so fidgety or restless that you have been moving around more than usual",
+          "Thoughts that you would be better off dead or of hurting yourself in some way",
         ],
         phq9h: [
           "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना।",
@@ -2630,15 +2660,15 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
           "ऐसा लगना कि मर जाना बेहतर होगा, या किसी तरह खुद को नुकसान पहुँचाने के विचार आना।",
         ],
         phq9b: [
-          "কাজকর্মে আগ্রহ বা আনন্দ কমে যাওয়া।",
-          "উদাস, বিষণ্ণ, বা খুব নিরাশ লাগা।",
-          "ঘুমাতে, ঘুম ধরে রাখতে, বা খুব বেশি ঘুমাতে সমস্যা হওয়া।",
-          "ক্লান্ত লাগা বা শক্তি খুব কম অনুভব করা।",
-          "ক্ষুধা কমে যাওয়া বা অতিরিক্ত খাওয়া।",
-          "নিজের সম্পর্কে খারাপ লাগা, ব্যর্থ মনে হওয়া, বা পরিবারকে হতাশ করা বলে মনে হওয়া।",
-          "পড়া, শুনা, বা কথাবার্তায় মনোযোগ দিতে অসুবিধা হওয়া।",
-          "খুব ধীরে হাঁটা বা কথা বলা, অথবা এর উল্টো খুব অস্থির বা চঞ্চল লাগা।",
-          "মনে হওয়া যে মরে গেলেই ভালো, বা কোনোভাবে নিজেকে আঘাত করার চিন্তা আসা।",
+          "???????? ????? ?? ????? ??? ???????",
+          "????, ????????, ?? ??? ????? ?????",
+          "??????, ??? ??? ?????, ?? ??? ???? ?????? ?????? ??????",
+          "??????? ???? ?? ????? ??? ?? ????? ????",
+          "?????? ??? ?????? ?? ???????? ???????",
+          "????? ???????? ????? ????, ?????? ??? ?????, ?? ???????? ???? ??? ??? ??? ??????",
+          "????, ????, ?? ??????????? ?????? ???? ??????? ??????",
+          "??? ???? ????? ?? ??? ???, ???? ?? ????? ??? ?????? ?? ????? ?????",
+          "??? ????? ?? ??? ????? ????, ?? ?????? ???? ???? ?????? ????",
         ],
         phq4: [
           "Little interest or pleasure in doing things.",
@@ -2660,10 +2690,10 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
           "Not being able to stop or control worrying.",
         ],
         sdohAgri: [
-          "In the last two weeks, how often have you worried that the crop may fail or the harvest may be lost?",
-          "In the last two weeks, how often have you worried about debt, loans, or repayment pressure?",
-          "In the last two weeks, how often have you worried that there may not be enough food at home?",
-          "In the last two weeks, how often have you felt forced to leave farming or look for outside work because of stress?",
+          "During the past two weeks, how often have you worried that your crop may fail or that your harvest may be lost?",
+          "During the past two weeks, how often have you worried about debt, loans, or repayment pressure?",
+          "During the past two weeks, how often have you worried that your household may not have enough food?",
+          "During the past two weeks, how often have you felt compelled to leave farming or seek outside work because of financial or emotional strain?",
         ],
       },
     },
@@ -2681,7 +2711,7 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
       gad2Label: "सामान्यीकृत चिंता विकार-2 (हिंदी)",
       gad2Desc: "सामान्यीकृत चिंता विकार-2, हिंदी अनुवाद",
       sdohAgriLabel: "SDOH-कृषि तनाव",
-      sdohAgriDesc: "फसल, कर्ज, भोजन की कमी, और पलायन दबाव के लिए सांस्कृतिक रूप से अनुकूलित स्क्रीनिंग",
+      sdohAgriDesc: "कृषि संकट, आर्थिक दबाव, खाद्य असुरक्षा, और पलायन दबाव के लिए सामाजिक निर्धारक-आधारित स्क्रीनिंग",
       items: {
         phq9: [
           "काम करने या गतिविधियों में कम रुचि या आनंद महसूस होना।",
@@ -2757,7 +2787,7 @@ function buildValidatedInstrumentFallbacks(language = currentLanguage()) {
       gad2Label: "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2 (বাংলা)",
       gad2Desc: "জেনারালাইজড অ্যাংজাইটি ডিসঅর্ডার-2, বাংলা অনুবাদ",
       sdohAgriLabel: "SDOH-কৃষি চাপ",
-      sdohAgriDesc: "ফসলহানি, দেনা, খাদ্যসঙ্কট, ও কাজের জন্য স্থানান্তরের চাপ নিয়ে সাংস্কৃতিকভাবে অভিযোজিত স্ক্রিনিং",
+      sdohAgriDesc: "কৃষি সংকট, আর্থিক চাপ, খাদ্য অনিরাপত্তা, এবং স্থানান্তরের চাপের জন্য সামাজিক নির্ধারকভিত্তিক স্ক্রিনিং",
       items: {
         phq9: [
           "কাজকর্মে আগ্রহ বা আনন্দ কমে যাওয়া।",
@@ -3082,37 +3112,8 @@ function renderSdohAgrarianCard(instrument, optionLabels) {
 
 function getValidatedInstrumentButtonSet() {
   const englishInstruments = buildLanguageSpecificValidatedInstruments("English") || [];
-  const preferredOrder = ["phq9", "phq4", "gad7", "gad2"];
-  const byId = new Map(
-    englishInstruments.map((instrument) => [String(instrument.id || instrument.label || "").toLowerCase(), instrument])
-  );
-  return preferredOrder.map((instrumentId) => byId.get(instrumentId)).filter(Boolean);
-}
-
-function renderValidatedInstrumentDetail(instrument, optionLabels) {
-  const label = instrument.localized_label || instrument.label || instrument.id || t("noDataLabel");
-  const description = instrument.localized_description || instrument.description || t("noDataLabel");
-  const items = (instrument.items || []).map((item, index) => {
-    const prompt = localizedValidatedInstrumentPrompt(instrument, item, index);
-    return `
-      <li><strong>${String(index + 1).padStart(2, "0")}.</strong> ${prompt || t("noDataLabel")}</li>
-    `;
-  }).join("");
-  const responseOptions = (instrument.response_options || []).map((option, index) => `
-    <span class="risk-pill">${optionLabels[index] || option.label || t("noDataLabel")}</span>
-  `).join("");
-  return `
-    <div class="detail-card validated-instrument-detail">
-      <div class="detail-inline">
-        <h3>${label}</h3>
-        <strong>${localizedValidatedInstrumentLanguageName(instrument.language || instrument.id)}</strong>
-      </div>
-      <p class="detail-muted">${t("validatedInstrumentLanguageLabel")}: ${localizedValidatedInstrumentLanguageName(instrument.language || instrument.id)}</p>
-      <p class="detail-muted">${description}</p>
-      <ul class="feature-list">${items}</ul>
-      <div class="choice-row">${responseOptions}</div>
-    </div>
-  `;
+  const phq9 = englishInstruments.find((instrument) => String(instrument.id || instrument.label || "").toLowerCase() === "phq9");
+  return phq9 ? [phq9] : [];
 }
 
 function renderValidatedInstrumentInfo() {
@@ -3250,6 +3251,7 @@ function setSelectOptionLabels(selectElement, labels) {
 }
 
 function applyLanguage() {
+  persistLanguageSelection(currentLanguage());
   document.documentElement.lang = currentLanguage() === "Hindi" ? "hi" : currentLanguage() === "Bengali" ? "bn" : "en";
   document.title = t("appTitle");
   if (elements.language && elements.language.value !== currentLanguage()) {
@@ -3271,7 +3273,6 @@ function applyLanguage() {
   document.getElementById("heroGraphicImage")?.setAttribute("alt", t("heroGraphicAlt"));
   elements.capturedPhotoPreview?.setAttribute("alt", t("capturedFacePreviewAlt"));
   setNodeText("#dashboardLanguageLabel", t("dashboardLanguageLabel"));
-  setNodeText("#applyLanguageBtn", t("applyLanguageBtn"));
   setNodeText("#signalNarrativeLabel", t("signalNarrativeLabel"));
   setNodeText("#signalNarrativeStrong", t("signalNarrativeStrong"));
   setNodeText("#signalNarrativeText", t("signalNarrativeText"));
@@ -3321,8 +3322,14 @@ function applyLanguage() {
   setNodeText(".intake-strip .intake-card:nth-child(4) p:last-child", t("step3Text"));
   setNodeText(".intake-strip .intake-card:nth-child(5) h3", t("step4Title"));
   setNodeText(".intake-strip .intake-card:nth-child(5) p:last-child", t("step4Text"));
-  setNodeText(".form-card h3", t("candidateProfileTitle"));
-  setNodeText(".form-grid .form-card:nth-child(2) h3", t("freeTextTitle"));
+  setNodeText("#workspaceProfileTitle", t("candidateProfileTitle"));
+  setNodeText("#workspacePage1NextBtn", t("nextLabel"));
+  setNodeText("#workspacePage2BackBtn", t("previousLabel"));
+  setNodeText("#workspacePage2NextBtn", t("nextLabel"));
+  setNodeText("#workspacePage3BackBtn", t("previousLabel"));
+  setNodeText("#workspaceReviewTitle", t("reviewTitle"));
+  setNodeText("#workspaceReviewText", t("reviewText"));
+  setNodeText("#freeTextTitle", t("freeTextTitle"));
   setNodeText("#adaptiveSectionTitle", t("adaptiveTitle"));
   setNodeText("#adaptiveSectionText", t("adaptiveSubtitle"));
   setNodeText("#adaptiveIntroFlowTitle", t("adaptiveIntroFlowTitle"));
@@ -3349,6 +3356,9 @@ function applyLanguage() {
   setLabelText(elements.age, t("ageLabel"));
   setLabelText(elements.gender, t("genderLabel"));
   setLabelText(elements.village, t("villageLabel"));
+  setLabelText(elements.district, t("districtLabel"));
+  setLabelText(elements.block, t("blockLabel"));
+  setLabelText(elements.occupation, t("occupationLabel"));
   setLabelText(elements.phone, t("phoneLabel"));
   setLabelText(elements.assessor, t("assessorLabel"));
   setLabelText(elements.language, t("languageLabel"));
@@ -3358,27 +3368,36 @@ function applyLanguage() {
   setLabelText(elements.adaptiveAge, t("ageLabel"));
   setLabelText(elements.adaptiveGender, t("genderLabel"));
   setLabelText(elements.adaptiveVillage, t("villageLabel"));
+  setLabelText(elements.adaptiveDistrict, t("districtLabel"));
+  setLabelText(elements.adaptiveBlock, t("blockLabel"));
+  setLabelText(elements.adaptiveOccupation, t("occupationLabel"));
   setLabelText(elements.adaptiveAssessor, t("assessorLabel"));
   setCheckboxLabel(elements.adaptiveConsent, t("consentLabel"));
   setLabelText(elements.textNarrative, t("narrativeLabel"));
   setLabelText(elements.adaptiveTextNarrative, t("narrativeLabel"));
   elements.fullName.placeholder = t("fullNamePlaceholder");
   elements.village.placeholder = t("villagePlaceholder");
+  elements.district.placeholder = t("districtPlaceholder");
+  elements.block.placeholder = t("blockPlaceholder");
+  elements.occupation.placeholder = t("occupationPlaceholder");
   elements.assessor.placeholder = t("assessorPlaceholder");
   elements.adaptiveFullName.placeholder = t("fullNamePlaceholder");
   elements.adaptiveVillage.placeholder = t("villagePlaceholder");
+  elements.adaptiveDistrict.placeholder = t("districtPlaceholder");
+  elements.adaptiveBlock.placeholder = t("blockPlaceholder");
+  elements.adaptiveOccupation.placeholder = t("occupationPlaceholder");
   elements.adaptiveAssessor.placeholder = t("assessorPlaceholder");
   elements.textNarrative.placeholder = t("narrativePlaceholder");
   elements.adaptiveTextNarrative.placeholder = t("narrativePlaceholder");
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(1) .capture-head strong", t("guidedSpeechTitle"));
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(1) .capture-head .capture-topic", t("guidedSpeechTopic"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(1) .capture-head strong", t("guidedSpeechTitle"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(1) .capture-head .capture-topic", t("guidedSpeechTopic"));
   setLabelText(elements.audioFile, t("audioFileLabel"));
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(2) .capture-head strong", t("passiveVideoTitle"));
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(2) .capture-head .capture-topic", t("passiveVideoTopic"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(2) .capture-head strong", t("passiveVideoTitle"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(2) .capture-head .capture-topic", t("passiveVideoTopic"));
   setLabelText(elements.passiveVideoFile, t("passiveVideoLabel"));
   setNodeText("#passiveVideoStatus", t("passiveVideoStatus"));
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(3) .capture-head strong", t("liveFaceTitle"));
-  setNodeText(".form-grid .form-card:nth-child(2) .capture-card:nth-of-type(3) .capture-head .capture-topic", t("liveFaceTopic"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(3) .capture-head strong", t("liveFaceTitle"));
+  setNodeText("#workspacePage2 .capture-card:nth-of-type(3) .capture-head .capture-topic", t("liveFaceTopic"));
   setLabelText(elements.imageFile, t("imageFileLabel"));
   setNodeText("#questionnaireTitle", t("questionnaireTitle"));
   setNodeText("#questionnaireSubtitle", t("questionnaireSubtitle"));
@@ -3391,19 +3410,39 @@ function applyLanguage() {
   setNodeText("#resetAssessmentBtn", t("resetAssessmentBtn"));
   setNodeText("#workspaceTitle", t("workspaceTab"));
   setNodeText("#workspaceText", t("workspaceText"));
+  setNodeText("#wizardLaunchKicker", t("wizardLaunchKicker"));
+  setNodeText("#wizardLaunchHeading", t("wizardLaunchHeading"));
+  setNodeText("#wizardLaunchText", t("wizardLaunchText"));
+  setNodeText("#wizardLaunchStep1Label", t("wizardLaunchStep1Label"));
+  setNodeText("#wizardLaunchStep1Title", t("wizardLaunchStep1Title"));
+  setNodeText("#wizardLaunchStep1Text", t("wizardLaunchStep1Text"));
+  setNodeText("#wizardLaunchStep1Btn", t("wizardLaunchOpenPage"));
+  setNodeText("#wizardLaunchStep2Label", t("wizardLaunchStep2Label"));
+  setNodeText("#wizardLaunchStep2Title", t("wizardLaunchStep2Title"));
+  setNodeText("#wizardLaunchStep2Text", t("wizardLaunchStep2Text"));
+  setNodeText("#wizardLaunchStep3Label", t("wizardLaunchStep3Label"));
+  setNodeText("#wizardLaunchStep3Title", t("wizardLaunchStep3Title"));
+  setNodeText("#wizardLaunchStep3Text", t("wizardLaunchStep3Text"));
   setNodeText("#workspacePredictionTitle", t("workspacePredictionTitle"));
   setNodeText("#workspacePredictionText", t("workspacePredictionText"));
   setNodeText("#workspaceNlpTitle", t("workspaceNlpTitle"));
   setNodeText("#workspaceNlpText", t("workspaceNlpText"));
   setNodeText("#workspaceReadinessTitle", t("workspaceReadinessTitle"));
   setNodeText("#workspaceReadinessText", t("workspaceReadinessText"));
+  setNodeText("#workspaceInsightHint", t("workspaceInsightHint"));
+  setNodeText("#analyticsInsightSummaryTitle", t("analyticsInsightSummaryTitle"));
+  setNodeText("#analyticsInsightSummaryText", t("analyticsInsightSummaryText"));
   setNodeText("#analyticsTitle", t("analyticsTab"));
   setNodeText("#analyticsText", t("detailAnalysisTitle"));
+  if (elements.analyticsNextPageBtn) setNodeText("#analyticsNextPageBtn", t("analyticsNextPageBtn") || t("nextLabel"));
   setNodeText("#runQualityCheckBtn", t("qualityCheckButton"));
+  setNodeText("#retrainPassiveBtn", t("passiveRetrainButton"));
   setNodeText("#exportQualityCheckBtn", t("exportQualityCheckButton"));
   setNodeText("#exportQualityCheckCsvBtn", t("exportQualityCheckCsvButton"));
   setNodeText("#exportQualityCheckPdfBtn", t("exportQualityCheckPdfButton"));
-  setNodeText("#qualityCheckHelperText", t("qualityCheckHelperText"));
+  if (elements.passiveRetrainStatus) {
+    elements.passiveRetrainStatus.textContent = t("passiveRetrainReady");
+  }
   if (state.qualityCheckReport) {
     renderQualityCheckSummary();
   } else if (elements.qualityCheckSummary) {
@@ -3411,12 +3450,19 @@ function applyLanguage() {
   }
   setNodeText("#recordsSectionTitle", t("recordsTab"));
   setNodeText("#recordsSectionText", t("recordsHeadingText"));
-  setNodeText("#fetchRecordBtn", t("fetchRecordBtn"));
-  setNodeText("#downloadSelectedPdfBtn", t("downloadPdfBtn"));
-  elements.recordLookup.placeholder = t("recordLookupPlaceholder");
+  setNodeText("#recordsLoadedLabel", t("recordsLoadedLabel") || "Loaded records");
+  setNodeText("#recordsLoadedText", t("recordsLoadedText") || "Records available in the dashboard cache and backend list.");
+  setNodeText("#recordsSelectedLabel", t("recordsSelectedLabel") || "Selected record");
+  setNodeText("#recordsSelectedText", t("recordsSelectedText") || "Choose a row to open the report details.");
+  setNodeText("#recordsLatestLabel", t("recordsLatestLabel") || "Latest record");
+  setNodeText("#recordsLatestText", t("recordsLatestText") || "Most recent assessment from the loaded dataset.");
+  if (elements.fetchRecordBtn) setNodeText("#fetchRecordBtn", t("fetchRecordBtn"));
+  if (elements.downloadSelectedPdfBtn) setNodeText("#downloadSelectedPdfBtn", t("downloadPdfBtn"));
+  if (elements.refreshRecordsBtn) setNodeText("#refreshRecordsBtn", t("refreshRecordsBtn") || "Refresh Records");
+  if (elements.exportFilteredRecordsBtn) setNodeText("#exportFilteredRecordsBtn", t("exportFilteredRecordsBtn") || "Export Filtered JSON");
+  if (elements.recordLookup) elements.recordLookup.placeholder = t("recordLookupPlaceholder");
   setNodeText("#analysisAssessmentIdLabel", t("assessmentIdLabel"));
   setNodeText("#analysisConfidenceLabel", t("overallConfidenceLabel"));
-  setNodeText("#analysisConfidenceLiftText", t("confidenceLiftText"));
   setNodeText("#analysisEvidenceStrengthLabel", t("evidenceStrengthLabel"));
   setNodeText("#analysisOverallRiskLabel", t("overallRiskLabel"));
   setNodeText("#recordsTableAssessmentIdHeader", t("assessmentIdLabel"));
@@ -3438,7 +3484,6 @@ function applyLanguage() {
   setNodeText("#analysisStrongestDomainLabel", t("strongestSignalLabel"));
   setNodeText("#analysisCoverageLabel", t("modalitiesUsedLabel"));
   setNodeText("#analysisSubmissionTimeLabel", t("submissionTimeLabel"));
-  setNodeText("#analysisTrajectoryLabel", t("trajectoryLabel"));
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(1) .section-heading h2", t("domainAnalysisTitle"));
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(1) .section-heading p", t("domainAnalysisText"));
   setNodeText("#analyticsView .analytics-grid-primary .panel:nth-child(2) .section-heading h2", t("componentContributionTitle"));
@@ -3466,15 +3511,20 @@ function applyLanguage() {
   setNodeText("#analyticsIntroInstrumentKicker", t("analyticsIntroInstrumentKicker"));
   setNodeText("#analyticsIntroInstrumentTitle", t("analyticsIntroInstrumentTitle"));
   setNodeText("#analyticsIntroInstrumentText", t("analyticsIntroInstrumentText"));
-  setNodeText("#trajectoryModelTitle", t("trajectoryModelTitle"));
-  setNodeText("#trajectoryModelText", t("trajectoryModelText"));
-  setNodeText("#trajectorySummaryTitle", t("trajectorySummaryTitle"));
-  setNodeText("#trajectorySummaryText", t("trajectorySummaryText"));
+}
+
+function setWorkspacePage(page) {
+  const nextPage = Math.max(1, Math.min(3, Number(page) || 1));
+  state.workspacePage = nextPage;
+  elements.workspacePage1?.classList.toggle("is-hidden", state.workspacePage !== 1);
+  elements.workspacePage2?.classList.toggle("is-hidden", state.workspacePage !== 2);
+  elements.workspacePage3?.classList.toggle("is-hidden", state.workspacePage !== 3);
 }
 
 function applyDashboardLanguageSelection() {
   buildQuestionnaire();
   wireQuestionnaireEvents();
+  setWorkspacePage(1);
   applyLanguage();
   loadValidatedInstruments();
   renderAdaptiveQuestion();
@@ -3647,12 +3697,12 @@ function modalityReadinessMessage(kind, payload, file) {
       uploadReceived: "अपलोड प्राप्त हुआ, लेकिन कोई उपयोगी बैकएंड निष्कर्ष नहीं मिला।",
     },
     Bengali: {
-      optionalInput: "ঐচ্ছিক ইনপুট দেওয়া হয়নি",
-      waiting: "আপলোড হয়েছে এবং ব্যাকএন্ড বিশ্লেষণের অপেক্ষায় আছে",
+      optionalInput: "ঐচ্ছিক ইনপুট দেওয়া হয়নি",
+      waiting: "আপলোড হয়েছে এবং ব্যাকএন্ড বিশ্লেষণের অপেক্ষায় আছে",
       selectedReady: "নির্বাচিত এবং ব্যাকএন্ড বিশ্লেষণের জন্য প্রস্তুত",
-      audioAnalyzed: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে",
-      imageAnalyzed: "{source} থেকে মুখের ছবি সফলভাবে বিশ্লেষণ করা হয়েছে",
-      uploadReceived: "আপলোড পাওয়া গেছে, কিন্তু ব্যবহারযোগ্য কোনো ব্যাকএন্ড ফলাফল তৈরি হয়নি।",
+      audioAnalyzed: "{source} থেকে সফলভাবে বিশ্লেষণ করা হয়েছে",
+      imageAnalyzed: "{source} থেকে মুখের ছবি সফলভাবে বিশ্লেষণ করা হয়েছে",
+      uploadReceived: "আপলোড পাওয়া গেছে, কিন্তু ব্যবহারযোগ্য কোনো ব্যাকএন্ড ফলাফল তৈরি হয়নি।",
     },
   }[language] || {
     optionalInput: "optional input not provided",
@@ -3787,10 +3837,10 @@ function updateCaptureUi() {
     Bengali: {
       recordingReady: "কথন রেকর্ডিং প্রস্তুত",
       recordingProgress: "রেকর্ডিং চলছে...",
-      recordingMissing: "এখনও কোনো কথন রেকর্ডিং পাওয়া যায়নি।",
+      recordingMissing: "এখনও কোনো কথন রেকর্ডিং পাওয়া যায়নি।",
       photoReady: "ধরা ছবি প্রস্তুত",
       cameraOpen: "ক্যামেরা খোলা আছে। একটি পরিষ্কার সামনের ছবি তুলুন।",
-      photoMissing: "এখনও কোনো লাইভ ছবি পাওয়া যায়নি।",
+      photoMissing: "এখনও কোনো লাইভ ছবি পাওয়া যায়নি।",
     },
   }[language] || {
     recordingReady: "Speech recording ready",
@@ -4002,7 +4052,6 @@ function renderValidatedInstrumentPanel() {
     return;
   }
 
-  const optionLabels = RESPONSE_OPTION_TRANSLATIONS[currentLanguage()] || RESPONSE_OPTION_TRANSLATIONS.English;
   const currentSelectionId = String(state.selectedValidatedInstrumentId || "").toLowerCase();
   const selectedInstrument = languageSpecificInstruments.find((instrument) => String(instrument.id || "").toLowerCase() === currentSelectionId)
     || languageSpecificInstruments[0];
@@ -4010,21 +4059,18 @@ function renderValidatedInstrumentPanel() {
   const buttons = languageSpecificInstruments.map((instrument) => {
     const instrumentId = String(instrument.id || "").toLowerCase();
     const label = instrument.localized_label || instrument.label || instrument.id || t("noDataLabel");
-    const languageName = localizedValidatedInstrumentLanguageName(instrument.language || instrument.id);
     const active = instrumentId === state.selectedValidatedInstrumentId ? " is-active" : "";
     return `
       <button type="button" class="validated-instrument-button${active}" data-validated-instrument-id="${instrumentId}" aria-pressed="${instrumentId === state.selectedValidatedInstrumentId ? "true" : "false"}">
         <span class="validated-instrument-button-label">${label}</span>
-        <span class="validated-instrument-button-language">${languageName}</span>
       </button>
     `;
   }).join("");
-  elements.validatedInstrumentPanel.className = "validated-instrument-panel chart-stack";
+  elements.validatedInstrumentPanel.className = "validated-instrument-panel";
   elements.validatedInstrumentPanel.innerHTML = `
-    <div class="validated-instrument-selector" role="group" aria-label="${t("validatedInstrumentsTitle")}">
+    <div class="validated-instrument-selector single-instrument" role="group" aria-label="${t("validatedInstrumentsTitle")}">
       ${buttons}
     </div>
-    ${selectedInstrument ? renderValidatedInstrumentDetail(selectedInstrument, optionLabels) : ""}
   `;
   elements.validatedInstrumentPanel.querySelectorAll("[data-validated-instrument-id]").forEach((button) => {
     button.addEventListener("click", () => {
@@ -4071,6 +4117,10 @@ function collectQuestionnaireResponses() {
     responses[question.id] = Number(selected?.value || 0);
   });
   return responses;
+}
+
+function isQuestionnaireFullyAnswered() {
+  return QUESTION_BANK.every((question) => Boolean(document.querySelector(`input[name="${question.id}"]:checked`)));
 }
 
 function scoreQuestionnaire(responses) {
@@ -4230,8 +4280,9 @@ function buildMetadataModality(type, file) {
     available: true,
     modality: type,
     confidence: 0.2,
-    notes: `Dashboard captured ${type} upload metadata for ${file.name}. No browser-side ${type} model inference was run.`,
+    notes: `Dashboard received the ${type} upload for ${file.name}. The file reached the backend, but no trained inference result was produced, so the card is showing metadata only.`,
     features: {
+      model_source: "metadata_only",
       file_name: file.name,
       file_size_kb: Math.round(file.size / 1024),
       mime_type: file.type || "unknown",
@@ -4251,9 +4302,9 @@ function buildPassiveMetadataModality(videoFile, typingEvents) {
   const featureName = videoFile?.name || "typing rhythm traces";
   const language = currentLanguage();
   const notesByLanguage = {
-    English: `Dashboard captured passive biomarker input from ${featureName}. No browser-side passive biomarker inference was run.`,
+    English: `Dashboard captured additional input from ${featureName}. No browser-side inference was run.`,
     Hindi: `डैशबोर्ड ने ${featureName} से निष्क्रिय संकेत इनपुट कैप्चर किया। ब्राउज़र-साइड निष्क्रिय संकेत विश्लेषण नहीं चलाया गया।`,
-    Bengali: `ড্যাশবোর্ড ${featureName} থেকে নিষ্ক্রিয় সংকেত ইনপুট সংগ্রহ করেছে। ব্রাউজার-সাইড নিষ্ক্রিয় সংকেত বিশ্লেষণ চালানো হয়নি।`,
+    Bengali: `ড্যাশবোর্ড ${featureName} থেকে নিষ্ক্রিয় সংকেত ইনপুট সংগ্রহ করেছে। ব্রাউজার-সাইড নিষ্ক্রিয় সংকেত বিশ্লেষণ চালানো হয়নি।`,
   };
   const metadata = {
     available: true,
@@ -4261,6 +4312,7 @@ function buildPassiveMetadataModality(videoFile, typingEvents) {
     confidence: 0.2,
     notes: notesByLanguage[language] || notesByLanguage.English,
     features: {
+      model_source: "metadata_only",
       file_name: featureName,
       input_type: videoFile ? "video" : "typing",
       upload_received: Boolean(videoFile),
@@ -4288,7 +4340,7 @@ function blendQuestionnaireWithScreening(questionnaireScore, screeningScore, scr
   const q = clamp01(questionnaireScore);
   const s = clamp01(screeningScore);
   const c = clamp01(screeningConfidence);
-  const evidenceWeight = Math.max(0.12, Math.min(0.30, 0.12 + (0.18 * c)));
+  const evidenceWeight = Math.max(0.10, Math.min(0.26, 0.10 + (0.16 * c)));
   return clamp01((q * (1.0 - evidenceWeight)) + (s * evidenceWeight));
 }
 
@@ -4362,6 +4414,57 @@ function buildOfflineAssessmentRecord(payload) {
   });
 }
 
+function loadWizardSavedAnalyticsRecord() {
+  try {
+    const raw = window.sessionStorage.getItem(WIZARD_SAVED_RECORD_KEY);
+    if (!raw) return null;
+    const snapshot = JSON.parse(raw);
+    const profile = snapshot.profile || {};
+    const questionnaireResponses = snapshot.questionnaire || {};
+    const questionnaire = scoreQuestionnaire(questionnaireResponses);
+    const language = normalizeLanguage(profile.language || "English");
+    const validatedInstrument = buildValidatedInstrumentPayload(language);
+    if (validatedInstrument) {
+      questionnaire.validated_instrument = validatedInstrument;
+    }
+    const payload = {
+      profile: {
+        full_name: String(profile.fullName || ""),
+        age: Number(profile.age || 0),
+        gender: profile.gender || "Prefer not to say",
+        village: String(profile.village || ""),
+        district: String(profile.district || ""),
+        block: String(profile.block || ""),
+        occupation: String(profile.occupation || ""),
+        phone: String(profile.phone || ""),
+        assessor: String(profile.assessor || ""),
+        language,
+        consent_received: Boolean(profile.consent),
+        record_origin: "test",
+      },
+      questionnaire,
+      text_input: String(snapshot.narrative || ""),
+      audio_file: snapshot.audioFileName ? { name: snapshot.audioFileName, size: 0, type: "audio/*" } : null,
+      image_file: snapshot.imageFileName ? { name: snapshot.imageFileName, size: 0, type: "image/*" } : null,
+      passive_video_file: snapshot.passiveVideoName ? { name: snapshot.passiveVideoName, size: 0, type: "video/*" } : null,
+      typing_events: [],
+    };
+    return normalizeRecord({
+      assessment_id: snapshot.assessment_id || makeOfflineAssessmentId(),
+      created_at: snapshot.savedAt || new Date().toISOString(),
+      sync_status: "pending",
+      local_visible: true,
+      record_origin: "test",
+      profile: payload.profile,
+      questionnaire: payload.questionnaire,
+      multimodal: buildOfflineMultimodal(payload),
+    });
+  } catch (error) {
+    console.error("Could not load saved wizard record", error);
+    return null;
+  }
+}
+
 function buildUploadMetadata(file) {
   if (!file) {
     return null;
@@ -4379,6 +4482,9 @@ function buildProfilePayload() {
     age: Number(elements.age.value || 0),
     gender: elements.gender.value,
     village: elements.village.value.trim(),
+    district: elements.district.value.trim(),
+    block: elements.block.value.trim(),
+    occupation: elements.occupation.value.trim(),
     phone: elements.phone.value.trim(),
     assessor: elements.assessor.value.trim(),
     language: normalizeLanguage(elements.language.value),
@@ -4448,8 +4554,8 @@ function createPdfBytes(record) {
     `${t("assessmentIdLabel")}: ${record.assessment_id}`,
     `${t("createdAtLabel")}: ${record.created_at}`,
     `${t("candidateLabel")}: ${record.profile.full_name || t("unknownUserLabel")}`,
-    `${t("villageShortLabel")}: ${record.profile.village || t("unknownLabel")}`,
-    `${t("assessorShortLabel")}: ${record.profile.assessor || t("unknownLabel")}`,
+    `${t("villageShortLabel")}: ${record.profile.village || t("unknownLabel")} | ${t("districtLabel")}: ${record.profile.district || t("unknownLabel")} | ${t("blockLabel")}: ${record.profile.block || t("unknownLabel")}`,
+    `${t("occupationLabel")}: ${record.profile.occupation || t("unknownLabel")} | ${t("assessorShortLabel")}: ${record.profile.assessor || t("unknownLabel")}`,
     ...(validatedInstrument ? [`${t("validatedInstrumentLabel")}: ${validatedInstrument.localized_label || validatedInstrument.label || validatedInstrument.id || t("unknownLabel")}`] : []),
     "",
   ];
@@ -4518,7 +4624,9 @@ function loadResults(records, sourceLabel, focusLatest = false) {
 }
 
 async function persistLocalRecord(record) {
-  await offlineStorePut(OFFLINE_RECORDS_STORE, normalizeRecord(record));
+  const normalized = normalizeRecord({ ...record, local_visible: true });
+  await offlineStorePut(OFFLINE_RECORDS_STORE, normalized);
+  return normalized;
 }
 
 async function removeLocalRecord(assessmentId) {
@@ -4531,8 +4639,9 @@ async function queueAssessmentForSync(payload, localRecord) {
     created_at: new Date().toISOString(),
     payload,
   });
-  await persistLocalRecord(localRecord);
+  const visibleRecord = await persistLocalRecord(localRecord);
   await refreshPendingSyncCount();
+  return visibleRecord;
 }
 
 async function loadOfflineRecords() {
@@ -4795,21 +4904,19 @@ function getTrajectory(record) {
 function renderOverview() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.analysisAssessmentId.textContent = t("noDataLabel");
+    elements.analysisAssessmentId.textContent = t("noRecordSelected");
     elements.analysisConfidence.textContent = "0%";
     if (elements.analysisEvidenceStrength) elements.analysisEvidenceStrength.textContent = "0%";
-    elements.analysisStrongestDomain.textContent = t("noDataLabel");
+    elements.analysisStrongestDomain.textContent = t("workspacePredictionEmpty");
     elements.analysisCoverage.textContent = "0/3";
-    elements.analysisSubmissionTime.textContent = t("noDataLabel");
-    if (elements.analysisTrajectory) elements.analysisTrajectory.textContent = t("noDataLabel");
-    elements.analysisOverallRisk.textContent = t("noDataLabel");
-    setBanner(elements.analysisStatusBanner, t("analyticsBannerDefault"), "neutral");
+    elements.analysisSubmissionTime.textContent = "—";
+    elements.analysisOverallRisk.textContent = t("noRecordSelected");
+    setBanner(elements.analysisStatusBanner, t("workspacePredictionEmpty"), "neutral");
     return;
   }
 
   const modalitiesUsed = ["text", "audio", "image"].filter((key) => record.multimodal?.[key]?.available).length;
   const dominant = strongestDomain(record);
-  const trajectory = getTrajectory(record);
   elements.analysisAssessmentId.textContent = record.assessment_id;
   elements.analysisConfidence.textContent = formatPercent(record.multimodal?.overall?.confidence || 0);
   if (elements.analysisEvidenceStrength) {
@@ -4818,11 +4925,6 @@ function renderOverview() {
   elements.analysisStrongestDomain.textContent = dominant ? localizedDomainLabel(dominant) : t("noDataLabel");
   elements.analysisCoverage.textContent = `${modalitiesUsed}/3`;
   elements.analysisSubmissionTime.textContent = formatDate(record.created_at);
-  if (elements.analysisTrajectory) {
-    elements.analysisTrajectory.textContent = trajectory && trajectory.history_count >= 2
-      ? trajectoryStatusLabel(trajectory.status)
-      : "";
-  }
   elements.analysisOverallRisk.textContent = overallRiskLabel(record);
   const comorbidity = record.multimodal?.comorbidity || {};
   const topPair = comorbidity.top_pairs?.[0] || null;
@@ -4850,22 +4952,40 @@ function buildChartCard(title, subtitle, visual, footer = "") {
   `;
 }
 
+function buildPromptCard(title, text, items = []) {
+  return `
+    <div class="chart-card prompt-card">
+      <div class="tile-top"><strong>${title}</strong><span class="summary-meta">${text}</span></div>
+      ${items.length ? `<ul class="prompt-list">${items.map((item) => `<li>${item}</li>`).join("")}</ul>` : ""}
+    </div>
+  `;
+}
+
+function buildAnalyticsStatStrip(items) {
+  return `
+    <div class="analytics-mini-stats">
+      ${items.map((item) => `
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${item.label}</span>
+          <strong class="analytics-mini-stat-value">${item.value}</strong>
+          ${item.detail ? `<span class="analytics-mini-stat-detail">${item.detail}</span>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderScoreWeightSummary() {
-  const items = ["image", "text", "audio", "passive_biomarkers"].map((modality) => {
+  const items = ["text", "audio", "image"].map((modality) => {
     const label = localizedModalityLabel(modality);
     const weight = finalScoreWeight(modality);
     const weightPct = Math.round(weight * 100);
-    const className = modality === "image"
-      ? "score-weight-item image-priority"
-      : modality === "audio"
-        ? "score-weight-item audio-priority"
-        : "score-weight-item";
+    const className = "score-weight-item";
     return `
       <div class="${className}">
         <div class="score-weight-row">
           <span class="score-weight-label">
             ${label}
-            ${modality === "image" ? '<span class="score-weight-tag">Lead signal</span>' : ""}
           </span>
           <strong>${weightPct}%</strong>
         </div>
@@ -4874,14 +4994,11 @@ function renderScoreWeightSummary() {
     `;
   }).join("");
   if (elements.scoreWeightSummary) {
-    const weightSummary = ["image", "text", "audio", "passive_biomarkers"]
+    const weightSummary = ["text", "audio", "image"]
       .map((modality) => `${localizedModalityLabel(modality)} ${Math.round(finalScoreWeight(modality) * 100)}%`)
       .join(", ");
     elements.scoreWeightSummary.innerHTML = `
-      <div class="score-weight-intro">
-        <span class="risk-pill instrument-pill image-focus-pill">Image now leads the combined score</span>
-        <span class="summary-meta">${weightSummary}.</span>
-      </div>
+      <p class="summary-meta">${weightSummary}.</p>
       <div class="score-weight-grid">${items}</div>
     `;
   }
@@ -4904,7 +5021,7 @@ function formatCompactPath(value) {
 }
 
 function classifyBundleFamily(bundleKey, bundle) {
-  const metrics = bundle?.metrics || {};
+  const metrics = derivePerformanceMetrics(bundle);
   if (bundleKey === "text_transformer") return "Transformer";
   if (bundleKey === "audio_sequence") return "Sequence";
   if (bundleKey === "comorbidity") return "Joint label";
@@ -4913,8 +5030,110 @@ function classifyBundleFamily(bundleKey, bundle) {
   return "Other";
 }
 
+function deriveSelectedCandidateMetrics(candidateMetrics) {
+  if (!candidateMetrics || typeof candidateMetrics !== "object") return {};
+  let bestCandidate = {};
+  let bestScore = [-1, -1, -1, -1, -1];
+  Object.values(candidateMetrics).forEach((candidate) => {
+    if (!candidate || typeof candidate !== "object") return;
+    const score = [
+      Number(candidate.best_fbeta ?? candidate.f1 ?? 0),
+      Number(candidate.f1 ?? 0),
+      Number(candidate.precision ?? 0),
+      Number(candidate.accuracy ?? 0),
+      Number(candidate.recall ?? 0),
+    ];
+    const isBetter = score.some((value, index) => Number.isFinite(value) && value > bestScore[index]);
+    if (isBetter) {
+      bestCandidate = candidate;
+      bestScore = score;
+    }
+  });
+  return bestCandidate;
+}
+
+function derivePerformanceMetrics(bundle) {
+  const baseMetrics = { ...(bundle?.metrics || {}) };
+  if (
+    baseMetrics.macro_accuracy !== undefined
+    || baseMetrics.macro_precision !== undefined
+    || baseMetrics.macro_recall !== undefined
+    || baseMetrics.macro_f1 !== undefined
+    || baseMetrics.macro_r2 !== undefined
+    || baseMetrics.exact_match !== undefined
+    || baseMetrics.label_accuracy !== undefined
+  ) {
+    return baseMetrics;
+  }
+
+  const selection = bundle?.model_selection || {};
+  const selected = Object.values(selection)
+    .map((candidateMetrics) => deriveSelectedCandidateMetrics(candidateMetrics))
+    .filter((candidate) => candidate && typeof candidate === "object");
+  if (!selected.length) return baseMetrics;
+
+  const mean = (keys) => {
+    const values = [];
+    selected.forEach((candidate) => {
+      for (const key of keys) {
+        const value = Number(candidate?.[key]);
+        if (Number.isFinite(value)) {
+          values.push(value);
+          break;
+        }
+      }
+    });
+    if (!values.length) return undefined;
+    return values.reduce((sum, value) => sum + value, 0) / values.length;
+  };
+
+  return {
+    ...baseMetrics,
+    macro_accuracy: mean(["accuracy", "macro_accuracy"]),
+    macro_precision: mean(["precision", "macro_precision"]),
+    macro_recall: mean(["recall", "macro_recall"]),
+    macro_f1: mean(["f1", "macro_f1"]),
+    macro_r2: mean(["r2", "macro_r2"]),
+  };
+}
+
+function shouldAutoOpenWorkspaceInsights(payload) {
+  return Boolean(
+    payload?.profile?.full_name?.trim()
+    && Number(payload?.profile?.age || 0) > 0
+    && payload?.profile?.village?.trim()
+    && payload?.profile?.assessor?.trim()
+    && payload?.profile?.consent_received
+    && isQuestionnaireFullyAnswered()
+    && (
+      String(payload?.text_input || "").trim()
+      || payload?.audio_file
+      || payload?.passive_video_file
+      || payload?.image_file
+    )
+  );
+}
+
+function goToAnalyticsHubAfterSave() {
+  if (state.workspaceReturnTimer) {
+    clearTimeout(state.workspaceReturnTimer);
+  }
+  setBanner(elements.workspaceStatus, t("savedReturnLabel"), "success");
+  state.workspaceReturnTimer = window.setTimeout(() => {
+    state.workspaceReturnTimer = null;
+  }, 0);
+  switchView("analyticsView");
+  if (state.latestCreatedRecord) {
+    setActiveResults([state.latestCreatedRecord], {
+      focusLatest: true,
+      bannerMessage: `${t("analyticsShowing")} ${state.latestCreatedRecord.assessment_id}.`,
+      bannerTone: "success",
+    });
+  }
+}
+
 function modelMetricSummary(bundleKey, bundle) {
-  const metrics = bundle?.metrics || {};
+  const metrics = derivePerformanceMetrics(bundle);
   const family = classifyBundleFamily(bundleKey, bundle);
   if (family === "Classic classifier") {
     return [
@@ -4939,7 +5158,7 @@ function modelMetricSummary(bundleKey, bundle) {
 }
 
 function metricMissingList(bundleKey, bundle) {
-  const metrics = bundle?.metrics || {};
+  const metrics = derivePerformanceMetrics(bundle);
   const family = classifyBundleFamily(bundleKey, bundle);
   if (family === "Classic classifier") {
     return ["macro_accuracy", "macro_precision", "macro_recall", "macro_f1", "macro_r2"]
@@ -4952,14 +5171,6 @@ function metricMissingList(bundleKey, bundle) {
       .map((key) => key.replace("macro_", "Macro ").replace("_", " "));
   }
   return [];
-}
-
-function getModelStats(record) {
-  return {
-    ...(state.modelStats || {}),
-    ...(record?.model_stats || {}),
-    ...(record?.multimodal?.model_stats || {}),
-  };
 }
 
 function isOfflinePreviewRecord(record) {
@@ -5015,24 +5226,17 @@ function modalityDisplayConfidence(modality, payload) {
 }
 
 function getModelComparisonRows(record) {
-  const modelStats = getModelStats(record);
   return ["text", "audio", "image"].map((modality) => {
-    const summary = modelStats[modality] || null;
     const modalityPayload = record?.multimodal?.[modality] || {};
     const features = modalityPayload.features || {};
     const fallbackConfidence = modalityDisplayConfidence(modality, modalityPayload);
     return {
       modality,
       label: modality.charAt(0).toUpperCase() + modality.slice(1),
-      source: summary?.model_source || features.model_source || "backend_heuristic",
-      macroR2: Number(summary?.macro_r2 ?? features.model_macro_r2 ?? 0),
-      confidenceHint: Number(summary?.confidence_hint ?? modalityPayload.confidence ?? fallbackConfidence ?? 0),
-      sampleCount: Number(summary?.sample_count ?? features.trained_samples ?? 0),
-      trainedAt: summary?.trained_at || "Unavailable",
-      datasetRoot: summary?.dataset_root || "Unavailable",
-      manifestPath: summary?.manifest_path || "Unavailable",
-      domains: Array.isArray(summary?.domains) ? summary.domains : (Array.isArray(features.trained_domains) ? features.trained_domains : []),
-      domainSampleCounts: summary?.sample_counts || features.domain_sample_counts || {},
+      source: features.model_source || "backend_heuristic",
+      confidenceHint: Number(modalityPayload.confidence ?? fallbackConfidence ?? 0),
+      sampleCount: Number(features.trained_samples ?? 0),
+      domains: Array.isArray(features.trained_domains) ? features.trained_domains : [],
     };
   });
 }
@@ -5125,11 +5329,16 @@ function buildHorizontalMetricSvg(items, color) {
   const rows = items.map((item, index) => {
     const y = topPad + (index * rowHeight);
     const barWidth = (item.value / maxValue) * chartWidth;
+    const rowColor = item.barColor || color;
+    const rowTrack = item.trackColor || "rgba(107,45,25,0.08)";
+    const labelWeight = item.emphasis ? "font-weight:700;" : "";
+    const valueWeight = item.emphasis ? "font-weight:700;" : "";
     return `
-      <text x="8" y="${y + 15}" class="svg-axis-text">${item.label}</text>
-      <rect x="${leftPad}" y="${y}" width="${chartWidth}" height="16" rx="8" fill="rgba(107,45,25,0.08)"></rect>
-      <rect x="${leftPad}" y="${y}" width="${barWidth}" height="16" rx="8" fill="${color}"></rect>
-      <text x="${width - 10}" y="${y + 14}" text-anchor="end" class="svg-value-text">${item.display}</text>
+      <text x="8" y="${y + 15}" class="svg-axis-text" style="${labelWeight}">${item.label}</text>
+      <rect x="${leftPad}" y="${y}" width="${chartWidth}" height="16" rx="8" fill="${rowTrack}"></rect>
+      <rect x="${leftPad}" y="${y}" width="${barWidth}" height="16" rx="8" fill="${rowColor}"></rect>
+      ${item.emphasis ? `<rect x="${leftPad}" y="${y}" width="${barWidth}" height="16" rx="8" fill="none" stroke="${rowColor}" stroke-width="1.5"></rect>` : ""}
+      <text x="${width - 10}" y="${y + 14}" text-anchor="end" class="svg-value-text" style="${valueWeight}">${item.display}</text>
     `;
   }).join("");
   return `<svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img">${rows}</svg>`;
@@ -5181,15 +5390,40 @@ function renderRiskDistribution() {
   const record = getAnalysisRecord();
   if (!record) {
     elements.riskDistribution.className = "chart-stack empty-state";
-    elements.riskDistribution.textContent = t("noAssessmentAnalysis");
+    elements.riskDistribution.innerHTML = buildPromptCard(
+      t("domainAnalysisTitle"),
+      t("workspacePredictionEmpty"),
+      [t("workspaceReadinessEmpty"), t("analyticsBannerDefault")]
+    );
     return;
   }
 
-  const comparisonCards = DOMAINS.map((domain) => `
-    <div class="compare-card">
-      <div class="score-header"><span>${localizedDomainLabel(domain)}</span><strong>${(record.multimodal?.overall?.[domain] || "low").toUpperCase()}</strong></div>
-      ${scoreLine(t("questionnaireLabel"), Number(record.questionnaire?.[`${domain}_score`] || 0))}
-      ${scoreLine(t("combinedAiLabel"), Number(record.multimodal?.overall?.scores?.[domain] || 0))}
+  const domainRows = DOMAINS.map((domain) => {
+    const questionnaireScore = Number(record.questionnaire?.[`${domain}_score`] || 0);
+    const combinedScore = Number(record.multimodal?.overall?.scores?.[domain] || 0);
+    const gap = Math.abs(questionnaireScore - combinedScore);
+    const risk = record.multimodal?.overall?.[domain] || "low";
+    return {
+      domain,
+      label: localizedDomainLabel(domain),
+      risk,
+      questionnaireScore,
+      combinedScore,
+      gap,
+    };
+  });
+  const highestGap = domainRows.slice().sort((a, b) => b.gap - a.gap)[0] || null;
+  const averageGap = average(domainRows.map((row) => row.gap));
+  const highRiskDomains = domainRows.filter((row) => row.risk === "high").length;
+  const comparisonCards = domainRows.map((row) => `
+    <div class="compare-card compare-card-tight">
+      <div class="score-header">
+        <span>${row.label}</span>
+        <strong>${String(row.risk).toUpperCase()}</strong>
+      </div>
+      ${scoreLine(t("questionnaireLabel"), row.questionnaireScore)}
+      ${scoreLine(t("combinedAiLabel"), row.combinedScore)}
+      <p class="chart-note">${t("scoreLabel")}: ${formatMetricNumber(row.gap, 3)} | ${t("overallRiskLabel")}: ${localizedRiskLevel(row.risk)}</p>
     </div>
   `).join("");
 
@@ -5197,7 +5431,17 @@ function renderRiskDistribution() {
   elements.riskDistribution.innerHTML = buildChartCard(
     t("domainScoreComparisonTitle"),
     t("domainScoreComparisonText"),
-    comparisonCards,
+    `
+      ${buildAnalyticsStatStrip([
+        { label: "Domains", value: String(domainRows.length) },
+        { label: "High risk", value: String(highRiskDomains) },
+        { label: "Avg gap", value: formatMetricNumber(averageGap, 3) },
+        { label: "Top gap", value: highestGap ? highestGap.label : t("noDataLabel"), detail: highestGap ? formatMetricNumber(highestGap.gap, 3) : "" },
+      ])}
+      <div class="compare-grid compare-grid-tight">
+        ${comparisonCards}
+      </div>
+    `,
     t("domainScoreComparisonDescription")
   );
 }
@@ -5206,25 +5450,58 @@ function renderSubmissionTrend() {
   const record = getAnalysisRecord();
   if (!record) {
     elements.submissionTrend.className = "chart-stack empty-state";
-    elements.submissionTrend.textContent = t("noComponentBreakdown");
+    elements.submissionTrend.innerHTML = buildPromptCard(
+      t("componentContributionTitle"),
+      t("workspaceNlpEmpty"),
+      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty")]
+    );
     return;
   }
-  const modalityRows = ["image", "text", "audio"].map((modality) => {
+  const modalityRows = ["text", "audio", "image"].map((modality) => {
     const payload = record.multimodal?.[modality] || {};
     const avgScore = average(DOMAINS.map((domain) => Number(payload[`${domain}_score`] || 0)));
     const weight = finalScoreWeight(modality);
     return {
+      modality,
       label: modality.charAt(0).toUpperCase() + modality.slice(1),
       value: Number(payload.confidence || 0),
       display: `${formatPercent(payload.confidence || 0)} conf | ${avgScore.toFixed(2)} avg score | ${Math.round(weight * 100)}% weight`,
+      emphasis: false,
+      barColor: "#287970",
+      trackColor: "rgba(107,45,25,0.08)",
     };
   });
+  const dominantRow = modalityRows.slice().sort((a, b) => b.value - a.value)[0] || null;
+  const activeModalities = modalityRows.filter((row) => row.value > 0).length;
+  const weightedAverage = average(modalityRows.map((row) => Number(row.display.split(" conf")[0].replace("%", "")) || 0));
+  const modalityCards = modalityRows.map((row) => `
+    <div class="compare-card compare-card-tight">
+      <div class="score-header">
+        <span>${row.label}</span>
+        <strong>${formatPercent(row.value)}</strong>
+      </div>
+      <p class="chart-note">${row.display}</p>
+      ${scoreLine("Average score", average(DOMAINS.map((domain) => Number(record.multimodal?.[row.modality]?.[`${domain}_score`] || 0))) || 0)}
+      ${scoreLine("Final weight", finalScoreWeight(row.modality))}
+    </div>
+  `).join("");
   elements.submissionTrend.className = "chart-stack";
   elements.submissionTrend.innerHTML = buildChartCard(
     "Component Contribution",
     "Confidence, average signal strength, and final score weight by modality",
-    buildHorizontalMetricSvg(modalityRows, "#287970"),
-    "Image now carries the largest share of the combined score when it is available."
+    `
+      ${buildAnalyticsStatStrip([
+        { label: "Active", value: String(activeModalities) },
+        { label: "Top modality", value: dominantRow ? dominantRow.label : t("noDataLabel") },
+        { label: "Top conf", value: dominantRow ? formatPercent(dominantRow.value) : t("noDataLabel") },
+        { label: "Avg conf", value: formatPercent(clamp01(weightedAverage / 100)) },
+      ])}
+      ${buildHorizontalMetricSvg(modalityRows, "#287970")}
+      <div class="compare-grid compare-grid-tight">
+        ${modalityCards}
+      </div>
+    `,
+    "Text, audio, and image are shown with the active final weighting."
   );
 }
 
@@ -5232,32 +5509,58 @@ function renderRiskHotspots() {
   const record = getAnalysisRecord();
   if (!record) {
     elements.riskHotspots.className = "chart-stack empty-state";
-    elements.riskHotspots.textContent = t("noModalityQuality");
+    elements.riskHotspots.innerHTML = buildPromptCard(
+      t("modalityQualityTitle"),
+      t("noModalityQuality"),
+      [t("workspaceNlpEmpty"), t("noAdditionalProcessingStatsLabel")]
+    );
     return;
   }
 
-  const cards = ["text", "audio", "image", "passive_biomarkers"].map((modality) => {
+  const cards = ["text", "audio", "image"].map((modality) => {
     const payload = record.multimodal?.[modality] || {};
     const features = payload.features || {};
     const displayConfidence = modalityDisplayConfidence(modality, payload);
     const available = modalityHasUsableSignal(modality, payload) || displayConfidence > 0;
     const weightPct = Math.round(finalScoreWeight(modality) * 100);
     const emphasisClass = modality === "image" ? " image-emphasis" : "";
+    const sourceBadge = features.model_source === "bundle_label_source_mismatch"
+      ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">Metadata mode</span>'
+      : features.model_source === "metadata_only"
+        ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">Metadata mode</span>'
+      : features.model_source === "missing_bundle"
+        ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">No bundle</span>'
+      : features.model_source === "unsupported_bundle_format"
+        ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">Unsupported bundle</span>'
+          : "";
     const metadata = [];
+    if (features.model_type) metadata.push(features.model_type);
+    if (features.model_source && features.model_source !== "trained_bundle") metadata.push(features.model_source);
+    if (features.training_strategy) metadata.push(features.training_strategy);
+    if (features.trained_samples !== undefined && features.trained_samples !== null) metadata.push(`samples ${features.trained_samples}`);
+    if (Array.isArray(features.trained_domains) && features.trained_domains.length) metadata.push(`domains ${features.trained_domains.join(", ")}`);
+    if (Array.isArray(features.label_sources) && features.label_sources.length) metadata.push(`labels ${features.label_sources.join(", ")}`);
+    if (Array.isArray(features.source_datasets) && features.source_datasets.length) metadata.push(features.source_datasets.join(", "));
+    if (features.file_name) metadata.push(features.file_name);
+    if (features.file_size_kb !== undefined && features.file_size_kb !== null) metadata.push(`${features.file_size_kb} KB`);
+    if (features.mime_type) metadata.push(features.mime_type);
+    if (features.precheck_reason) metadata.push(features.precheck_reason);
     if (features.transformer_model && features.transformer_model !== "unavailable") metadata.push(features.transformer_model);
     if (features.vision_backend) metadata.push(features.vision_backend);
     if (features.duration) metadata.push(`${Number(features.duration).toFixed(1)}s`);
     if (features.voiced_ratio !== undefined) metadata.push(`voiced ${Math.round(Number(features.voiced_ratio) * 100)}%`);
+    const cleanedMetadata = metadata.filter(Boolean);
     return `
       <div class="detail-card modality-card${emphasisClass}">
         <div class="detail-inline"><h3>${localizedModalityLabel(modality)}</h3><strong>${available ? t("usableLabel") : t("limitedLabel")}</strong></div>
         <div class="modality-weight-row">
           <span class="risk-pill instrument-pill weight-pill">${weightPct}% final weight</span>
+          ${sourceBadge}
           ${modality === "image" ? '<span class="risk-pill instrument-pill image-focus-pill">Image emphasized</span>' : ""}
         </div>
         ${scoreLine(t("confidenceLabel"), displayConfidence)}
         <p class="detail-muted">${payload.notes || t("noModalityNoteLabel")}</p>
-        <p class="detail-muted">${metadata.join(" | ") || t("noAdditionalProcessingStatsLabel")}</p>
+        <p class="detail-muted">${cleanedMetadata.join(" | ") || t("noAdditionalProcessingStatsLabel")}</p>
       </div>
     `;
   }).join("");
@@ -5284,7 +5587,6 @@ function renderNlpTrends() {
   if (modalityHasUsableSignal("text", record.multimodal?.text || {})) usedSignals.push(t("sentimentLabel"));
   if (modalityHasUsableSignal("audio", record.multimodal?.audio || {})) usedSignals.push(t("audioModalityLabel"));
   if (modalityHasUsableSignal("image", record.multimodal?.image || {})) usedSignals.push(t("imageModalityLabel"));
-  if (modalityHasUsableSignal("passive_biomarkers", record.multimodal?.passive || {})) usedSignals.push(localizedModalityLabel("passive_biomarkers"));
   const language = currentLanguage();
   const recommendationSummary = RECOMMENDATION_SOURCE_SUMMARIES[language] || RECOMMENDATION_SOURCE_SUMMARIES.English;
   const sourceSummary = usedSignals.length
@@ -5314,163 +5616,6 @@ function renderNlpTrends() {
     `,
     t("recommendationOverviewText")
   );
-}
-
-function renderTrajectoryModel() {
-  const record = getAnalysisRecord();
-  const trajectory = getTrajectory(record);
-  if (!record || !trajectory) {
-    elements.trajectoryModel.className = "chart-stack empty-state";
-    elements.trajectoryModel.textContent = t("noTrajectoryLabel");
-    elements.trajectorySummary.className = "chart-stack empty-state";
-    elements.trajectorySummary.textContent = t("noTrendSummaryLabel");
-    return;
-  }
-
-  const chartPoints = trajectory.points.map((point) => ({
-    label: point.created_at,
-    count: Math.round(Number(point.overall_score || 0) * 100),
-  }));
-  elements.trajectoryModel.className = "chart-stack";
-  elements.trajectoryModel.innerHTML = buildChartCard(
-    t("overallRiskTrajectoryTitle"),
-    t("screeningCountLabel", { count: trajectory.history_count, status: trajectoryStatusLabel(trajectory.status) }),
-    buildLineTrendSvg(chartPoints),
-    trajectory.summary,
-  );
-
-  if (trajectory.history_count < 2) {
-    elements.trajectorySummary.className = "chart-stack empty-state";
-    elements.trajectorySummary.textContent = "";
-    return;
-  }
-
-  const domainCards = DOMAINS.map((domain) => {
-    const info = trajectory.domains?.[domain] || {};
-    const change = Number(info.change_from_baseline || 0);
-    return `
-      <div class="detail-card">
-        <div class="detail-inline"><h3>${localizedDomainLabel(domain)}</h3><strong>${localizedTrajectoryStatus(info.direction || "stable")}</strong></div>
-        ${scoreLine(t("currentLabel"), Number(info.latest_score || 0))}
-        <p class="detail-muted">${t("changeSinceBaselineLabel")}: ${change >= 0 ? "+" : ""}${change.toFixed(2)}</p>
-      </div>
-    `;
-  }).join("");
-  elements.trajectorySummary.className = "chart-stack";
-  elements.trajectorySummary.innerHTML = buildChartCard(
-    t("trendSummaryTitle"),
-    t("baselineToCurrentLabel", {
-      baseline: Number(trajectory.baseline_overall_score || 0).toFixed(2),
-      current: Number(trajectory.latest_overall_score || 0).toFixed(2),
-    }),
-    `
-      <div class="detail-grid compact-grid">
-        <div class="detail-card">
-          <h3>${t("statusTitle")}</h3>
-          <p>${trajectoryStatusLabel(trajectory.status)}</p>
-          <p class="detail-muted">${trajectory.summary}</p>
-        </div>
-        <div class="detail-card">
-          <h3>${t("trajectoryMetricsTitle")}</h3>
-          <p>${t("changeSinceBaselineLabel")}: ${Number(trajectory.change_from_baseline || 0).toFixed(2)}</p>
-          <p>${t("recentChangeLabel")}: ${Number(trajectory.change_from_previous || 0).toFixed(2)}</p>
-          <p>${t("volatilityLabel")}: ${Number(trajectory.volatility || 0).toFixed(2)}</p>
-        </div>
-      </div>
-      <div class="detail-grid compact-grid">${domainCards}</div>
-    `,
-    t("trendModelDescription"),
-  );
-}
-
-function renderModelStatistics() {
-  const modelStats = state.modelStats || {};
-  const bundleEntries = Object.entries(modelStats).filter(([, bundle]) => bundle && typeof bundle === "object");
-  if (!bundleEntries.length) {
-    elements.villageSummary.className = "chart-stack empty-state";
-    elements.villageSummary.textContent = t("modelStatsUnavailableLabel");
-    return;
-  }
-
-  const familyGroups = {
-    "Classic classifier": [],
-    Transformer: [],
-    Sequence: [],
-    "Joint label": [],
-    Other: [],
-  };
-  bundleEntries.forEach(([bundleKey, bundle]) => {
-    const family = classifyBundleFamily(bundleKey, bundle);
-    familyGroups[family] = familyGroups[family] || [];
-    familyGroups[family].push({ bundleKey, bundle });
-  });
-
-  const familyCards = Object.entries(familyGroups)
-    .filter(([, bundles]) => bundles.length)
-    .map(([family, bundles]) => `
-      <div class="detail-card">
-        <div class="detail-inline">
-          <h3>${family}</h3>
-          <strong>${bundles.length} model${bundles.length === 1 ? "" : "s"}</strong>
-        </div>
-        <p class="detail-muted">${bundles.map(({ bundleKey }) => bundleKey).join(", ")}</p>
-      </div>
-    `)
-    .join("");
-
-  const bundleCards = bundleEntries.map(([bundleKey, bundle]) => {
-    const family = classifyBundleFamily(bundleKey, bundle);
-    const metrics = modelMetricSummary(bundleKey, bundle);
-    const missingMetrics = metricMissingList(bundleKey, bundle);
-    const sampleCount = Number(bundle.sample_count || 0);
-    const metricPills = metrics
-      .map((metric) => `
-        <span class="risk-pill instrument-pill metric-pill">
-          ${metric.label}: ${Number.isFinite(Number(metric.value)) ? formatMetricNumber(metric.value, 3) : "N/A"}
-        </span>
-      `)
-      .join("");
-    const sourceLine = [
-      bundle.training_strategy ? `Strategy: ${bundle.training_strategy}` : null,
-      bundle.trained_at ? `Trained: ${formatDate(bundle.trained_at)}` : null,
-      bundle.sample_count ? `Samples: ${bundle.sample_count}` : null,
-    ].filter(Boolean).join(" | ");
-    const missingLine = missingMetrics.length
-      ? `Classic scores not reported: ${missingMetrics.join(", ")}`
-      : "All classic score columns are reported for this family.";
-    const labelSources = Array.isArray(bundle.label_sources) && bundle.label_sources.length
-      ? bundle.label_sources.join(", ")
-      : "Unavailable";
-    return `
-      <div class="detail-card">
-        <div class="detail-inline">
-          <h3>${bundleKey}</h3>
-          <strong class="metric-family-pill">${family}</strong>
-        </div>
-        <p class="detail-muted">${sourceLine || "Model metadata unavailable."}</p>
-        <div class="detail-inline metric-pills">${metricPills}</div>
-        <p class="detail-muted">${missingLine}</p>
-        <p class="detail-muted">Label sources: ${labelSources}</p>
-      </div>
-    `;
-  }).join("");
-
-  elements.villageSummary.className = "chart-stack";
-  elements.villageSummary.innerHTML = `
-    <div class="detail-card">
-      <div class="detail-inline">
-        <h3>Model Performance Matrix</h3>
-        <strong>${bundleEntries.length} bundles</strong>
-      </div>
-      <p class="detail-muted">Classic classifier bundles report accuracy, precision, recall, macro F1, and macro R2. Transformer, sequence, and joint-label bundles report their own family metrics instead of those columns.</p>
-    </div>
-    <div class="detail-grid compact-grid">
-      ${familyCards}
-    </div>
-    <div class="compare-grid">
-      ${bundleCards}
-    </div>
-  `;
 }
 
 function getEmotionIntensityValue(features = {}) {
@@ -5576,9 +5721,9 @@ function renderNlpSignalSummary() {
       direct: "সরাসরি পাঠ্য তীব্রতা স্কোর থেকে নির্ধারিত।",
       emotionScores: "সবচেয়ে শক্তিশালী আবেগ স্কোর থেকে নির্ধারিত।",
       sentimentDistress: "সেন্টিমেন্ট ও কষ্টের সংকেত থেকে নির্ধারিত।",
-      missing: "কোনো ব্যবহারযোগ্য তীব্রতা সংকেত পাওয়া যায়নি।",
-      distressMatched: "বর্ণনামূলক কষ্টের বাক্য মেলানো হয়েছে।",
-      distressMissing: "কোনো কষ্টের বাক্য পাওয়া যায়নি।",
+      missing: "কোনো ব্যবহারযোগ্য তীব্রতা সংকেত পাওয়া যায়নি।",
+      distressMatched: "বর্ণনামূলক কষ্টের বাক্য মেলানো হয়েছে।",
+      distressMissing: "কোনো কষ্টের বাক্য পাওয়া যায়নি।",
       narrativeAnalyzed: analyticsSummary.narrativeAnalyzed,
       narrativeMissing: analyticsSummary.narrativeMissing,
       bundleAvailable: "মডেল বান্ডেল কভারেজ উপলব্ধ আছে।",
@@ -5650,9 +5795,14 @@ function renderQualityCheckSummary() {
   }
 
   const report = state.qualityCheckReport;
+  const record = getAnalysisRecord();
   if (!report) {
     elements.qualityCheckSummary.className = "chart-stack empty-state";
-    elements.qualityCheckSummary.textContent = t("qualityCheckEmpty");
+    elements.qualityCheckSummary.innerHTML = buildPromptCard(
+      t("qualityCheckSummaryTitle"),
+      t("qualityCheckEmpty"),
+      [t("analyticsIntroCurrentText"), t("analyticsIntroModelText")]
+    );
     return;
   }
 
@@ -5697,11 +5847,34 @@ function renderQualityCheckSummary() {
     `).join("")
     : `<p class="chart-note">${t("qualityCheckNoMismatches")}</p>`;
 
+  const domainComparisonCards = record
+    ? DOMAINS.map((domain) => {
+        const questionnaireScore = Number(record.questionnaire?.[`${domain}_score`] || 0);
+        const predictedScore = Number(record.multimodal?.overall?.scores?.[domain] || 0);
+        const questionnaireLabel = record.questionnaire?.[`${domain}_risk`] || riskLevel(questionnaireScore);
+        const predictedLabel = record.multimodal?.overall?.[domain] || riskLevel(predictedScore);
+        const confidence = Number(record.multimodal?.overall?.confidence || 0);
+        const gap = Math.abs(questionnaireScore - predictedScore);
+        const domainReport = report.by_domain?.[domain] || {};
+        return `
+          <div class="detail-card">
+            <div class="detail-inline">
+              <h3>${localizedDomainLabel(domain)}</h3>
+              <strong>${formatPercent(confidence)}</strong>
+            </div>
+            <p class="detail-muted">${t("questionnaireLabel")}: ${localizedRiskLevel(questionnaireLabel)} | ${t("dashboardLabel")}: ${localizedRiskLevel(predictedLabel)}</p>
+            <p class="detail-muted">${t("questionnaireLabel")} ${formatMetricNumber(questionnaireScore, 2)} | ${t("dashboardLabel")} ${formatMetricNumber(predictedScore, 2)} | ${t("scoreLabel")}: ${formatMetricNumber(gap, 3)}</p>
+            <p class="detail-muted">Backend: ${formatMetricNumber(domainReport.count || 0, 0)} samples | Acc ${formatMetricNumber(domainReport.accuracy, 3)} | F1 ${formatMetricNumber(domainReport.macro_f1, 3)}</p>
+          </div>
+        `;
+      }).join("")
+    : "";
+
   elements.qualityCheckSummary.className = "chart-stack";
   elements.qualityCheckSummary.innerHTML = `
     ${buildChartCard(
       t("qualityCheckSummaryTitle"),
-      `${report.record_count || 0} ${t("qualityCheckRecordsLabel")} | ${report.example_count || 0} ${t("qualityCheckExamplesLabel")}`,
+      `${(report.assessment_id || record?.assessment_id || t("unknownLabel"))} | ${report.record_count || 0} ${t("qualityCheckRecordsLabel")} | ${report.example_count || 0} ${t("qualityCheckExamplesLabel")}`,
       `
         <div class="tile-grid">
           ${summaryTiles.map((item) => `
@@ -5713,6 +5886,16 @@ function renderQualityCheckSummary() {
       `,
       gatePassed ? t("qualityCheckGatePassed") : t("qualityCheckGateFailed")
     )}
+    <div class="detail-card">
+      <div class="detail-inline">
+        <h3>Test-wise comparison</h3>
+        <strong>${report.assessment_id || record?.assessment_id || t("unknownLabel")}</strong>
+      </div>
+      <p class="detail-muted">Only the active screening record is shown here.</p>
+    </div>
+    <div class="compare-grid">
+      ${domainComparisonCards}
+    </div>
     <div class="compare-grid">
       ${mismatchCards}
     </div>
@@ -5837,7 +6020,9 @@ function exportQualityCheckPdfReport() {
   }
 
   const suffix = new Date().toISOString().replace(/[:.]/g, "-");
-  const url = `/api/quality-check/report.pdf?mismatches=5&language=${encodeURIComponent(currentLanguage())}`;
+  const record = getAnalysisRecord();
+  const recordParam = record?.assessment_id ? `&assessment_id=${encodeURIComponent(record.assessment_id)}` : "";
+  const url = `/api/quality-check/report.pdf?mismatches=5&language=${encodeURIComponent(currentLanguage())}${recordParam}`;
   downloadUrl(`quality_check_report_${suffix}.pdf`, url);
   setBanner(elements.analysisStatusBanner, t("qualityCheckSummaryTitle"), "success");
 }
@@ -5851,14 +6036,15 @@ async function runQualityCheck() {
   setBanner(elements.analysisStatusBanner, t("qualityCheckLoading"), "neutral");
 
   try {
-    const response = await fetch("/api/quality-check?mismatches=5", { cache: "no-store" });
+    const record = getAnalysisRecord();
+    const recordParam = record?.assessment_id ? `&assessment_id=${encodeURIComponent(record.assessment_id)}` : "";
+    const response = await fetch(`/api/quality-check?mismatches=5${recordParam}`, { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
     state.qualityCheckReport = await response.json();
     renderQualityCheckSummary();
-    await loadApiResults(t("backendApiLabel"), true);
-    setBanner(elements.analysisStatusBanner, `${t("qualityCheckSummaryTitle")}: ${state.qualityCheckReport?.overall?.accuracy != null ? formatPercent(state.qualityCheckReport.overall.accuracy) : t("noDataLabel")}`, "success");
+    setBanner(elements.analysisStatusBanner, `${t("qualityCheckSummaryTitle")}: ${(state.qualityCheckReport?.assessment_id || record?.assessment_id || t("unknownLabel"))}`, "success");
   } catch (error) {
     console.error("Quality check failed", error);
     state.qualityCheckReport = null;
@@ -5920,6 +6106,80 @@ function renderTable() {
   elements.nextPageBtn.disabled = state.currentPage >= totalPages;
 }
 
+function renderRecordsOverview() {
+  const loadedCount = state.filteredResults.length;
+  const selectedRecord = state.selectedRecord || null;
+  const latestRecord = state.allResults[0] || null;
+  const selectedLabel = selectedRecord
+    ? `${selectedRecord.assessment_id} | ${selectedRecord.profile?.full_name || t("unknownUserLabel")}`
+    : "None";
+  const latestLabel = latestRecord
+    ? `${latestRecord.assessment_id} | ${formatDate(latestRecord.created_at)}`
+    : "None";
+
+  if (elements.recordsLoadedValue) elements.recordsLoadedValue.textContent = String(loadedCount);
+  if (elements.recordsSelectedValue) elements.recordsSelectedValue.textContent = selectedLabel;
+  if (elements.recordsLatestValue) elements.recordsLatestValue.textContent = latestLabel;
+  if (elements.recordsSelectedText) {
+    elements.recordsSelectedText.textContent = selectedRecord
+      ? `${t("overallRiskLabel")}: ${overallRiskLabel(selectedRecord)} | ${t("overallConfidenceLabel")}: ${formatPercent(selectedRecord.multimodal?.overall?.confidence || 0)}`
+      : t("recordsSelectedText");
+  }
+  if (elements.recordsLatestText) {
+    elements.recordsLatestText.textContent = latestRecord
+      ? `${t("createdAtLabel")}: ${formatDate(latestRecord.created_at)} | ${t("overallRiskLabel")}: ${overallRiskLabel(latestRecord)}`
+      : t("recordsLatestText");
+  }
+  if (elements.downloadSelectedPdfBtn) {
+    elements.downloadSelectedPdfBtn.disabled = !selectedRecord || isDemoRecord(selectedRecord);
+  }
+  if (elements.exportFilteredRecordsBtn) {
+    elements.exportFilteredRecordsBtn.disabled = !state.filteredResults.length;
+  }
+}
+
+async function retrainPassiveBiomarkers() {
+  if (state.passiveRetrainLoading || !elements.retrainPassiveBtn) return;
+
+  state.passiveRetrainLoading = true;
+  elements.retrainPassiveBtn.disabled = true;
+  elements.retrainPassiveBtn.textContent = t("passiveRetrainLoading");
+  if (elements.passiveRetrainStatus) {
+    elements.passiveRetrainStatus.textContent = t("passiveRetrainLoading");
+  }
+
+  try {
+    const response = await fetch(apiUrl("/api/passive-biomarkers/retrain"), {
+      method: "POST",
+      cache: "no-store",
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = payload?.error || `HTTP ${response.status}`;
+      if (response.status === 500 && String(message).toLowerCase().includes("no passive")) {
+        throw new Error(t("passiveRetrainEmpty"));
+      }
+      throw new Error(message);
+    }
+    renderDashboard();
+    if (elements.passiveRetrainStatus) {
+      elements.passiveRetrainStatus.textContent = `${t("passiveRetrainSuccess")} ${payload?.bundle?.sample_count ? `(${payload.bundle.sample_count} rows)` : ""}`.trim();
+    }
+    setBanner(elements.analysisStatusBanner, t("passiveRetrainSuccess"), "success");
+  } catch (error) {
+    console.error("Passive retraining failed", error);
+    const message = error?.message || t("passiveRetrainError");
+    if (elements.passiveRetrainStatus) {
+      elements.passiveRetrainStatus.textContent = message;
+    }
+    setBanner(elements.analysisStatusBanner, message, "error");
+  } finally {
+    state.passiveRetrainLoading = false;
+    elements.retrainPassiveBtn.disabled = false;
+    elements.retrainPassiveBtn.textContent = t("passiveRetrainButton");
+  }
+}
+
 function scoreLine(label, value) {
   return `
     <div class="score-line">
@@ -5931,20 +6191,36 @@ function scoreLine(label, value) {
 
 function renderSelectedAssessment() {
   const record = state.selectedRecord;
+  renderAnalyticsInsightSummary(record);
   if (!record) {
     setNodeText("#analyticsIntroInstrumentKicker", t("analyticsIntroInstrumentKicker"));
     setNodeText("#analyticsIntroInstrumentTitle", t("analyticsIntroInstrumentTitle"));
     setNodeText("#analyticsIntroInstrumentText", t("analyticsIntroInstrumentText"));
-    elements.selectedAssessment.className = "empty-state";
-    elements.selectedAssessment.textContent = t("noRecordSelected");
+    elements.selectedAssessment.className = "detail-stack";
+    elements.selectedAssessment.innerHTML = `
+      <div class="detail-card prompt-card">
+        <h3>${t("noRecordSelected")}</h3>
+        <p class="detail-muted">${t("analyticsBannerDefault")}</p>
+        <ul class="prompt-list">
+          <li>${t("workspacePredictionEmpty")}</li>
+          <li>${t("workspaceNlpEmpty")}</li>
+          <li>${t("workspaceReadinessEmpty")}</li>
+        </ul>
+      </div>
+    `;
     return;
   }
   if (!isVisibleUserRecord(record)) {
     setNodeText("#analyticsIntroInstrumentKicker", t("analyticsIntroInstrumentKicker"));
     setNodeText("#analyticsIntroInstrumentTitle", t("analyticsIntroInstrumentTitle"));
     setNodeText("#analyticsIntroInstrumentText", t("analyticsIntroInstrumentText"));
-    elements.selectedAssessment.className = "empty-state";
-    elements.selectedAssessment.textContent = t("reportHiddenLabel");
+    elements.selectedAssessment.className = "detail-stack";
+    elements.selectedAssessment.innerHTML = `
+      <div class="detail-card prompt-card">
+        <h3>${t("reportHiddenLabel")}</h3>
+        <p class="detail-muted">${t("analyticsBannerDefault")}</p>
+      </div>
+    `;
     return;
   }
   const validatedInstrument = record.questionnaire.validated_instrument || null;
@@ -5953,6 +6229,10 @@ function renderSelectedAssessment() {
     const instrumentLabel = validatedInstrument.localized_label || validatedInstrument.label || validatedInstrument.id || t("analyticsIntroInstrumentTitle");
     elements.analyticsIntroInstrumentTitle.innerHTML = `<span class="risk-pill instrument-pill">${instrumentLabel}</span>`;
     setNodeText("#analyticsIntroInstrumentText", validatedInstrument.localized_description || validatedInstrument.description || t("analyticsIntroInstrumentText"));
+  } else {
+    setNodeText("#analyticsIntroInstrumentKicker", t("analyticsIntroInstrumentKicker"));
+    setNodeText("#analyticsIntroInstrumentTitle", t("analyticsIntroInstrumentTitle"));
+    setNodeText("#analyticsIntroInstrumentText", t("analyticsIntroInstrumentText"));
   }
   const questionnairePills = DOMAINS.map((domain) => `<span class="risk-pill ${record.questionnaire[`${domain}_risk`]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.questionnaire[`${domain}_risk`])}</span>`).join("");
   const overallPills = DOMAINS.map((domain) => `<span class="risk-pill ${record.multimodal.overall[domain]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.multimodal.overall[domain])}</span>`).join("");
@@ -5960,7 +6240,8 @@ function renderSelectedAssessment() {
   elements.selectedAssessment.innerHTML = `
     <div class="detail-card">
       <div class="detail-inline"><h3>${record.profile.full_name || t("unknownUserLabel")}</h3><strong>${record.assessment_id}</strong></div>
-      <p class="detail-muted">${record.profile.village || t("unknownLocationLabel")} | ${t("ageLabel")}: ${record.profile.age || t("noDataMetricLabel")} | ${record.profile.gender || t("notStatedLabel")}</p>
+      <p class="detail-muted">${record.profile.village || t("unknownLocationLabel")} | ${t("districtLabel")}: ${record.profile.district || t("noDataMetricLabel")} | ${t("blockLabel")}: ${record.profile.block || t("noDataMetricLabel")}</p>
+      <p class="detail-muted">${t("occupationLabel")}: ${record.profile.occupation || t("noDataMetricLabel")} | ${t("ageLabel")}: ${record.profile.age || t("noDataMetricLabel")} | ${record.profile.gender || t("notStatedLabel")}</p>
       <p class="detail-muted">${t("assessorLabel")}: ${record.profile.assessor || t("noDataMetricLabel")} | ${t("languageLabel")}: ${record.profile.language || t("noDataMetricLabel")} | ${t("phoneLabel")}: ${record.profile.phone || t("noDataMetricLabel")}</p>
       ${validatedInstrument ? `<p class="detail-muted">${t("validatedInstrumentLabel")}: <span class="risk-pill instrument-pill">${validatedInstrument.localized_label || validatedInstrument.label || validatedInstrument.id || t("noDataMetricLabel")}</span> | ${t("languageLabel")}: ${validatedInstrument.language || t("noDataMetricLabel")}</p>` : ""}
       <p class="detail-muted">${t("createdAtLabel")}: ${formatDate(record.created_at)}</p>
@@ -6035,8 +6316,12 @@ function comparisonRow(label, questionnaireValue, multimodalValue) {
 function renderScoreComparison() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.scoreComparison.className = "empty-state";
-    elements.scoreComparison.textContent = t("noRecordSelected");
+    elements.scoreComparison.className = "chart-stack empty-state";
+    elements.scoreComparison.innerHTML = buildPromptCard(
+      t("domainScoreComparisonTitle"),
+      t("noRecordSelected"),
+      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty")]
+    );
     return;
   }
   elements.scoreComparison.className = "compare-grid";
@@ -6066,8 +6351,12 @@ function modalityCard(title, payload) {
 function renderModalityBreakdown() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.modalityBreakdown.className = "empty-state";
-    elements.modalityBreakdown.textContent = t("noRecordSelected");
+    elements.modalityBreakdown.className = "chart-stack empty-state";
+    elements.modalityBreakdown.innerHTML = buildPromptCard(
+      t("modalityQualityTitle"),
+      t("noRecordSelected"),
+      [t("workspacePredictionEmpty"), t("workspaceNlpEmpty")]
+    );
     return;
   }
   elements.modalityBreakdown.className = "modality-grid";
@@ -6075,18 +6364,21 @@ function renderModalityBreakdown() {
     modalityCard(localizedModalityLabel("text"), record.multimodal.text),
     modalityCard(localizedModalityLabel("audio"), record.multimodal.audio),
     modalityCard(localizedModalityLabel("image"), record.multimodal.image),
-    modalityCard(localizedModalityLabel("passive_biomarkers"), record.multimodal.passive),
   ].join("");
 }
 
 function renderFeatureSnapshot() {
   const record = getAnalysisRecord();
   if (!record) {
-    elements.featureSnapshot.className = "empty-state";
-    elements.featureSnapshot.textContent = t("noRecordSelected");
+    elements.featureSnapshot.className = "chart-stack empty-state";
+    elements.featureSnapshot.innerHTML = buildPromptCard(
+      t("nlpSafetyTitle"),
+      t("noRecordSelected"),
+      [t("workspaceNlpEmpty"), t("analyticsBannerDefault")]
+    );
     return;
   }
-  const featureCards = ["text", "audio", "image", "passive"]
+  const featureCards = ["text", "audio", "image"]
     .filter((key) => record.multimodal[key]?.features)
     .map((key) => {
       const items = Object.entries(record.multimodal[key].features).map(([name, value]) => {
@@ -6133,10 +6425,15 @@ function renderPatientHistory() {
   const record = getAnalysisRecord();
   const trajectory = getTrajectory(record);
   if (!record || !trajectory) {
-    elements.patientHistory.className = "empty-state";
-    elements.patientHistory.textContent = t("noRecordSelected");
-    elements.domainTrajectory.className = "empty-state";
-    elements.domainTrajectory.textContent = t("noRecordSelected");
+    const promptMarkup = buildPromptCard(
+      t("recordsSectionTitle"),
+      t("noRecordSelected"),
+      [t("analyticsBannerDefault"), t("qualityCheckEmpty")]
+    );
+    elements.patientHistory.className = "chart-stack empty-state";
+    elements.patientHistory.innerHTML = promptMarkup;
+    elements.domainTrajectory.className = "chart-stack empty-state";
+    elements.domainTrajectory.innerHTML = promptMarkup;
     return;
   }
 
@@ -6177,6 +6474,48 @@ function renderPatientHistory() {
       <p>${trajectory.summary}</p>
     </div>
     ${buildHorizontalMetricSvg(domainRows, "#ad4a21")}
+  `;
+}
+
+function renderAnalyticsInsightSummary(record) {
+  if (!elements.analyticsInsightSummary) return;
+  if (!record || !isVisibleUserRecord(record)) {
+    elements.analyticsInsightSummary.className = "detail-stack";
+    elements.analyticsInsightSummary.innerHTML = `
+      <div class="detail-card prompt-card">
+        <h3>${t("analyticsInsightSummaryEmpty")}</h3>
+        <p class="detail-muted">${t("analyticsInsightSummaryNext")}</p>
+      </div>
+    `;
+    return;
+  }
+
+  const features = record.multimodal?.text?.features || {};
+  const strongest = strongestDomain(record);
+  const narrativeStatus = modalityHasUsableSignal("text", record.multimodal?.text || {}) || Boolean(features.word_count || features.sentiment_label || features.dominant_emotion)
+    ? t("narrativeAnalyzedLabel")
+    : t("narrativeMissingLabel");
+  const modalitiesUsed = ["text", "audio", "image"].filter((key) => modalityHasUsableSignal(key, record.multimodal?.[key] || {})).length;
+  const questionnaireRisk = localizedRiskLevel(riskLevel(Number(record.questionnaire?.overall_score || 0)));
+  const strongestLabel = strongest ? localizedDomainLabel(strongest) : t("noDataLabel");
+  const languageLabel = record.profile?.language || currentLanguage();
+
+  elements.analyticsInsightSummary.className = "detail-stack";
+  elements.analyticsInsightSummary.innerHTML = `
+    <div class="detail-card">
+      <div class="detail-inline">
+        <h3>${t("analyticsInsightSummaryTitle")}</h3>
+        <strong>${record.assessment_id}</strong>
+      </div>
+      <p class="detail-muted">${record.profile.full_name || t("unknownUserLabel")} · ${languageLabel}</p>
+      <div class="workspace-chip-row">
+        <span class="workspace-chip workspace-chip-strong">${t("questionnaireLabel")}: ${questionnaireRisk}</span>
+        <span class="workspace-chip">${t("strongestSignalLabel")}: ${strongestLabel}</span>
+        <span class="workspace-chip">${t("modalitiesUsedLabel")}: ${modalitiesUsed}/3</span>
+      </div>
+      <p class="detail-muted">${narrativeStatus}</p>
+      <p class="detail-muted">${t("analyticsInsightSummaryNext")}</p>
+    </div>
   `;
 }
 
@@ -6247,135 +6586,7 @@ function renderAgrarianDistressSummary(features) {
 }
 
 function renderWorkspacePanels() {
-  const record = state.draftRecord;
-  if (!record) {
-    elements.workspacePrediction.className = "empty-state";
-    elements.workspacePrediction.textContent = t("workspacePredictionEmpty");
-    elements.workspaceNlp.className = "empty-state";
-    elements.workspaceNlp.textContent = t("workspaceNlpEmpty");
-    elements.workspaceReadiness.className = "empty-state";
-    elements.workspaceReadiness.textContent = t("workspaceReadinessEmpty");
-    return;
-  }
-
-  elements.workspacePrediction.className = "detail-stack";
-  elements.workspacePrediction.innerHTML = `
-    <div class="detail-card">
-      <div class="detail-inline"><h3>${record.profile.full_name || t("unknownUserLabel")}</h3><strong>${record.assessment_id}</strong></div>
-      <p class="detail-muted">${state.draftRecord ? `${t("livePreviewLabel")}${state.draftPreviewLoading ? ` | ${t("refreshingLabel")}` : ""}` : `${t("savedAtLabel")} ${formatDate(record.created_at)}`}</p>
-      ${DOMAINS.map((domain) => scoreLine(`${localizedDomainLabel(domain)} ${t("scoreLabel")}`, record.multimodal.overall.scores[domain])).join("")}
-      ${isOfflinePreviewRecord(record) ? `<span class="offline-pill offline recommendation-badge">${t("offlinePreviewBadgeLabel")}</span>` : ""}
-      <p class="detail-muted">${record.multimodal.recommendation}</p>
-    </div>
-  `;
-
-  const features = record.multimodal.text?.features || {};
-  const audioStatus = modalityReadinessMessage("audio", record.multimodal.audio, getCurrentAudioFile());
-  const imageStatus = modalityReadinessMessage("image", record.multimodal.image, getCurrentImageFile());
-  const passiveStatus = modalityReadinessMessage("passive_biomarkers", record.multimodal.passive, getCurrentPassiveVideoFile());
-  const workspaceSummary = {
-    English: {
-      via: "via",
-      unknown: "unknown",
-      backendHeuristic: "backend heuristic",
-      noSelfHarm: "No self-harm keywords detected",
-      selfHarmDetected: "Self-harm keywords detected: {matches}",
-      noDistress: "No distress phrases detected",
-      narrativeAnalyzed: t("narrativeAnalyzedLabel"),
-      narrativeMissing: t("narrativeMissingLabel"),
-      unavailable: "unavailable",
-    },
-    Hindi: {
-      via: "के माध्यम से",
-      unknown: "अज्ञात",
-      backendHeuristic: "बैकएंड heuristic",
-      noSelfHarm: "कोई आत्म-हानि कीवर्ड नहीं मिला",
-      selfHarmDetected: "आत्म-हानि कीवर्ड मिले: {matches}",
-      noDistress: "कोई कष्ट वाक्य नहीं मिला",
-      narrativeAnalyzed: t("narrativeAnalyzedLabel"),
-      narrativeMissing: t("narrativeMissingLabel"),
-      unavailable: "उपलब्ध नहीं",
-    },
-    Bengali: {
-      via: "দিয়ে",
-      unknown: "অজানা",
-      backendHeuristic: "ব্যাকএন্ড heuristic",
-      noSelfHarm: "কোনো আত্মক্ষতির কীওয়ার্ড পাওয়া যায়নি",
-      selfHarmDetected: "আত্মক্ষতির কীওয়ার্ড পাওয়া গেছে: {matches}",
-      noDistress: "কোনো কষ্টের বাক্য পাওয়া যায়নি",
-      narrativeAnalyzed: t("narrativeAnalyzedLabel"),
-      narrativeMissing: t("narrativeMissingLabel"),
-      unavailable: "অনুপলব্ধ",
-    },
-  }[currentLanguage()] || {
-    via: "via",
-    unknown: "unknown",
-    backendHeuristic: "backend heuristic",
-    noSelfHarm: "No self-harm keywords detected",
-    selfHarmDetected: "Self-harm keywords detected: {matches}",
-    noDistress: "No distress phrases detected",
-    narrativeAnalyzed: t("narrativeAnalyzedLabel"),
-    narrativeMissing: t("narrativeMissingLabel"),
-    unavailable: "unavailable",
-  };
-  elements.workspaceNlp.className = "detail-stack";
-  elements.workspaceNlp.innerHTML = `
-    <div class="detail-card">
-      <h3>${t("sentimentLabel")}</h3>
-      <p>${features.sentiment_label || workspaceSummary.unknown} ${workspaceSummary.via} ${features.sentiment_model || workspaceSummary.backendHeuristic}</p>
-      <h3>${t("emotionLabel")}</h3>
-      <p>${features.dominant_emotion || "neutral"} ${workspaceSummary.via} ${features.emotion_model || workspaceSummary.backendHeuristic}</p>
-      <h3>${t("safetyLanguageLabel")}</h3>
-      <p>${features.self_harm_keyword_detected ? workspaceSummary.selfHarmDetected.replace("{matches}", (features.self_harm_keyword_matches || []).join(", ")) : workspaceSummary.noSelfHarm}</p>
-      <h3>${t("distressPhraseLabel")}</h3>
-      <p>${features.distress_phrase_detected ? (features.distress_phrase_matches || []).join(", ") : workspaceSummary.noDistress}</p>
-      ${renderAgrarianDistressSummary(features)}
-      <h3>${t("transformerLabel")}</h3>
-      <p>${features.transformer_model || workspaceSummary.unavailable}</p>
-      <h3>${t("transformerModelFamilyLabel")}</h3>
-      <p>${localizedTransformerFamilyLabel(features.transformer_preferred_family)}</p>
-      ${renderExplanationSummary(features)}
-      <h3>${t("audioModalityLabel")}</h3>
-      <p>${audioStatus.text}</p>
-      <h3>${t("imageModalityLabel")}</h3>
-      <p>${imageStatus.text}</p>
-      <h3>${localizedModalityLabel("passive_biomarkers")}</h3>
-      <p>${passiveStatus.text}</p>
-    </div>
-  `;
-
-  const readinessChecks = [
-    { key: "consentLabel", ready: Boolean(elements.consent.checked) },
-    { key: "fullNameLabel", ready: Boolean(elements.fullName.value.trim()) },
-    { key: "villageLabel", ready: Boolean(elements.village.value.trim()) },
-    { key: "assessorLabel", ready: Boolean(elements.assessor.value.trim()) },
-    { key: "narrativeLabel", ready: Boolean(elements.textNarrative.value.trim()) },
-    { key: "audioFileLabel", ready: audioStatus.ready, detail: audioStatus.text, tone: audioStatus.tone, type: "audio" },
-    { key: "passiveInputLabel", ready: Boolean(getCurrentPassiveVideoFile() || state.mainTypingEvents.length || state.adaptiveTypingEvents.length), detail: passiveStatus.text, tone: passiveStatus.tone, type: "passive" },
-    { key: "imageFileLabel", ready: imageStatus.ready, detail: imageStatus.text, tone: imageStatus.tone, type: "image" },
-  ];
-  const scoringChecks = readinessChecks.filter((item) => {
-    if (!item.type) return true;
-    if (item.type === "audio") return Boolean(getCurrentAudioFile());
-    if (item.type === "image") return Boolean(getCurrentImageFile());
-    return true;
-  });
-  const readinessScore = scoringChecks.length ? scoringChecks.filter((item) => item.ready).length / scoringChecks.length : 0;
-  elements.workspaceReadiness.className = "detail-stack";
-  elements.workspaceReadiness.innerHTML = `
-    <div class="detail-card">
-      <h3>${t("readinessScoreLabel")}</h3>
-      ${scoreLine(t("completionLabel"), readinessScore)}
-      ${readinessChecks.map((item) => {
-        const statusLabel = item.tone === "error"
-          ? t("needsAttention")
-          : item.tone === "success"
-            ? t("readyLabel")
-            : t("infoLabel");
-        return `<p class="detail-muted">${statusLabel}: ${item.detail || t(item.key)}</p>`;
-      }).join("")}
-    </div>
-  `;
+  return;
 }
 
 function renderDashboard() {
@@ -6383,14 +6594,11 @@ function renderDashboard() {
   renderScoreWeightSummary();
   renderRiskDistribution();
   renderSubmissionTrend();
-  if (isModelStatsVisible()) {
-    renderModelStatistics();
-  }
   renderNlpSignalSummary();
   renderQualityCheckSummary();
   renderRiskHotspots();
   renderNlpTrends();
-  renderTrajectoryModel();
+  renderRecordsOverview();
   renderTable();
   renderDetailPanels();
   renderWorkspacePanels();
@@ -6410,6 +6618,9 @@ function switchView(viewId) {
       section.classList.add("section-live");
     }
   });
+  if (viewId === "recordsView" && !state.allResults.length) {
+    void loadApiResults(t("backendApiLabel"));
+  }
 }
 
 function activateTab(viewId) {
@@ -6419,6 +6630,12 @@ function activateTab(viewId) {
     return;
   }
   switchView(viewId);
+}
+
+function initialViewFromLocation() {
+  const viewId = String(window.location.hash || "").replace(/^#/, "");
+  const allowedViews = new Set(["workspaceView", "adaptiveView", "analyticsView", "recordsView"]);
+  return allowedViews.has(viewId) ? viewId : "workspaceView";
 }
 
 function jumpToDashboardArea(viewId, panelId = "") {
@@ -6499,24 +6716,6 @@ function renderAdaptiveAnswerOptions() {
 
 function renderAdaptiveStatus(message, tone = "neutral") {
   setBanner(elements.adaptiveStatus, message, tone);
-}
-
-function renderAdaptiveMetaPills(items) {
-  if (!elements.adaptiveQuestionMeta) return;
-  if (!items.length) {
-    elements.adaptiveQuestionMeta.textContent = "";
-    return;
-  }
-  const nodes = items.map((item) => {
-    const pill = document.createElement("span");
-    pill.className = "adaptive-meta-pill";
-    const label = document.createElement("strong");
-    label.textContent = item.label;
-    pill.append(label);
-    pill.append(` ${item.value}`);
-    return pill;
-  });
-  elements.adaptiveQuestionMeta.replaceChildren(...nodes);
 }
 
 function adaptiveLogistic(value) {
@@ -6732,26 +6931,6 @@ function renderAdaptiveQuestion() {
   const progressMeta = state.adaptiveProgress || {};
   const tuning = progressMeta.tuning || {};
   elements.adaptiveQuestionPrompt.textContent = questionPrompt(question, currentAdaptiveLanguage());
-  const sectionLabel = question.language === currentAdaptiveLanguage() && question.section_label
-    ? question.section_label
-    : adaptiveSectionLabel(question.section, currentAdaptiveLanguage());
-  const remainingLabel = adaptiveText("remaining");
-  const irtInfoLabel = adaptiveText("irtInfo");
-  const difficultyLabel = adaptiveText("difficulty");
-  const selectionScoreLabel = adaptiveText("selectionScore");
-  const coverageBonusLabel = adaptiveText("coverageBonus");
-  const stopThresholdLabel = adaptiveText("stopThreshold");
-  const balanceWeightLabel = adaptiveText("balanceWeight");
-  renderAdaptiveMetaPills([
-    { label: adaptiveText("section"), value: sectionLabel },
-    { label: irtInfoLabel, value: (question.irt?.information || 0).toFixed(3) },
-    { label: difficultyLabel, value: (question.irt?.difficulty || 0).toFixed(2) },
-    { label: selectionScoreLabel, value: (adaptiveMeta.selection_score ?? question.irt?.information ?? 0).toFixed(3) },
-    { label: coverageBonusLabel, value: (adaptiveMeta.coverage_bonus ?? 1).toFixed(2) },
-    { label: remainingLabel, value: String(progressMeta.remaining_count ?? 0) },
-    ...(tuning.info_threshold !== undefined ? [{ label: stopThresholdLabel, value: Number(tuning.info_threshold).toFixed(3) }] : []),
-    ...(tuning.coverage_weight !== undefined ? [{ label: balanceWeightLabel, value: Number(tuning.coverage_weight).toFixed(3) }] : []),
-  ]);
   elements.adaptiveNextBtn.disabled = false;
   elements.adaptiveStartBtn.disabled = true;
   elements.adaptiveResetBtn.disabled = false;
@@ -6789,6 +6968,9 @@ function buildAdaptivePayload() {
       age: Number(elements.adaptiveAge.value || 0),
       gender: elements.adaptiveGender.value,
       village: elements.adaptiveVillage.value.trim(),
+      district: elements.adaptiveDistrict.value.trim(),
+      block: elements.adaptiveBlock.value.trim(),
+      occupation: elements.adaptiveOccupation.value.trim(),
       phone: "",
       assessor: elements.adaptiveAssessor.value.trim(),
       language: normalizeLanguage(elements.adaptiveLanguage.value || elements.language.value || currentLanguage()),
@@ -6844,15 +7026,13 @@ async function saveAdaptiveAssessmentToApi(payload) {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
-    const savedRecord = normalizeRecord(await response.json());
-    await persistLocalRecord(savedRecord);
+    const savedRecord = await persistLocalRecord(await response.json());
     return adaptiveRecordBanner(savedRecord, false);
   } catch (error) {
     console.error("Adaptive assessment save failed", error);
     const localRecord = buildOfflineAssessmentRecord(payload);
-    await queueAssessmentForSync(payload, localRecord);
-    await persistLocalRecord(localRecord);
-    return adaptiveRecordBanner(localRecord, true);
+    const visibleRecord = await queueAssessmentForSync(payload, localRecord);
+    return adaptiveRecordBanner(visibleRecord, true);
   }
 }
 
@@ -6960,17 +7140,17 @@ async function submitAssessment(event) {
 async function saveAssessmentToApi(payload) {
   if (!state.networkOnline) {
     const localRecord = buildOfflineAssessmentRecord(payload);
-    await queueAssessmentForSync(payload, localRecord);
-    state.latestCreatedRecord = localRecord;
+    const visibleRecord = await queueAssessmentForSync(payload, localRecord);
+    state.latestCreatedRecord = visibleRecord;
     state.draftRecord = null;
     renderWorkspacePanels();
-    setActiveResults([localRecord], {
+    setActiveResults([visibleRecord], {
       focusLatest: true,
-      bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} ${t("savedOfflineQueuedShortLabel")}`,
+      bannerMessage: `${t("assessmentIdLabel")} ${visibleRecord.assessment_id} ${t("savedOfflineQueuedShortLabel")}`,
       bannerTone: "success",
     });
     setBanner(elements.workspaceStatus, t("savedOfflineQueuedLabel"), "success");
-    switchView("analyticsView");
+    goToAnalyticsHubAfterSave();
     return;
   }
   try {
@@ -6991,8 +7171,7 @@ async function saveAssessmentToApi(payload) {
       );
       return;
     }
-    const savedRecord = normalizeRecord(await response.json());
-    await persistLocalRecord(savedRecord);
+    const savedRecord = await persistLocalRecord(await response.json());
     state.latestCreatedRecord = savedRecord;
     state.draftRecord = null;
     renderWorkspacePanels();
@@ -7002,22 +7181,22 @@ async function saveAssessmentToApi(payload) {
       bannerTone: "success",
     });
     setBanner(elements.workspaceStatus, `${t("assessmentIdLabel")} ${savedRecord.assessment_id} ${t("savedMessage")}`, "success");
-    switchView("analyticsView");
+    goToAnalyticsHubAfterSave();
   } catch (error) {
     console.error("Assessment save failed", error);
     if (!state.networkOnline || error instanceof TypeError || error?.message?.includes("Failed to fetch")) {
       const localRecord = buildOfflineAssessmentRecord(payload);
-      await queueAssessmentForSync(payload, localRecord);
-      state.latestCreatedRecord = localRecord;
+      const visibleRecord = await queueAssessmentForSync(payload, localRecord);
+      state.latestCreatedRecord = visibleRecord;
       state.draftRecord = null;
       renderWorkspacePanels();
-      setActiveResults([localRecord], {
+      setActiveResults([visibleRecord], {
         focusLatest: true,
-        bannerMessage: `${t("assessmentIdLabel")} ${localRecord.assessment_id} ${t("savedOfflineQueuedAfterApiLabel")}`,
+        bannerMessage: `${t("assessmentIdLabel")} ${visibleRecord.assessment_id} ${t("savedOfflineQueuedAfterApiLabel")}`,
         bannerTone: "success",
       });
       setBanner(elements.workspaceStatus, t("backendUnavailableSavedOfflineLabel"), "success");
-      switchView("analyticsView");
+      goToAnalyticsHubAfterSave();
       return;
     }
     setBanner(elements.workspaceStatus, tf("assessmentSaveFailedLabel", { message: error?.message || "Unknown error" }), "error");
@@ -7029,9 +7208,21 @@ async function fetchDraftPreview(payload, requestId) {
     if (requestId !== state.draftPreviewRequestId) {
       return;
     }
+    const signature = JSON.stringify({
+      profile: payload.profile,
+      questionnaire: payload.questionnaire,
+      text_input: payload.text_input || "",
+      audio: Boolean(payload.audio_file),
+      passive: Boolean(payload.passive_video_file),
+      image: Boolean(payload.image_file),
+    });
     state.draftRecord = buildAssessmentRecordFromAnalysis(payload, buildOfflineMultimodal(payload), "Offline Preview");
     state.draftPreviewLoading = false;
+    state.draftPreviewSignature = signature;
     renderWorkspacePanels();
+    if (shouldAutoOpenWorkspaceInsights(payload) && state.workspacePage !== 3) {
+      setWorkspacePage(3);
+    }
     return;
   }
   try {
@@ -7046,18 +7237,42 @@ async function fetchDraftPreview(payload, requestId) {
     if (requestId !== state.draftPreviewRequestId) {
       return;
     }
+    const signature = JSON.stringify({
+      profile: payload.profile,
+      questionnaire: payload.questionnaire,
+      text_input: payload.text_input || "",
+      audio: Boolean(payload.audio_file),
+      passive: Boolean(payload.passive_video_file),
+      image: Boolean(payload.image_file),
+    });
     state.draftRecord = buildAssessmentRecordFromAnalysis(payload, multimodal);
     state.draftPreviewLoading = false;
+    state.draftPreviewSignature = signature;
     renderWorkspacePanels();
+    if (shouldAutoOpenWorkspaceInsights(payload) && state.workspacePage !== 3) {
+      setWorkspacePage(3);
+    }
   } catch (error) {
     if (requestId !== state.draftPreviewRequestId) {
       return;
     }
     console.error("Draft preview failed", error);
+    const signature = JSON.stringify({
+      profile: payload.profile,
+      questionnaire: payload.questionnaire,
+      text_input: payload.text_input || "",
+      audio: Boolean(payload.audio_file),
+      passive: Boolean(payload.passive_video_file),
+      image: Boolean(payload.image_file),
+    });
     state.draftRecord = buildAssessmentRecordFromAnalysis(payload, buildOfflineMultimodal(payload), "Offline Preview");
     state.draftPreviewLoading = false;
+    state.draftPreviewSignature = signature;
     setBanner(elements.workspaceStatus, t("backendPreviewUnavailableLabel"), "neutral");
     renderWorkspacePanels();
+    if (shouldAutoOpenWorkspaceInsights(payload) && state.workspacePage !== 3) {
+      setWorkspacePage(3);
+    }
   }
 }
 
@@ -7078,11 +7293,23 @@ function updateDraftPreview() {
     state.draftPreviewRequestId += 1;
     state.draftRecord = null;
     state.draftPreviewLoading = false;
+    state.draftPreviewSignature = "";
     renderWorkspacePanels();
     return;
   }
 
   const payload = buildAssessmentPayload();
+  const signature = JSON.stringify({
+    profile: payload.profile,
+    questionnaire: payload.questionnaire,
+    text_input: payload.text_input || "",
+    audio: Boolean(payload.audio_file),
+    passive: Boolean(payload.passive_video_file),
+    image: Boolean(payload.image_file),
+  });
+  if (signature === state.draftPreviewSignature && state.draftRecord) {
+    return;
+  }
   const requestId = state.draftPreviewRequestId + 1;
   state.draftPreviewRequestId = requestId;
   state.draftRecord = null;
@@ -7125,54 +7352,11 @@ function loadBrowserResults() {
 }
 
 async function loadApiResults(sourceLabel, focusLatest = false) {
-  try {
-    const response = await fetch("/api/assessments", { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const apiRecords = uniqueRecords(visibleUserRecords(await response.json()));
-    for (const record of apiRecords) {
-      await persistLocalRecord(record);
-    }
-    const merged = uniqueRecords([...visibleUserRecords(await loadOfflineRecords()), ...apiRecords]);
-    loadResults(merged, sourceLabel, focusLatest);
-    return merged.length > 0;
-  } catch (error) {
-    console.error("API load failed", error);
-    const localRecords = visibleUserRecords(await loadOfflineRecords());
-    if (localRecords.length) {
-      loadResults(localRecords, t("localOfflineStorageLabel"), focusLatest);
-      setBanner(elements.statusBanner, t("offlineRecordsLoadedLabel"), "neutral");
-      return true;
-    }
-    setBanner(elements.statusBanner, t("loadRecordsFromApiGenericErrorLabel"), "error");
-    return false;
+  const localRecords = visibleUserRecords(await loadOfflineRecords());
+  if (localRecords.length) {
+    loadResults(localRecords, sourceLabel, focusLatest);
   }
-}
-
-async function loadModelStats() {
-  try {
-    const response = await fetch(apiUrl("/api/model-stats"), { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    state.modelStats = await response.json();
-    state.modelStatsSource = "api";
-  } catch (error) {
-    console.warn("Model stats API unavailable, falling back to bundled snapshot.", error);
-    try {
-      const fallbackResponse = await fetch(MODEL_STATS_FALLBACK_URL, { cache: "no-store" });
-      if (!fallbackResponse.ok) {
-        throw new Error(`HTTP ${fallbackResponse.status}`);
-      }
-      state.modelStats = await fallbackResponse.json();
-      state.modelStatsSource = "file";
-    } catch (fallbackError) {
-      console.warn("Model stats file fallback unavailable, using embedded snapshot.", fallbackError);
-      state.modelStats = structuredClone ? structuredClone(MODEL_STATS_FALLBACK) : JSON.parse(JSON.stringify(MODEL_STATS_FALLBACK));
-      state.modelStatsSource = "embedded";
-    }
-  }
+  return localRecords.length > 0;
 }
 
 function exportFilteredResults() {
@@ -7206,21 +7390,26 @@ async function fetchRecordByIdFromApi(assessmentId) {
       throw new Error(`HTTP ${response.status}`);
     }
     const record = normalizeRecord(await response.json());
-    if (!visibleUserRecords([record]).length) {
+    const localRecord = (await loadOfflineRecords()).find((item) => item.assessment_id === record.assessment_id);
+    if (!visibleUserRecords([localRecord || record]).length) {
       throw new Error("Record hidden from user view.");
     }
-    const existingIndex = state.allResults.findIndex((item) => item.assessment_id === record.assessment_id);
-    if (existingIndex >= 0) {
-      state.allResults[existingIndex] = record;
-    } else {
-      state.allResults.unshift(record);
+    const recordToShow = localRecord ? normalizeRecord(localRecord) : null;
+    if (!recordToShow) {
+      throw new Error("Backend-loaded records are hidden from the user view.");
     }
-    state.selectedRecord = record;
+    const existingIndex = state.allResults.findIndex((item) => item.assessment_id === recordToShow.assessment_id);
+    if (existingIndex >= 0) {
+      state.allResults[existingIndex] = recordToShow;
+    } else {
+      state.allResults.unshift(recordToShow);
+    }
+    state.selectedRecord = recordToShow;
     populateFilterOptions();
     applyFilters();
     switchView("recordsView");
     renderDashboard();
-    setBanner(elements.statusBanner, tf("fetchSuccess", { id: record.assessment_id }), "success");
+    setBanner(elements.statusBanner, tf("fetchSuccess", { id: recordToShow.assessment_id }), "success");
   } catch (error) {
     console.error("Record fetch failed", error);
     const localRecord = state.allResults.find((item) => item.assessment_id === assessmentId);
@@ -7362,6 +7551,7 @@ elements.tabButtons.forEach((button) => {
 elements.assessmentForm.addEventListener("submit", submitAssessment);
 elements.resetAssessmentBtn.addEventListener("click", () => {
   resetAssessmentForm();
+  setWorkspacePage(1);
   updateDraftPreview();
 });
 elements.adaptiveStartBtn.addEventListener("click", startAdaptiveSession);
@@ -7388,10 +7578,25 @@ elements.stopCameraBtn.addEventListener("click", () => {
 elements.clearCapturedPhotoBtn.addEventListener("click", () => {
   clearCapturedPhoto();
 });
-elements.fetchRecordBtn.addEventListener("click", fetchRecordById);
-elements.downloadSelectedPdfBtn.addEventListener("click", () => downloadPdfForRecord(state.selectedRecord));
+elements.fetchRecordBtn?.addEventListener("click", fetchRecordById);
+elements.downloadSelectedPdfBtn?.addEventListener("click", () => downloadPdfForRecord(state.selectedRecord));
+elements.refreshRecordsBtn?.addEventListener("click", async () => {
+  setBanner(elements.statusBanner, t("previewRefreshing"), "neutral");
+  await loadApiResults(t("backendApiLabel"), true);
+  renderDashboard();
+  setBanner(elements.statusBanner, t("recordsBannerDefault"), "neutral");
+});
+elements.exportFilteredRecordsBtn?.addEventListener("click", exportFilteredResults);
 if (elements.runQualityCheckBtn) {
   elements.runQualityCheckBtn.addEventListener("click", runQualityCheck);
+}
+if (elements.analyticsNextPageBtn) {
+  elements.analyticsNextPageBtn.addEventListener("click", () => {
+    switchView("recordsView");
+  });
+}
+if (elements.retrainPassiveBtn) {
+  elements.retrainPassiveBtn.addEventListener("click", retrainPassiveBiomarkers);
 }
 if (elements.exportQualityCheckBtn) {
   elements.exportQualityCheckBtn.addEventListener("click", exportQualityCheckReport);
@@ -7407,6 +7612,9 @@ if (elements.exportQualityCheckPdfBtn) {
   elements.age,
   elements.gender,
   elements.village,
+  elements.district,
+  elements.block,
+  elements.occupation,
   elements.phone,
   elements.assessor,
   elements.language,
@@ -7415,7 +7623,7 @@ if (elements.exportQualityCheckPdfBtn) {
   elements.audioFile,
   elements.passiveVideoFile,
   elements.imageFile,
-].forEach((element) => {
+].filter(Boolean).forEach((element) => {
   element.addEventListener("input", updateDraftPreview);
   element.addEventListener("change", updateDraftPreview);
 });
@@ -7430,8 +7638,12 @@ elements.adaptiveTextNarrative.addEventListener("keydown", (event) => {
 elements.audioFile.addEventListener("change", () => {
   state.recordedAudioFile = null;
   updateCaptureUi();
+  updateDraftPreview();
 });
-elements.passiveVideoFile.addEventListener("change", updateCaptureUi);
+elements.passiveVideoFile?.addEventListener("change", () => {
+  updateCaptureUi();
+  updateDraftPreview();
+});
 elements.imageFile.addEventListener("change", () => {
   if (elements.capturedPhotoPreview.src) {
     URL.revokeObjectURL(elements.capturedPhotoPreview.src);
@@ -7439,23 +7651,49 @@ elements.imageFile.addEventListener("change", () => {
   elements.capturedPhotoPreview.removeAttribute("src");
   state.capturedImageFile = null;
   updateCaptureUi();
+  updateDraftPreview();
 });
-elements.applyLanguageBtn.addEventListener("click", () => {
-  applyDashboardLanguageSelection();
-});
+if (elements.workspacePage1NextBtn) {
+  elements.workspacePage1NextBtn.addEventListener("click", () => {
+    setWorkspacePage(2);
+  });
+}
+if (elements.workspacePage2BackBtn) {
+  elements.workspacePage2BackBtn.addEventListener("click", () => {
+    setWorkspacePage(1);
+  });
+}
+if (elements.workspacePage2NextBtn) {
+  elements.workspacePage2NextBtn.addEventListener("click", () => {
+    setWorkspacePage(3);
+  });
+}
+if (elements.workspacePage3BackBtn) {
+  elements.workspacePage3BackBtn.addEventListener("click", () => {
+    setWorkspacePage(2);
+  });
+}
 if (elements.validatedInstrumentInfoBtn) {
   elements.validatedInstrumentInfoBtn.addEventListener("click", () => {
     toggleValidatedInstrumentInfo();
   });
 }
 elements.language.addEventListener("change", () => {
+  persistLanguageSelection(elements.language.value);
   if (elements.dashboardLanguage) {
     elements.dashboardLanguage.value = elements.language.value;
   }
   applyDashboardLanguageSelection();
 });
+if (elements.dashboardLanguage) {
+  elements.dashboardLanguage.addEventListener("change", () => {
+    persistLanguageSelection(currentLanguage());
+    applyDashboardLanguageSelection();
+  });
+}
 if (elements.adaptiveLanguage) {
   elements.adaptiveLanguage.addEventListener("change", () => {
+    persistLanguageSelection(elements.adaptiveLanguage.value);
     if (elements.language) {
       elements.language.value = elements.adaptiveLanguage.value;
     }
@@ -7499,7 +7737,6 @@ async function bootstrapDashboard() {
   applyLanguage();
   auditTranslationCoverage();
   await loadValidatedInstruments();
-  await loadModelStats();
   resetAdaptiveState();
   updateCaptureUi();
   resetAssessmentForm();
@@ -7511,6 +7748,18 @@ async function bootstrapDashboard() {
     await loadSampleResults();
   }
   await initializeOfflineFirst();
+  const wizardRecord = loadWizardSavedAnalyticsRecord();
+  if (wizardRecord) {
+    setActiveResults([wizardRecord], {
+      focusLatest: true,
+      bannerMessage: `${t("analyticsShowing")} ${wizardRecord.assessment_id}.`,
+      bannerTone: "success",
+    });
+  }
+  switchView(initialViewFromLocation());
 }
 
 bootstrapDashboard();
+
+
+

@@ -17,6 +17,14 @@ MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "mental_health_scre
 TMP_MODEL_DIR = Path(__file__).resolve().parents[2] / "tmp_datasets"
 ONNX_DIR = MODEL_DIR / "onnx"
 
+RECOMMENDED_REQUIREMENTS = {
+    "audio_sequence": {"min_samples": 500, "target_quality": 0.55},
+    "audio_spectrogram": {"min_samples": 500, "target_quality": 0.55},
+    "image_dl": {"min_samples": 250, "target_quality": 0.55},
+    "comorbidity": {"min_samples": 1000, "target_quality": 0.55},
+    "passive_biomarkers": {"min_samples": 25, "target_quality": 0.60},
+}
+
 
 def _ensure_legacy_module_alias() -> None:
     if "mental_health_screening" in sys.modules:
@@ -33,7 +41,7 @@ def ensure_model_dir() -> Path:
 
 
 def get_model_bundle_path(modality: str) -> Path:
-    if modality in {"text_transformer", "audio_sequence", "audio_spectrogram", "image_dl"}:
+    if modality in {"text_transformer", "audio_sequence", "audio_spectrogram", "image_dl", "passive_biomarkers"}:
         TMP_MODEL_DIR.mkdir(parents=True, exist_ok=True)
         return TMP_MODEL_DIR / f"{modality}_bundle.pkl"
     return ensure_model_dir() / f"{modality}_bundle.pkl"
@@ -58,6 +66,108 @@ def _json_safe(value):
     return value
 
 
+def _best_candidate_metrics(candidate_metrics: dict | None) -> dict:
+    if not isinstance(candidate_metrics, dict):
+        return {}
+    best_candidate = {}
+    best_score = (-1.0, -1.0, -1.0, -1.0, -1.0)
+    for candidate in candidate_metrics.values():
+        if not isinstance(candidate, dict):
+            continue
+        score = (
+            float(candidate.get("best_fbeta", candidate.get("f1", 0.0)) or 0.0),
+            float(candidate.get("f1", 0.0) or 0.0),
+            float(candidate.get("precision", 0.0) or 0.0),
+            float(candidate.get("accuracy", 0.0) or 0.0),
+            float(candidate.get("recall", 0.0) or 0.0),
+        )
+        if score > best_score:
+            best_score = score
+            best_candidate = candidate
+    return dict(best_candidate)
+
+
+def _synthesize_macro_metrics(bundle: dict, metrics: dict) -> dict:
+    resolved = dict(metrics)
+    required_keys = {"macro_accuracy", "macro_precision", "macro_recall", "macro_f1", "macro_r2"}
+    if required_keys.intersection(resolved.keys()) or {"exact_match", "label_accuracy"}.intersection(resolved.keys()):
+        return resolved
+
+    model_selection = bundle.get("model_selection", {}) or {}
+    selected_metrics = [
+        _best_candidate_metrics(candidate_metrics)
+        for candidate_metrics in model_selection.values()
+        if isinstance(candidate_metrics, dict)
+    ]
+    selected_metrics = [candidate for candidate in selected_metrics if candidate]
+    if not selected_metrics:
+        return resolved
+
+    def _mean_metric(*keys: str) -> float | None:
+        values = []
+        for candidate in selected_metrics:
+            for key in keys:
+                value = candidate.get(key)
+                if value is not None and value != "":
+                    try:
+                        numeric = float(value)
+                    except (TypeError, ValueError):
+                        continue
+                    values.append(numeric)
+                    break
+        if not values:
+            return None
+        return float(sum(values) / len(values))
+
+    for target_key, source_keys in (
+        ("macro_accuracy", ("accuracy", "macro_accuracy")),
+        ("macro_precision", ("precision", "macro_precision")),
+        ("macro_recall", ("recall", "macro_recall")),
+        ("macro_f1", ("f1", "macro_f1")),
+        ("macro_r2", ("r2", "macro_r2")),
+    ):
+        mean_value = _mean_metric(*source_keys)
+        if mean_value is not None:
+            resolved[target_key] = mean_value
+
+    return resolved
+
+
+def _bundle_quality_score(bundle: dict | None) -> float:
+    if not bundle:
+        return 0.0
+    metrics = dict(bundle.get("metrics", {}) or {})
+    candidates = [
+        bundle.get("confidence_hint", 0.0),
+        metrics.get("macro_f1", 0.0),
+        metrics.get("macro_accuracy", 0.0),
+        metrics.get("label_accuracy", 0.0),
+        metrics.get("exact_match", 0.0),
+        metrics.get("accuracy", 0.0),
+    ]
+    best_score = max(float(value or 0.0) for value in candidates)
+    return max(0.0, min(1.0, float(best_score)))
+
+
+def _bundle_improvement_requirements(modality: str, bundle: dict) -> dict:
+    requirement = dict(RECOMMENDED_REQUIREMENTS.get(modality, {}))
+    if not requirement:
+        return {}
+    current_sample_count = int(bundle.get("sample_count", 0) or 0)
+    current_quality = _bundle_quality_score(bundle)
+    min_samples = int(requirement.get("min_samples", 0) or 0)
+    target_quality = float(requirement.get("target_quality", 0.0) or 0.0)
+    return {
+        "current_sample_count": current_sample_count,
+        "required_min_samples": min_samples,
+        "sample_gap": max(0, min_samples - current_sample_count),
+        "current_quality": round(float(current_quality), 6),
+        "target_quality": target_quality,
+        "quality_gap": round(max(0.0, target_quality - current_quality), 6),
+        "ready_for_trusted_use": bool(current_sample_count >= min_samples and current_quality >= target_quality),
+    }
+
+
 def save_model_bundle(modality: str, bundle: dict) -> Path:
     path = get_model_bundle_path(modality)
     with path.open("wb") as handle:
@@ -80,7 +190,7 @@ def bundle_summary(modality: str) -> dict | None:
     bundle = load_model_bundle(modality)
     if bundle is None:
         return None
-    metrics = bundle.get("metrics", {}) or {}
+    metrics = _synthesize_macro_metrics(bundle, bundle.get("metrics", {}) or {})
     summary = {
         "modality": modality,
         "bundle_path": str(get_model_bundle_path(modality).resolve()),
@@ -121,6 +231,8 @@ def bundle_summary(modality: str) -> dict | None:
             if key not in {"macro_r2", "calibration_quality"}
         },
         "skipped_domains": dict(bundle.get("skipped_domains", {}) or {}),
+        "improvement_requirements": _bundle_improvement_requirements(modality, bundle),
+        "metric_source": "bundle_metrics" if bundle.get("metrics") else "synthesized_from_model_selection",
         "model_source": "trained_bundle",
     }
     onnx_manifest_path = get_onnx_manifest_path()
@@ -170,7 +282,7 @@ def bundle_summary(modality: str) -> dict | None:
 
 def summarize_all_bundles() -> dict[str, dict]:
     summaries: dict[str, dict] = {}
-    for modality in ("text", "text_transformer", "audio", "audio_sequence", "audio_spectrogram", "image", "image_dl", "comorbidity"):
+    for modality in ("text", "text_transformer", "audio", "audio_sequence", "audio_spectrogram", "image", "image_dl", "comorbidity", "passive_biomarkers"):
         summary = bundle_summary(modality)
         if summary is not None:
             summaries[modality] = summary

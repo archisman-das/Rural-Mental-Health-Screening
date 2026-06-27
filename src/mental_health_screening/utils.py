@@ -22,7 +22,7 @@ def average(values: Iterable[float]) -> float:
     return sum(values) / len(values)
 
 
-def confidence_weighted_score(score: float, confidence: float, neutral: float = 0.5, minimum_weight: float = 0.2) -> float:
+def confidence_weighted_score(score: float, confidence: float, neutral: float = 0.5, minimum_weight: float = 0.12) -> float:
     score = normalize_score(score)
     confidence = normalize_score(confidence)
     weight = max(minimum_weight, confidence)

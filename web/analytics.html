@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics Hub</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260626v">
+</head>
+<body class="module-page">
+  <div class="page-shell">
+    <header class="hero panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Analytics Hub</p>
+        <h1>Detailed Analysis</h1>
+        <p class="hero-text">A dedicated page for live prediction preview, component contribution, and all analytics panels.</p>
+        <div class="language-switcher">
+          <label for="analyticsDashboardLanguage">Preferred language</label>
+          <div class="language-switcher-row">
+            <select id="analyticsDashboardLanguage">
+              <option value="English">English</option>
+              <option value="Hindi">Hindi</option>
+              <option value="Bengali">Bengali</option>
+            </select>
+          </div>
+        </div>
+        <div class="action-row wizard-nav-row">
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/index.html'">Dashboard</button>
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/adaptive.html'">Adaptive Test</button>
+          <button class="ghost-btn small-btn" type="button" onclick="window.location.href='/web/records.html'">Records and Reports</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel" style="padding: 16px;">
+      <iframe id="analyticsFrame" class="module-frame" src="/web/index.html#analyticsView" title="Analytics Hub dashboard section"></iframe>
+    </section>
+  </div>
+  <script>
+    const analyticsFrame = document.getElementById("analyticsFrame");
+    const analyticsLanguage = document.getElementById("analyticsDashboardLanguage");
+    function syncAnalyticsLanguage() {
+      const doc = analyticsFrame?.contentWindow?.document;
+      const select = doc?.getElementById("dashboardLanguage");
+      if (select && analyticsLanguage) {
+        select.value = analyticsLanguage.value;
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    analyticsLanguage?.addEventListener("change", syncAnalyticsLanguage);
+    analyticsFrame?.addEventListener("load", syncAnalyticsLanguage);
+  </script>
+</body>
+</html>

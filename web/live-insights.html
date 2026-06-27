@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Metadata</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260626z">
+</head>
+<body class="wizard-body" data-page="insights">
+  <div class="wizard-shell">
+    <header class="panel wizard-header">
+      <p class="eyebrow">Step 3 of 3</p>
+      <h1>Upload Metadata</h1>
+      <p class="hero-text">Add narrative and uploads before saving the final record.</p>
+    </header>
+
+    <section class="panel wizard-stage">
+      <div class="wizard-grid-1">
+        <article class="form-card">
+          <h3>Free Text and Upload Metadata</h3>
+          <label>Describe how the person has been feeling
+            <textarea id="narrative" rows="7" placeholder="Example: I have been feeling tired, disconnected, anxious, and unable to sleep well."></textarea>
+          </label>
+          <div class="capture-card">
+            <div class="capture-head">
+              <strong id="guidedSpeechTitle">Guided Speech Recording</strong>
+              <span id="guidedSpeechTopic" class="capture-topic">Topic: Describe your last few days, your sleep, stress, and how connected you feel to people around you.</span>
+            </div>
+            <div class="capture-actions">
+              <button id="startRecordingBtn" class="ghost-btn small-btn" type="button">Start Recording</button>
+              <button id="stopRecordingBtn" class="ghost-btn small-btn" type="button" disabled>Stop Recording</button>
+              <button id="clearRecordingBtn" class="ghost-btn small-btn" type="button" disabled>Clear Recording</button>
+            </div>
+            <p id="recordingStatus" class="capture-status">No speech recording captured yet.</p>
+          </div>
+          <label id="audioFileLabel">Voice sample
+            <input id="audioFile" type="file" accept=".wav,.mp3,.m4a">
+          </label>
+          <div class="capture-card">
+            <div class="capture-head">
+              <strong id="liveFaceTitle">Live Face Capture</strong>
+              <span id="liveFaceTopic" class="capture-topic">Capture one clear front-facing photo from the webcam for live facial-cue analysis.</span>
+            </div>
+            <div class="capture-actions">
+              <button id="startCameraBtn" class="ghost-btn small-btn" type="button">Open Camera</button>
+              <button id="capturePhotoBtn" class="ghost-btn small-btn" type="button" disabled>Capture Photo</button>
+              <button id="stopCameraBtn" class="ghost-btn small-btn" type="button" disabled>Close Camera</button>
+              <button id="clearCapturedPhotoBtn" class="ghost-btn small-btn" type="button" disabled>Clear Photo</button>
+            </div>
+            <div class="camera-stage">
+              <video id="cameraPreview" class="camera-preview is-hidden" autoplay playsinline muted></video>
+              <img id="capturedPhotoPreview" class="camera-preview is-hidden" alt="Captured face preview">
+              <canvas id="captureCanvas" class="is-hidden"></canvas>
+            </div>
+            <p id="cameraStatus" class="capture-status">No live photo captured yet.</p>
+            <label id="imageFileLabel">Face image
+              <input id="imageFile" type="file" accept=".png,.jpg,.jpeg">
+            </label>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="wizard-nav">
+        <button id="prevToQuestionnaire" class="ghost-btn" type="button">Previous</button>
+        <a class="ghost-btn" href="/web/index.html#workspaceView">Back to Dashboard</a>
+        <button id="saveRecord" class="primary-btn" type="button">Save Assessment</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="/web/wizard.js?v=20260626-6"></script>
+</body>
+</html>

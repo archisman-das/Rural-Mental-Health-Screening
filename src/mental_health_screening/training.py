@@ -4,6 +4,7 @@ import argparse
 import json
 import importlib
 import os
+import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -42,15 +43,15 @@ if __name__ == "__main__":
 from .constants import PREDICTION_DOMAINS
 from .feature_extract import extract_audio_features, extract_audio_sequence_features, extract_audio_spectrogram_features, extract_image_features, extract_text_features
 from .model_features import audio_feature_vector, image_feature_vector, text_feature_vector
-from .model_store import save_model_bundle
+from .model_store import load_model_bundle, save_model_bundle
 from .predict import COMORBIDITY_MODEL_NAME, COMORBIDITY_MODALITIES, score_audio_features, score_image_features, score_text_features
 
 
-SUPPORTED_MODALITIES = ("text", "audio", "image")
+SUPPORTED_MODALITIES = ("text", "audio", "image", "passive_biomarkers")
 CALIBRATION_TOLERANCE = 0.15
 FEDERATED_DEFAULT_ROUNDS = 6
 FEDERATED_DEFAULT_LOCAL_EPOCHS = 2
-COMORBIDITY_CHAIN_ENSEMBLE_SIZE = 3
+COMORBIDITY_CHAIN_ENSEMBLE_SIZE = 1
 COMORBIDITY_THRESHOLD_BETA = 2.0
 THRESHOLD_CENTER = 0.5
 THRESHOLD_CENTER_PENALTY = 0.08
@@ -67,6 +68,9 @@ AUDIO_DOMAIN_TUNING = {
     "loneliness": {"beta": 1.80, "min_precision": 0.50},
     "substance_abuse": {"beta": 1.05, "min_precision": 0.62},
 }
+PASSIVE_TRAINING_MANIFEST = Path(__file__).resolve().parents[2] / "tmp_datasets" / "passive_training_manifest.jsonl"
+PASSIVE_AUTOTRAIN_MIN_NEW_ROWS = 10
+PASSIVE_AUTOTRAIN_MIN_TOTAL_ROWS = 25
 
 
 def _load_manifest(path: str | Path) -> pd.DataFrame:
@@ -115,6 +119,52 @@ def _parse_target_value(value) -> float | None:
         return float(text)
     except ValueError:
         return None
+
+
+def _load_saved_assessment_records() -> list[dict]:
+    data_dir = Path(__file__).resolve().parents[2] / "data"
+    records: list[dict] = []
+    results_file = data_dir / "screening_results.json"
+    if results_file.exists():
+        try:
+            payload = json.loads(results_file.read_text(encoding="utf-8"))
+            if isinstance(payload, list):
+                records.extend([record for record in payload if isinstance(record, dict)])
+        except Exception:
+            records = []
+    if records:
+        return records
+
+    legacy_db = data_dir / "screening_results.db"
+    if not legacy_db.exists():
+        return []
+    try:
+        with sqlite3.connect(legacy_db) as connection:
+            connection.row_factory = sqlite3.Row
+            rows = connection.execute(
+                """
+                SELECT assessment_id, created_at, profile_json, questionnaire_json, multimodal_json
+                FROM assessments
+                ORDER BY datetime(created_at) DESC
+                """
+            ).fetchall()
+    except Exception:
+        return []
+
+    for row in rows:
+        profile = json.loads(row["profile_json"])
+        records.append(
+            {
+                "assessment_id": row["assessment_id"],
+                "created_at": row["created_at"],
+                "profile": profile,
+                "questionnaire": json.loads(row["questionnaire_json"]),
+                "multimodal": json.loads(row["multimodal_json"]),
+                "patient_key": profile.get("patient_key"),
+                "record_origin": profile.get("record_origin", "backend"),
+            }
+        )
+    return records
 
 
 def _binary_targets(targets: np.ndarray | list[float], threshold: float = 0.5) -> np.ndarray:
@@ -540,6 +590,61 @@ def _fit_selected_chain_binary_model(
         fallback = DummyClassifier(strategy="prior")
         fallback.fit(x_train, y_train)
         candidates.append(("dummy", fallback))
+
+    evaluated: list[tuple[str, object, dict]] = []
+    for name, model in candidates:
+        probabilities, _ = _forest_prediction_stats(model, x_eval)
+        threshold, metrics = _tune_binary_threshold(y_eval, probabilities, beta=1.0)
+        metrics["threshold"] = threshold
+        evaluated.append((name, model, metrics))
+
+    best_name, best_model, best_metrics = max(
+        evaluated,
+        key=lambda item: (_binary_metric_score(item[2]), item[2].get("f1", 0.0), item[2].get("precision", 0.0), item[2].get("accuracy", 0.0)),
+    )
+    candidate_metrics = {name: metrics for name, _, metrics in evaluated}
+    return best_model, best_metrics, best_name, candidate_metrics
+
+
+def _fit_comorbidity_chain_binary_model(
+    x_train: np.ndarray,
+    y_train: np.ndarray,
+    x_eval: np.ndarray,
+    y_eval: np.ndarray,
+    random_state: int,
+) -> tuple[object, dict, str, dict]:
+    class_counts = np.bincount(y_train, minlength=2)
+    if int(class_counts.min()) < 2:
+        fallback = DummyClassifier(strategy="prior")
+        fallback.fit(x_train, y_train)
+        probabilities = (
+            np.asarray(fallback.predict_proba(x_eval), dtype=float)[:, -1]
+            if hasattr(fallback, "predict_proba")
+            else np.asarray(fallback.predict(x_eval), dtype=float)
+        )
+        metrics = _evaluate_binary_predictions(np.asarray(y_eval, dtype=int), probabilities, threshold=0.5)
+        metrics["threshold"] = 0.5
+        return fallback, metrics, "dummy", {"dummy": metrics}
+
+    balanced_x, balanced_y = _balanced_resample_training_data(x_train, y_train, random_state=random_state)
+    candidates: list[tuple[str, object]] = [
+        ("logistic", _fit_logistic_binary_candidate(balanced_x, balanced_y, random_state=random_state)),
+        (
+            "extra_trees",
+            ExtraTreesClassifier(
+                n_estimators=140,
+                random_state=random_state,
+                class_weight="balanced",
+                min_samples_leaf=2,
+                min_samples_split=4,
+                max_depth=8,
+                max_features="sqrt",
+                bootstrap=False,
+                n_jobs=-1,
+            ),
+        ),
+    ]
+    candidates[1][1].fit(balanced_x, balanced_y)
 
     evaluated: list[tuple[str, object, dict]] = []
     for name, model in candidates:
@@ -1054,7 +1159,7 @@ def _train_audio_sequence_model(
             continue
         if len(sequences) and len(sequences) % 10 == 0:
             print(f"[audio_sequence] extracted {len(sequences)} sequences", flush=True)
-        extracted = extract_audio_sequence_features(audio_path, max_frames=max_frames)
+        extracted = extract_audio_sequence_features(audio_path, max_frames=max_frames, include_mfcc=False)
         if not extracted.get("available"):
             continue
         sequences.append(np.asarray(extracted["sequence_features"], dtype=np.float32))
@@ -1101,6 +1206,9 @@ def _train_audio_sequence_model(
         replacement=True,
     )
 
+    train_sequences, normalization = _normalize_sequence_collection(train_sequences)
+    eval_sequences = [((sequence - np.asarray(normalization["mean"], dtype=np.float32)) / np.asarray(normalization["std"], dtype=np.float32)).astype(np.float32) for sequence in eval_sequences]
+
     train_loader = DataLoader(
         _AudioSequenceDataset(train_sequences, train_labels),
         batch_size=batch_size,
@@ -1113,9 +1221,6 @@ def _train_audio_sequence_model(
         shuffle=False,
         collate_fn=collate_fn,
     )
-
-    train_sequences, normalization = _normalize_sequence_collection(train_sequences)
-    eval_sequences = [((sequence - np.asarray(normalization["mean"], dtype=np.float32)) / np.asarray(normalization["std"], dtype=np.float32)).astype(np.float32) for sequence in eval_sequences]
 
     model = _AudioSequenceBiLSTM(
         input_size=int(train_sequences[0].shape[1]),
@@ -1215,6 +1320,7 @@ def _train_audio_sequence_model(
             "learning_rate": float(learning_rate),
             "max_rows": int(max_rows),
             "max_frames": int(max_frames),
+            "feature_mode": "fast",
         },
         "sequence_normalization": normalization,
         "label_thresholds": thresholds,
@@ -1909,6 +2015,39 @@ def _extract_feature_vector(record: dict, base_dir: Path, modality: str) -> tupl
         feature_names, vector = image_feature_vector(features)
         return features, feature_names, vector
 
+    if modality == "passive_biomarkers":
+        passive_payload = dict((record.get("multimodal") or {}).get("passive") or {})
+        features = dict(passive_payload.get("features") or {})
+        if not features:
+            return None
+        rppg = dict(features.get("rppg") or {})
+        typing = dict(features.get("typing") or {})
+        feature_names = [
+            "confidence",
+            "heart_rate_bpm",
+            "heart_rate_score",
+            "signal_quality",
+            "typing_speed_cpm",
+            "typing_pause_ratio",
+            "typing_backspace_ratio",
+            "typing_rhythm_score",
+            "rppg_available",
+            "typing_available",
+        ]
+        vector = [
+            float(features.get("confidence", 0.0) or 0.0),
+            float(features.get("heart_rate_bpm", 0.0) or 0.0),
+            float(rppg.get("heart_rate_score", features.get("heart_rate_score", 0.0)) or 0.0),
+            float(rppg.get("signal_quality", features.get("signal_quality", 0.0)) or 0.0),
+            float(features.get("typing_speed_cpm", 0.0) or 0.0),
+            float(features.get("typing_pause_ratio", 0.0) or 0.0),
+            float(features.get("typing_backspace_ratio", 0.0) or 0.0),
+            float(typing.get("rhythm_score", features.get("typing_rhythm_score", 0.0)) or 0.0),
+            1.0 if rppg.get("available") else 0.0,
+            1.0 if typing.get("available") else 0.0,
+        ]
+        return features, feature_names, vector
+
     raise ValueError(f"Unsupported modality: {modality}")
 
 
@@ -1967,6 +2106,275 @@ def _build_comorbidity_modality_results(record: dict, base_dir: Path) -> dict[st
         results["image"] = {"available": False, "confidence": 0.0}
 
     return results
+
+
+def _passive_questionnaire_targets(record: dict, threshold: float = 0.5) -> list[int] | None:
+    questionnaire = dict(record.get("questionnaire") or {})
+    overall_scores = dict(((record.get("multimodal") or {}).get("overall") or {}).get("scores") or {})
+    targets = []
+    for domain in PREDICTION_DOMAINS:
+        raw_value = _parse_target_value(
+            questionnaire.get(f"{domain}_score")
+            if questionnaire.get(f"{domain}_score") is not None
+            else questionnaire.get(domain)
+        )
+        if raw_value is None:
+            raw_value = _parse_target_value(overall_scores.get(domain))
+        if raw_value is None:
+            return None
+        targets.append(int(float(raw_value) >= threshold))
+    return targets
+
+
+def _passive_training_row(record: dict) -> dict | None:
+    passive_payload = dict(((record.get("multimodal") or {}).get("passive") or {}).get("features") or {})
+    if not passive_payload:
+        return None
+    targets = _passive_questionnaire_targets(record)
+    if targets is None:
+        return None
+
+    questionnaire = dict(record.get("questionnaire") or {})
+    overall_scores = dict(((record.get("multimodal") or {}).get("overall") or {}).get("scores") or {})
+    rppg = dict(passive_payload.get("rppg") or {})
+    typing = dict(passive_payload.get("typing") or {})
+    row = {
+        "assessment_id": record.get("assessment_id"),
+        "created_at": record.get("created_at"),
+        "patient_key": record.get("patient_key"),
+        "source_dataset": "screening_results",
+        "record_origin": record.get("record_origin", "backend"),
+        "passive_features": {
+            "confidence": float(passive_payload.get("confidence", 0.0) or 0.0),
+            "heart_rate_bpm": float(passive_payload.get("heart_rate_bpm", 0.0) or 0.0),
+            "heart_rate_score": float(rppg.get("heart_rate_score", passive_payload.get("heart_rate_score", 0.0)) or 0.0),
+            "signal_quality": float(rppg.get("signal_quality", passive_payload.get("signal_quality", 0.0)) or 0.0),
+            "typing_speed_cpm": float(passive_payload.get("typing_speed_cpm", 0.0) or 0.0),
+            "typing_pause_ratio": float(passive_payload.get("typing_pause_ratio", 0.0) or 0.0),
+            "typing_backspace_ratio": float(passive_payload.get("typing_backspace_ratio", 0.0) or 0.0),
+            "typing_rhythm_score": float(typing.get("rhythm_score", passive_payload.get("typing_rhythm_score", 0.0)) or 0.0),
+            "rppg_available": bool(rppg.get("available")),
+            "typing_available": bool(typing.get("available")),
+        },
+        "questionnaire_scores": {
+            domain: float(
+                _parse_target_value(questionnaire.get(f"{domain}_score"))
+                if questionnaire.get(f"{domain}_score") is not None
+                else _parse_target_value(questionnaire.get(domain))
+                if questionnaire.get(domain) is not None
+                else _parse_target_value(overall_scores.get(domain))
+                or 0.0
+            )
+            for domain in PREDICTION_DOMAINS
+        },
+        "labels": {domain: int(targets[index]) for index, domain in enumerate(PREDICTION_DOMAINS)},
+    }
+    return row
+
+
+def collect_passive_training_example(record: dict) -> dict | None:
+    row = _passive_training_row(record)
+    if row is None:
+        return None
+
+    PASSIVE_TRAINING_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    existing_ids = set()
+    if PASSIVE_TRAINING_MANIFEST.exists():
+        try:
+            for line in PASSIVE_TRAINING_MANIFEST.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                payload = json.loads(line)
+                assessment_id = str(payload.get("assessment_id", "")).strip().upper()
+                if assessment_id:
+                    existing_ids.add(assessment_id)
+        except Exception:
+            existing_ids = set()
+
+    assessment_id = str(row.get("assessment_id", "")).strip().upper()
+    if assessment_id and assessment_id in existing_ids:
+        return row
+
+    with PASSIVE_TRAINING_MANIFEST.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, ensure_ascii=True) + "\n")
+    return row
+
+
+def sync_passive_training_manifest(records: list[dict] | None = None) -> int:
+    source_records = list(records) if records is not None else _load_saved_assessment_records()
+    collected = 0
+    for record in source_records:
+        if collect_passive_training_example(record) is not None:
+            collected += 1
+    return collected
+
+
+def _load_passive_training_rows() -> list[dict]:
+    if not PASSIVE_TRAINING_MANIFEST.exists():
+        return []
+    rows: list[dict] = []
+    try:
+        for line in PASSIVE_TRAINING_MANIFEST.read_text(encoding="utf-8").splitlines():
+            text = line.strip()
+            if not text:
+                continue
+            row = json.loads(text)
+            if isinstance(row, dict):
+                rows.append(row)
+    except Exception:
+        return []
+    return rows
+
+
+def train_passive_biomarkers_model(
+    random_state: int = 42,
+    min_samples: int = 25,
+) -> dict:
+    passive_rows = _load_passive_training_rows()
+    if not passive_rows:
+        sync_passive_training_manifest()
+        passive_rows = _load_passive_training_rows()
+
+    feature_rows: list[list[float]] = []
+    label_rows: list[list[int]] = []
+    feature_names: list[str] | None = None
+
+    for row in passive_rows:
+        passive_features = dict(row.get("passive_features") or {})
+        labels = dict(row.get("labels") or {})
+        if not passive_features or len(labels) != len(PREDICTION_DOMAINS):
+            continue
+        feature_names = feature_names or [
+            "confidence",
+            "heart_rate_bpm",
+            "heart_rate_score",
+            "signal_quality",
+            "typing_speed_cpm",
+            "typing_pause_ratio",
+            "typing_backspace_ratio",
+            "typing_rhythm_score",
+            "rppg_available",
+            "typing_available",
+        ]
+        feature_rows.append([
+            float(passive_features.get("confidence", 0.0) or 0.0),
+            float(passive_features.get("heart_rate_bpm", 0.0) or 0.0),
+            float(passive_features.get("heart_rate_score", 0.0) or 0.0),
+            float(passive_features.get("signal_quality", 0.0) or 0.0),
+            float(passive_features.get("typing_speed_cpm", 0.0) or 0.0),
+            float(passive_features.get("typing_pause_ratio", 0.0) or 0.0),
+            float(passive_features.get("typing_backspace_ratio", 0.0) or 0.0),
+            float(passive_features.get("typing_rhythm_score", 0.0) or 0.0),
+            1.0 if passive_features.get("rppg_available") else 0.0,
+            1.0 if passive_features.get("typing_available") else 0.0,
+        ])
+        label_rows.append([int(labels.get(domain, 0)) for domain in PREDICTION_DOMAINS])
+
+    if len(feature_rows) < min_samples:
+        raise ValueError(
+            f"At least {min_samples} passive-labeled rows are required to train the passive biomarker bundle."
+        )
+
+    features_x = np.asarray(feature_rows, dtype=float)
+    labels_y = np.asarray(label_rows, dtype=int)
+
+    metrics: dict[str, dict] = {}
+    confidence_calibrators: dict[str, dict] = {}
+    model_families: dict[str, str] = {}
+    model_selection: dict[str, dict] = {}
+    label_thresholds: dict[str, float] = {}
+    sample_counts: dict[str, int] = {}
+    train_counts: dict[str, int] = {}
+    test_counts: dict[str, int] = {}
+    models: dict[str, RandomForestClassifier | DummyClassifier | Pipeline] = {}
+    skipped_domains: dict[str, str] = {}
+
+    for index, domain in enumerate(PREDICTION_DOMAINS):
+        try:
+            model, domain_metrics, train_count, test_count, calibrator = _fit_domain_model(
+                features_x=features_x,
+                targets_y=labels_y[:, index].astype(float),
+                random_state=random_state,
+                test_size=0.3,
+                domain=domain,
+                modality="passive_biomarkers",
+                allow_deep_candidate=False,
+            )
+        except Exception as error:
+            skipped_domains[domain] = str(error)
+            continue
+        models[domain] = model
+        metrics[domain] = domain_metrics
+        confidence_calibrators[domain] = calibrator
+        model_families[domain] = str(domain_metrics.get("selected_model_family", type(model).__name__)).strip()
+        model_selection[domain] = dict(domain_metrics.get("candidate_metrics", {}))
+        label_thresholds[domain] = float(domain_metrics.get("decision_threshold", 0.5))
+        sample_counts[domain] = int(len(features_x))
+        train_counts[domain] = train_count
+        test_counts[domain] = test_count
+
+    if not models:
+        raise ValueError("No passive biomarker domains were trainable from the available records.")
+
+    trained_domains = list(models.keys())
+    macro_accuracy = float(np.mean([metrics[domain]["accuracy"] for domain in trained_domains]))
+    macro_precision = float(np.mean([metrics[domain]["precision"] for domain in trained_domains]))
+    macro_recall = float(np.mean([metrics[domain]["recall"] for domain in trained_domains]))
+    macro_f1 = float(np.mean([metrics[domain]["f1"] for domain in trained_domains]))
+    macro_r2 = float(np.mean([metrics[domain]["r2"] for domain in trained_domains]))
+    calibration_quality = float(np.mean([confidence_calibrators[domain]["metrics"]["calibrated_accuracy"] for domain in trained_domains]))
+    confidence_hint = float(np.clip(0.3 * macro_f1 + 0.2 * macro_precision + 0.5 * calibration_quality, 0.05, 0.99))
+
+    bundle = {
+        "modality": "passive_biomarkers",
+        "domains": trained_domains,
+        "feature_names": feature_names or [],
+        "models": models,
+        "confidence_calibrators": confidence_calibrators,
+        "label_thresholds": label_thresholds,
+        "model_families": model_families,
+        "model_selection": model_selection,
+        "metrics": {
+            **metrics,
+            "macro_accuracy": macro_accuracy,
+            "macro_precision": macro_precision,
+            "macro_recall": macro_recall,
+            "macro_f1": macro_f1,
+            "macro_r2": macro_r2,
+            "calibration_quality": calibration_quality,
+        },
+        "confidence_hint": confidence_hint,
+        "sample_count": int(sum(sample_counts.values())),
+        "sample_counts": sample_counts,
+        "train_counts": train_counts,
+        "test_counts": test_counts,
+        "manifest_path": None,
+        "dataset_root": None,
+        "source_datasets": ["screening_results"],
+        "label_sources": ["questionnaire"],
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+        "skipped_domains": skipped_domains,
+        "training_strategy": "passive_bootstrap_from_saved_assessments",
+    }
+    save_model_bundle("passive_biomarkers", bundle)
+    return bundle
+
+
+def maybe_autotrain_passive_biomarkers(
+    min_new_rows: int = PASSIVE_AUTOTRAIN_MIN_NEW_ROWS,
+    min_total_rows: int = PASSIVE_AUTOTRAIN_MIN_TOTAL_ROWS,
+) -> dict | None:
+    passive_rows = _load_passive_training_rows()
+    if len(passive_rows) < min_total_rows:
+        return None
+
+    current_bundle = load_model_bundle("passive_biomarkers") or {}
+    current_sample_count = int(current_bundle.get("sample_count", 0) or 0)
+    new_rows = len(passive_rows) - current_sample_count
+    if new_rows < min_new_rows:
+        return None
+
+    return train_passive_biomarkers_model()
 
 
 def _comorbidity_feature_vector(results: dict[str, dict]) -> tuple[list[str], list[float]]:
@@ -2072,7 +2480,7 @@ def _fit_comorbidity_chain(
                     random_state=random_state + position + domain_index,
                     stratify=None,
                 )
-        model, metrics, model_family, candidate_metrics = _fit_selected_chain_binary_model(
+        model, metrics, model_family, candidate_metrics = _fit_comorbidity_chain_binary_model(
             x_train=x_train,
             y_train=y_train,
             x_eval=x_eval,
@@ -3203,7 +3611,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--modality",
-        choices=(*SUPPORTED_MODALITIES, "audio-sequence", "audio-spectrogram", "image-dl", "comorbidity", "text-transformer", "all"),
+        choices=(*SUPPORTED_MODALITIES, "audio-sequence", "audio-spectrogram", "image-dl", "comorbidity", "text-transformer", "passive-biomarkers", "all"),
         default="all",
         help="Train one modality, the joint comorbidity head, or all supported modalities.",
     )
@@ -3320,6 +3728,13 @@ def main() -> None:
                     manifest_path=args.manifest,
                     dataset_root=args.dataset_root,
                 ),
+            }
+        }
+    elif args.modality == "passive-biomarkers":
+        result = {
+            "passive_biomarkers": {
+                "status": "trained",
+                "bundle": train_passive_biomarkers_model(),
             }
         }
     elif args.modality == "all":

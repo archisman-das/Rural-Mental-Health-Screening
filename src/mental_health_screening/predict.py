@@ -18,14 +18,13 @@ except ImportError:
 
 
 MODALITY_WEIGHTS = {
-    # These base weights are intentionally close together so the combined score
-    # stays multimodal while keeping calibrated text from dominating the final
-    # signal after threshold tightening.
-    "text": 0.21,
-    "audio": 0.37,
-    "image": 0.37,
-    "passive_biomarkers": 0.05,
+    # Keep the display and backend scoring aligned with a clinically stable blend.
+    "text": 0.46,
+    "audio": 0.30,
+    "image": 0.24,
 }
+
+ACTIVE_MODALITIES = ("text", "audio", "image")
 
 COMORBIDITY_MODALITIES = ("text", "audio", "image")
 COMORBIDITY_MODEL_NAME = "comorbidity"
@@ -40,14 +39,58 @@ COMORBIDITY_PAIR_PRIORS = {
     ("substance_abuse", "stress"): 1.12,
 }
 
-SCREENING_MIN_CONFIDENCE_FOR_AUTOMATED_TRIAGE = 0.75
+SCREENING_MIN_CONFIDENCE_FOR_AUTOMATED_TRIAGE = 0.8
 SCREENING_MIN_MODALITIES_FOR_AUTOMATED_TRIAGE = 2
+
+# Weak auxiliary bundles can add noise when they were trained on small or
+# poorly performing sets. Keep them out of the final blend unless they clear a
+# minimum quality floor.
+MIN_BUNDLE_QUALITY = {
+    "audio_sequence": 0.35,
+    "audio_spectrogram": 0.55,
+    "image_dl": 0.55,
+    "comorbidity": 0.55,
+    "passive_biomarkers": 0.60,
+}
+MIN_BUNDLE_SAMPLE_COUNT = {
+    "audio_sequence": 500,
+    "audio_spectrogram": 500,
+    "image_dl": 250,
+    "comorbidity": 1000,
+    "passive_biomarkers": 25,
+}
 
 _SHAP_EXPLAINERS: dict[tuple[str, str, int], object] = {}
 
 
 def _confidence_from_feature_count(feature_count: int, max_count: int) -> float:
     return normalize_score(feature_count / max_count)
+
+
+def _bundle_quality_score(bundle: dict | None) -> float:
+    if not bundle:
+        return 0.0
+    metrics = dict(bundle.get("metrics", {}) or {})
+    candidates = [
+        bundle.get("confidence_hint", 0.0),
+        metrics.get("macro_f1", 0.0),
+        metrics.get("macro_accuracy", 0.0),
+        metrics.get("label_accuracy", 0.0),
+        metrics.get("exact_match", 0.0),
+        metrics.get("accuracy", 0.0),
+    ]
+    best_score = max(float(value or 0.0) for value in candidates)
+    return normalize_score(best_score)
+
+
+def _bundle_is_trusted(modality: str, bundle: dict | None) -> bool:
+    if not bundle:
+        return False
+    min_quality = float(MIN_BUNDLE_QUALITY.get(modality, 0.5))
+    min_samples = int(MIN_BUNDLE_SAMPLE_COUNT.get(modality, 0))
+    sample_count = int(bundle.get("sample_count", 0) or 0)
+    quality_score = _bundle_quality_score(bundle)
+    return quality_score >= min_quality and sample_count >= min_samples
 
 
 def _confidence_signal_from_std(prediction_std: float, scale: float | None) -> float:
@@ -492,32 +535,15 @@ def _modality_quality_signal(result: dict) -> float:
 
 
 def _effective_modality_weight(result: dict) -> float:
+    if result.get("modality") == "passive_biomarkers":
+        return 0.0
     base_weight = float(MODALITY_WEIGHTS.get(result.get("modality"), 0.25))
     quality_signal = _modality_quality_signal(result)
     quality_multiplier = 0.7 + 0.3 * quality_signal
-    if result.get("modality") == "text":
-        # Keep text close behind the stronger visual/acoustic signals.
-        quality_multiplier += 0.06 * max(quality_signal - 0.45, 0.0)
-    if result.get("modality") == "audio":
-        # Audio is now a first-class signal, but only earns additional weight
-        # when the trained bundle quality is decent enough to justify it.
-        quality_multiplier += 0.24 * max(quality_signal - 0.28, 0.0)
-    if result.get("modality") == "image":
-        # Give the visual bundle a slightly stronger voice because it is now a
-        # trained classifier rather than a passive metadata-only signal.
-        feature_snapshot = result.get("features", {}) or {}
-        if str(feature_snapshot.get("image_primary_model", "")).strip().lower() == "image_dl":
-            quality_multiplier += 0.18 * quality_signal
-        else:
-            quality_multiplier += 0.10 * quality_signal
     if result.get("modality") == "comorbidity":
         # The comorbidity head is useful, but keep it secondary until it is
         # retrained on stronger upstream modality signals.
-        quality_multiplier *= 0.82
-    if result.get("modality") == "audio_sequence":
-        # Sequence audio remains a fallback candidate until its architecture
-        # or data improves.
-        quality_multiplier *= 0.72
+        quality_multiplier *= 0.93
     return base_weight * quality_multiplier
 
 
@@ -643,13 +669,20 @@ def _trained_modality_result(
         return _unavailable_modality_result(
             modality=modality,
             notes=(
-                f"The available {modality} bundle was not trained on the required DAIC-WOZ PHQ-derived "
-                "domain targets, so it was excluded from scoring."
+                f"The available {modality} bundle is present, but it uses alternate label sources, so the "
+                "dashboard is showing its bundle metadata instead of using it in the core score."
             ),
             feature_snapshot={
                 **feature_snapshot,
                 "model_source": "bundle_label_source_mismatch",
+                "model_type": bundle.get("model_type"),
+                "trained_samples": bundle.get("sample_count", 0),
+                "training_strategy": bundle.get("training_strategy", "centralized"),
+                "source_datasets": list(bundle.get("source_datasets", [])),
                 "label_sources": bundle_label_sources,
+                "model_families": dict(bundle.get("model_families", {}) or {}),
+                "model_selection": dict(bundle.get("model_selection", {}) or {}),
+                "trained_domains": list(bundle.get("domains", [])),
             },
         )
 
@@ -926,9 +959,15 @@ def score_audio_features(features: dict) -> dict:
         sequence_bundle is not None
         and str(sequence_bundle.get("model_type")) == "audio_bilstm_multilabel"
         and audio_path
+        and _bundle_is_trusted("audio_sequence", sequence_bundle)
     ):
         try:
-            sequence_features = extract_audio_sequence_features(audio_path, max_frames=int((sequence_bundle.get("sequence_config", {}) or {}).get("max_frames", 160)))
+            sequence_config = dict(sequence_bundle.get("sequence_config", {}) or {})
+            sequence_features = extract_audio_sequence_features(
+                audio_path,
+                max_frames=int(sequence_config.get("max_frames", 160)),
+                include_mfcc=str(sequence_config.get("feature_mode", "full")).lower() != "fast",
+            )
             model = sequence_bundle.get("model")
             if sequence_features.get("available") and model is not None:
                 normalization = dict(sequence_bundle.get("sequence_normalization", {}) or {})
@@ -981,6 +1020,7 @@ def score_audio_features(features: dict) -> dict:
         spectrogram_bundle is not None
         and str(spectrogram_bundle.get("model_type")) == "audio_spectrogram_cnn_multilabel"
         and audio_path
+        and _bundle_is_trusted("audio_spectrogram", spectrogram_bundle)
     ):
         try:
             spectrogram_config = dict(spectrogram_bundle.get("spectrogram_config", {}) or {})
@@ -1159,6 +1199,10 @@ def score_audio_features(features: dict) -> dict:
         candidate_results.append(("audio_spectrogram", spectrogram_result, spectrogram_macro_f1))
 
     if len(candidate_results) == 1:
+        trained_result["notes"] = (
+            "Audio screening used the main acoustic bundle; weak auxiliary audio bundles were excluded "
+            "because their saved quality was below the trust threshold."
+        )
         return trained_result
 
     weights = [max(score, 0.05) for _, _, score in candidate_results]
@@ -1216,6 +1260,12 @@ def score_audio_features(features: dict) -> dict:
     if spectrogram_result is not None and spectrogram_result.get("available"):
         features_snapshot["audio_spectrogram_ensemble"] = dict(spectrogram_result.get("features", {}) or {})
     features_snapshot["audio_primary_model"] = "audio"
+    features_snapshot["audio_auxiliary_bundles"] = {
+        "audio_sequence_trusted": bool(sequence_result is not None and sequence_result.get("available")),
+        "audio_spectrogram_trusted": bool(spectrogram_result is not None and spectrogram_result.get("available")),
+        "audio_sequence_quality": round(_bundle_quality_score(sequence_bundle), 3),
+        "audio_spectrogram_quality": round(_bundle_quality_score(spectrogram_bundle), 3),
+    }
     return {
         **trained_result,
         "confidence": blended_confidence,
@@ -1226,7 +1276,7 @@ def score_audio_features(features: dict) -> dict:
         "scores": blended_scores,
         **{f"{domain}_score": blended_scores[domain] for domain in PREDICTION_DOMAINS},
         "features": features_snapshot,
-        "notes": "Audio screening blended the summary classifier with sequence and spectrogram models when available.",
+        "notes": "Audio screening blended the main acoustic classifier with trusted auxiliary sequence and spectrogram models.",
     }
 
 
@@ -1240,6 +1290,7 @@ def score_image_features(features: dict) -> dict:
     image_bundle = load_model_bundle("image")
     image_dl_bundle = load_model_bundle("image_dl")
     image_path = str(features.get("image_path", "") or "").strip()
+    image_dl_trusted = _bundle_is_trusted("image_dl", image_dl_bundle)
 
     classical_result = None
     if features.get("available"):
@@ -1268,6 +1319,7 @@ def score_image_features(features: dict) -> dict:
         and str(image_dl_bundle.get("model_type")) == "image_cnn_multilabel"
         and image_path
         and cv2 is not None
+        and image_dl_trusted
     ):
         image_config = dict(image_dl_bundle.get("image_config", {}) or {})
         image_size = int(image_config.get("image_size", 128))
@@ -1320,7 +1372,7 @@ def score_image_features(features: dict) -> dict:
     if classical_result is None and dl_result is None:
         return _unavailable_modality_result(
             modality="image",
-            notes="Image features were unavailable, so no trained classifier could run.",
+            notes="Image features were unavailable or the image CNN bundle did not clear the quality floor.",
             feature_snapshot=feature_snapshot,
         )
     if classical_result is None:
@@ -1378,6 +1430,8 @@ def score_image_features(features: dict) -> dict:
         },
     }
     features_snapshot["image_primary_model"] = "image_dl" if dl_result is not None else "image"
+    features_snapshot["image_dl_trusted"] = bool(image_dl_trusted and dl_result is not None)
+    features_snapshot["image_dl_quality"] = round(_bundle_quality_score(image_dl_bundle), 3)
     return {
         **classical_result,
         "confidence": blended_confidence,
@@ -1388,8 +1442,38 @@ def score_image_features(features: dict) -> dict:
         "scores": blended_scores,
         **{f"{domain}_score": blended_scores[domain] for domain in PREDICTION_DOMAINS},
         "features": features_snapshot,
-        "notes": "Image screening blended the classical face bundle with the image CNN when available.",
+        "notes": "Image screening blended the classical face bundle with the image CNN only when the CNN bundle cleared the quality floor.",
     }
+
+
+def _passive_feature_vector(features: dict) -> tuple[list[str], list[float]]:
+    rppg = dict(features.get("rppg", {}) or {})
+    typing = dict(features.get("typing", {}) or {})
+    feature_names = [
+        "confidence",
+        "heart_rate_bpm",
+        "heart_rate_score",
+        "signal_quality",
+        "typing_speed_cpm",
+        "typing_pause_ratio",
+        "typing_backspace_ratio",
+        "typing_rhythm_score",
+        "rppg_available",
+        "typing_available",
+    ]
+    vector = [
+        float(features.get("confidence", 0.0) or 0.0),
+        float(features.get("heart_rate_bpm", 0.0) or 0.0),
+        float(rppg.get("heart_rate_score", features.get("heart_rate_score", 0.0)) or 0.0),
+        float(rppg.get("signal_quality", features.get("signal_quality", 0.0)) or 0.0),
+        float(features.get("typing_speed_cpm", 0.0) or 0.0),
+        float(features.get("typing_pause_ratio", 0.0) or 0.0),
+        float(features.get("typing_backspace_ratio", 0.0) or 0.0),
+        float(typing.get("rhythm_score", features.get("typing_rhythm_score", 0.0)) or 0.0),
+        1.0 if rppg.get("available") else 0.0,
+        1.0 if typing.get("available") else 0.0,
+    ]
+    return feature_names, vector
 
 
 def score_passive_biomarkers(features: dict) -> dict:
@@ -1414,6 +1498,54 @@ def score_passive_biomarkers(features: dict) -> dict:
             feature_snapshot=feature_snapshot,
         )
 
+    passive_bundle = load_model_bundle("passive_biomarkers")
+    passive_bundle_trusted = bool(passive_bundle is not None and _bundle_is_trusted("passive_biomarkers", passive_bundle))
+    if passive_bundle_trusted and passive_bundle.get("models"):
+        feature_names, vector = _passive_feature_vector(features)
+        per_domain_scores = {}
+        binary_predictions = {}
+        predicted_domains = []
+        confidence_inputs = []
+        thresholds = dict(passive_bundle.get("label_thresholds", {}) or {})
+        calibrators = dict(passive_bundle.get("confidence_calibrators", {}) or {})
+        for domain in PREDICTION_DOMAINS:
+            model = (passive_bundle.get("models") or {}).get(domain)
+            if model is None:
+                continue
+            raw_probability, calibrated_confidence, _ = _predict_calibrated_domain(
+                model,
+                vector,
+                calibrators.get(domain),
+            )
+            per_domain_scores[domain] = normalize_score(raw_probability)
+            binary_predictions[domain] = bool(per_domain_scores[domain] >= float(thresholds.get(domain, 0.5)))
+            if binary_predictions[domain]:
+                predicted_domains.append(domain)
+            confidence_inputs.append(float(calibrated_confidence or 0.0))
+        if per_domain_scores:
+            confidence = normalize_score(
+                average([
+                    float(passive_bundle.get("confidence_hint", 0.0) or 0.0),
+                    average(confidence_inputs) if confidence_inputs else 0.0,
+                ])
+            )
+            feature_snapshot.update(
+                {
+                    "bundle_feature_names": feature_names,
+                    "bundle_model_source": passive_bundle.get("training_strategy", "trained_bundle"),
+                    "bundle_quality": round(_bundle_quality_score(passive_bundle), 3),
+                }
+            )
+            return _modality_result(
+                modality="passive_biomarkers",
+                domain_scores=per_domain_scores,
+                confidence=confidence,
+                notes="Passive biomarkers used the trained passive bundle from saved assessment data.",
+                feature_snapshot=feature_snapshot,
+                predicted_domains=predicted_domains,
+                available=bool(predicted_domains),
+            )
+
     heart_rate_bpm = float(features.get("heart_rate_bpm") or 0.0)
     typing_speed_cpm = float(features.get("typing_speed_cpm") or 0.0)
     typing_pause_ratio = float(features.get("typing_pause_ratio") or 0.0)
@@ -1431,6 +1563,18 @@ def score_passive_biomarkers(features: dict) -> dict:
             float(features.get("rppg", {}).get("signal_quality", 0.0)),
             float(features.get("typing", {}).get("rhythm_score", 0.0)),
         ])
+
+    rppg_quality = float(features.get("rppg", {}).get("signal_quality", 0.0) or 0.0)
+    typing_quality = float(features.get("typing", {}).get("rhythm_score", 0.0) or 0.0)
+    if confidence < 0.45 or max(rppg_quality, typing_quality) < 0.35:
+        return _unavailable_modality_result(
+            modality="passive_biomarkers",
+            notes=(
+                "Passive biomarker data reached the backend, but the signal quality was too weak to use it "
+                "for scoring, so it stayed as metadata only."
+            ),
+            feature_snapshot=feature_snapshot,
+        )
 
     return _modality_result(
         modality="passive_biomarkers",
@@ -1450,7 +1594,7 @@ def score_passive_biomarkers(features: dict) -> dict:
 
 
 def aggregate_scores(results: list) -> dict:
-    available = [r for r in results if r.get("available")]
+    available = [r for r in results if r.get("available") and r.get("modality") in ACTIVE_MODALITIES]
     if not available:
         return {
             **{domain: "unknown" for domain in PREDICTION_DOMAINS},
@@ -1483,7 +1627,7 @@ def aggregate_scores(results: list) -> dict:
         sum(MODALITY_WEIGHTS.get(result["modality"], 0.25) for result in available)
         / sum(MODALITY_WEIGHTS.values())
     )
-    modality_count_score = normalize_score(len(available) / float(len(MODALITY_WEIGHTS)))
+    modality_count_score = normalize_score(len(available) / float(len(ACTIVE_MODALITIES)))
     weighted_confidence = sum(result["confidence"] * weight for result, weight in weighted_results) / total_weight
     agreement_confidence = _domain_score_agreement(
         [
@@ -1495,13 +1639,13 @@ def aggregate_scores(results: list) -> dict:
         ]
     )
     confidence = normalize_score(
-        0.54 * weighted_confidence
-        + 0.17 * coverage_score
-        + 0.11 * modality_count_score
-        + 0.18 * agreement_confidence
+        0.48 * weighted_confidence
+        + 0.16 * coverage_score
+        + 0.10 * modality_count_score
+        + 0.26 * agreement_confidence
     )
     evidence_strength = normalize_score(
-        0.92 * confidence + 0.08 * max(coverage_score, modality_count_score)
+        0.86 * confidence + 0.14 * max(coverage_score, modality_count_score)
     )
 
     result = {
@@ -1686,6 +1830,8 @@ def _score_comorbidity_from_bundle(modality_results: dict[str, dict]) -> dict | 
     bundle = load_model_bundle(COMORBIDITY_MODEL_NAME)
     if bundle is None:
         return None
+    if not _bundle_is_trusted(COMORBIDITY_MODEL_NAME, bundle):
+        return None
 
     feature_names, vector = _comorbidity_feature_vector(modality_results)
     raw_chain_ensemble = list(bundle.get("chain_ensemble") or [])
@@ -1738,7 +1884,7 @@ def _score_comorbidity_from_bundle(modality_results: dict[str, dict]) -> dict | 
             raw_probability,
         )
         probabilities[domain] = normalize_score(
-            0.58 * calibrated_probability + 0.42 * float(upstream_blend.get(domain, 0.0) or 0.0)
+            0.66 * calibrated_probability + 0.34 * float(upstream_blend.get(domain, 0.0) or 0.0)
         )
         calibration_methods[domain] = method
 
@@ -1865,7 +2011,7 @@ def screen(
     image_result = score_image_features(image_features)
     passive_result = score_passive_biomarkers(passive_features)
 
-    overall = aggregate_scores([text_result, audio_result, image_result, passive_result])
+    overall = aggregate_scores([text_result, audio_result, image_result])
     comorbidity = score_comorbidity(
         {
             "text": text_result,

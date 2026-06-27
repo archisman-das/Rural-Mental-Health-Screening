@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Questionnaire</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260626z">
+</head>
+<body class="wizard-body" data-page="questionnaire">
+  <div class="wizard-shell">
+    <header class="panel wizard-header">
+      <p class="eyebrow">Step 2 of 3</p>
+      <h1>Questionnaire</h1>
+      <p class="hero-text">Rate each symptom in grouped screening sections so the flow stays quick and clinically readable.</p>
+    </header>
+
+    <section class="panel wizard-stage">
+      <div id="questionnaireContainer" class="wizard-grid-1"></div>
+      <div class="form-card">
+        <h3>Validated instruments</h3>
+        <div id="validatedInstrumentPanel" class="validated-instrument-panel"></div>
+        <div id="validatedInstrumentInfo" class="validated-instrument-info is-hidden" aria-live="polite"></div>
+      </div>
+
+      <div class="wizard-nav">
+        <button id="prevToScreening" class="ghost-btn" type="button">Previous</button>
+        <a class="ghost-btn" href="/web/index.html#workspaceView">Back to Dashboard</a>
+        <button id="nextToLiveInsights" class="primary-btn" type="button">Next</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="/web/wizard.js?v=20260626-6"></script>
+</body>
+</html>

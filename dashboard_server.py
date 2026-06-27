@@ -34,7 +34,7 @@ from mental_health_screening.utils import average, confidence_weighted_score, no
 
 app = Flask(__name__, static_folder=str(ROOT / "web"), static_url_path="/web")
 app.config["MAX_CONTENT_LENGTH"] = 25 * 1024 * 1024
-APP_BUILD = "2026-06-24"
+APP_BUILD = "2026-06-27-modelstats-removed"
 
 MAX_TEXT_INPUT_LENGTH = 5000
 LIST_LIMIT_DEFAULT = 50
@@ -69,21 +69,27 @@ def _validation_text(key: str, language: str = "English") -> str:
     messages = {
         "English": {
             "full_name_required": "Candidate full name is required.",
+            "age_required": "Age is required.",
             "village_required": "Village or local area is required.",
+            "district_required": "District is required.",
             "assessor_required": "Assessor name is required.",
             "consent_required": "Consent is required before saving an assessment.",
             "questionnaire_incomplete": "Questionnaire scores are incomplete.",
         },
         "Hindi": {
             "full_name_required": "उम्मीदवार का पूरा नाम आवश्यक है।",
+            "age_required": "आयु आवश्यक है।",
             "village_required": "गाँव या स्थानीय क्षेत्र आवश्यक है।",
+            "district_required": "ज़िला आवश्यक है।",
             "assessor_required": "आकलनकर्ता का नाम आवश्यक है।",
             "consent_required": "आकलन सहेजने से पहले सहमति आवश्यक है।",
             "questionnaire_incomplete": "प्रश्नावली स्कोर अधूरे हैं।",
         },
         "Bengali": {
             "full_name_required": "প্রার্থীর পূর্ণ নাম প্রয়োজন।",
+            "age_required": "বয়স প্রয়োজন।",
             "village_required": "গ্রাম বা স্থানীয় এলাকা প্রয়োজন।",
+            "district_required": "জেলা প্রয়োজন।",
             "assessor_required": "মূল্যায়নকারীর নাম প্রয়োজন।",
             "consent_required": "মূল্যায়ন সংরক্ষণের আগে সম্মতি প্রয়োজন।",
             "questionnaire_incomplete": "প্রশ্নমালার স্কোর অসম্পূর্ণ।",
@@ -106,6 +112,9 @@ def _normalize_profile(profile: dict | None) -> dict:
         "age": age,
         "gender": _clean_text(safe_profile.get("gender") or "Prefer not to say", 40) or "Prefer not to say",
         "village": _clean_text(safe_profile.get("village"), 120),
+        "district": _clean_text(safe_profile.get("district"), 120),
+        "block": _clean_text(safe_profile.get("block"), 120),
+        "occupation": _clean_text(safe_profile.get("occupation"), 120),
         "phone": _clean_text(safe_profile.get("phone"), 40),
         "assessor": _clean_text(safe_profile.get("assessor"), 120),
         "language": normalized_language,
@@ -160,8 +169,12 @@ def _default_validated_instrument(language: str | None) -> dict | None:
 def _validate_assessment_payload(profile: dict, questionnaire: dict, require_consent: bool = True, language: str = "English") -> dict | None:
     if not profile.get("full_name"):
         return {"field": "full_name", "message": _validation_text("full_name_required", language)}
+    if not profile.get("age"):
+        return {"field": "age", "message": _validation_text("age_required", language)}
     if not profile.get("village"):
         return {"field": "village", "message": _validation_text("village_required", language)}
+    if not profile.get("district"):
+        return {"field": "district", "message": _validation_text("district_required", language)}
     if not profile.get("assessor"):
         return {"field": "assessor", "message": _validation_text("assessor_required", language)}
     if require_consent and not profile.get("consent_received"):
@@ -235,9 +248,11 @@ def _modality_failure_note(modality: str, reason: str | None, result: dict | Non
         return text_map["video_missing"]
     if modality == "passive_biomarkers" and reason == "vision_dependencies_not_installed":
         return text_map["passive_vision_missing"]
-    return text_map["fallback"].format(
-        modality=modality,
-        file_name=(result or {}).get("features", {}).get("file_name", "the uploaded file"),
+    return (
+        f"Dashboard received the {modality} upload for "
+        f"{(result or {}).get('features', {}).get('file_name', 'the uploaded file')}. "
+        "The file reached the backend, but no trained inference result was produced, so the card is showing "
+        "metadata only."
     )
 
 
@@ -252,6 +267,7 @@ def _metadata_modality(modality: str, metadata: dict | None, reason: str | None 
         "notes": _modality_failure_note(modality, reason, source_result, language=language),
         "features": {
             "upload_received": True,
+            "model_source": "metadata_only",
             "file_name": metadata.get("file_name", "unknown"),
             "file_size_kb": metadata.get("file_size_kb", 0),
             "mime_type": metadata.get("mime_type", "unknown"),
@@ -327,7 +343,7 @@ def _decorate_modality_result(result: dict, metadata: dict | None, modality: str
     return _metadata_modality(modality, metadata, reason=result.get("reason"), source_result=result, language=language)
 
 
-def _run_quality_check_report(records: list[dict], mismatches: int = 10) -> dict:
+def _run_quality_check_report(records: list[dict], mismatches: int = 10, assessment_id: str | None = None) -> dict:
     tool_path = ROOT / "tools" / "run_quality_check.py"
     if not tool_path.exists():
         raise FileNotFoundError(f"Quality check tool not found: {tool_path}")
@@ -362,6 +378,8 @@ def _run_quality_check_report(records: list[dict], mismatches: int = 10) -> dict
         report["tool_stdout"] = completed.stdout.strip()
         report["tool_stderr"] = completed.stderr.strip()
         report["source"] = "live_database"
+        if assessment_id:
+            report["assessment_id"] = assessment_id
         return report
 
 
@@ -404,7 +422,7 @@ def _comorbidity_note(comorbidity: dict | None, language: str = "english") -> st
     if not top_pairs:
         return ""
     top_pair = top_pairs[0]
-    if float(top_pair.get("probability", 0.0) or 0.0) < 0.55:
+    if float(top_pair.get("probability", 0.0) or 0.0) < 0.5:
         return ""
     domains = top_pair.get("domains") or []
     if len(domains) != 2:
@@ -437,9 +455,9 @@ def _blend_questionnaire_with_screening(questionnaire_score: float, screening_sc
     questionnaire_score = normalize_score(questionnaire_score)
     screening_score = normalize_score(screening_score)
     screening_confidence = normalize_score(screening_confidence)
-    # Keep the questionnaire as the stronger prior, but let strong multimodal evidence nudge the score.
-    evidence_weight = 0.12 + (0.18 * screening_confidence)
-    evidence_weight = max(0.12, min(evidence_weight, 0.30))
+    # Keep the questionnaire as the anchor, and let strong multimodal evidence nudge the score gently.
+    evidence_weight = 0.10 + (0.16 * screening_confidence)
+    evidence_weight = max(0.10, min(evidence_weight, 0.26))
     questionnaire_weight = 1.0 - evidence_weight
     return normalize_score((questionnaire_score * questionnaire_weight) + (screening_score * evidence_weight))
 
@@ -471,7 +489,7 @@ def _comorbidity_note_basic(comorbidity: dict | None, language: str = "english")
     if not top_pairs:
         return ""
     top_pair = top_pairs[0]
-    if float(top_pair.get("probability", 0.0) or 0.0) < 0.55:
+    if float(top_pair.get("probability", 0.0) or 0.0) < 0.5:
         return ""
     domains = top_pair.get("domains") or []
     if len(domains) != 2:
@@ -771,6 +789,10 @@ def api_create_assessment():
             actor="dashboard_api",
             source_ip=request.remote_addr,
         )
+        from mental_health_screening.training import collect_passive_training_example, maybe_autotrain_passive_biomarkers
+
+        collect_passive_training_example(record)
+        maybe_autotrain_passive_biomarkers()
         record["trajectory"] = build_assessment_trajectory(
             record["assessment_id"],
             actor="dashboard_api",
@@ -779,6 +801,30 @@ def api_create_assessment():
         return jsonify(record), 201
     finally:
         _cleanup_temp_paths(payload["audio_path"], payload["image_path"], payload.get("passive_video_path"))
+
+
+@app.post("/api/passive-biomarkers/retrain")
+def api_retrain_passive_biomarkers():
+    from mental_health_screening.training import sync_passive_training_manifest, train_passive_biomarkers_model
+
+    collected = sync_passive_training_manifest()
+    try:
+        bundle = train_passive_biomarkers_model()
+    except Exception as exc:
+        return _json_error("Passive biomarker retraining failed.", 500, {"error": str(exc), "collected_rows": collected})
+    return jsonify(
+        {
+            "status": "trained",
+            "collected_rows": collected,
+            "bundle": {
+                "training_strategy": bundle.get("training_strategy"),
+                "sample_count": bundle.get("sample_count"),
+                "metrics": bundle.get("metrics"),
+                "confidence_hint": bundle.get("confidence_hint"),
+                "trained_at": bundle.get("trained_at"),
+            },
+        }
+    )
 
 
 @app.post("/api/preview")
@@ -935,8 +981,15 @@ def api_model_stats():
 @app.get("/api/quality-check")
 def api_quality_check():
     try:
-        records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check", source_ip=request.remote_addr)
-        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10))
+        assessment_id = request.args.get("assessment_id")
+        if assessment_id:
+            record = fetch_assessment_record(assessment_id, actor="dashboard_quality_check", source_ip=request.remote_addr)
+            if record is None:
+                return _json_error(f"Assessment record not found: {assessment_id}", 404, {"assessment_id": assessment_id})
+            records = [record]
+        else:
+            records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check", source_ip=request.remote_addr)
+        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10), assessment_id=assessment_id)
         return jsonify(report)
     except Exception as exc:
         return _json_error("Quality check could not be completed.", 500, {"error": str(exc)})
@@ -946,8 +999,15 @@ def api_quality_check():
 def api_quality_check_pdf():
     try:
         language = request.args.get("language", "english")
-        records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check_pdf", source_ip=request.remote_addr)
-        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10))
+        assessment_id = request.args.get("assessment_id")
+        if assessment_id:
+            record = fetch_assessment_record(assessment_id, actor="dashboard_quality_check_pdf", source_ip=request.remote_addr)
+            if record is None:
+                return _json_error(f"Assessment record not found: {assessment_id}", 404, {"assessment_id": assessment_id})
+            records = [record]
+        else:
+            records = list_assessment_records(limit=None, audit_actor="dashboard_quality_check_pdf", source_ip=request.remote_addr)
+        report = _run_quality_check_report(records, mismatches=request.args.get("mismatches", 10), assessment_id=assessment_id)
         pdf_bytes = create_quality_check_pdf_bytes(report, language=language)
         return Response(
             pdf_bytes,

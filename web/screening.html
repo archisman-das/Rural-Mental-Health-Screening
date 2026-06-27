@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rural Mental Health Detection</title>
+  <link rel="stylesheet" href="/web/styles.css?v=20260626z">
+</head>
+<body class="wizard-body" data-page="screening">
+  <div class="wizard-shell">
+    <header class="panel hero">
+      <div class="hero-copy">
+        <div class="hero-copy-grid">
+          <div class="hero-copy-main">
+            <p class="eyebrow">Step 1 of 3</p>
+            <h1>Rural Mental Health Detection</h1>
+            <p class="hero-text">
+              Start the session by entering identity and consent details before moving to the questionnaire.
+            </p>
+            <div class="wizard-meta">
+              <span class="offline-pill online">Screening step ready</span>
+              <span class="offline-pill syncing">Identity and consent first</span>
+            </div>
+          </div>
+          <div class="hero-copy-side">
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-visual-card">
+          <div class="signal-stage">
+            <div class="signal-orbit orbit-one"></div>
+            <div class="signal-orbit orbit-two"></div>
+            <div class="signal-orbit orbit-three"></div>
+            <div class="signal-core">
+              <div class="signal-ring signal-ring-one"></div>
+              <div class="signal-ring signal-ring-two"></div>
+              <div class="signal-center">
+                <img src="/web/assets/mental-health-icon.svg" alt="" class="hero-graphic-image">
+              </div>
+            </div>
+            <article class="signal-card signal-card-text">
+              <span class="signal-card-label">Questionnaire</span>
+              <strong>Structured symptom signals</strong>
+              <p>Page 2 opens on its own screen after the screening card is complete.</p>
+            </article>
+            <article class="signal-card signal-card-audio">
+              <span class="signal-card-label">Uploads</span>
+              <strong>Text, audio, video</strong>
+              <p>Page 3 gathers the metadata and live insights.</p>
+            </article>
+            <article class="signal-card signal-card-face">
+              <span class="signal-card-label">Wizard flow</span>
+              <strong>Next and Previous</strong>
+              <p>The buttons move between separate pages instead of one long scroll.</p>
+            </article>
+            <div class="signal-chart">
+              <div class="signal-chart-header">
+                <span>Live screening path</span>
+                <span>stepwise</span>
+              </div>
+              <div class="signal-bars">
+                <span class="signal-bar signal-bar-one"></span>
+                <span class="signal-bar signal-bar-two"></span>
+                <span class="signal-bar signal-bar-three"></span>
+                <span class="signal-bar signal-bar-four"></span>
+                <span class="signal-bar signal-bar-five"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel wizard-stage">
+      <div class="wizard-grid-1">
+        <article class="form-card profile-card">
+          <h3>Candidate Profile</h3>
+          <div class="profile-grid">
+            <label><span class="field-label-row">Full name <span class="required-star" aria-hidden="true">*</span></span><input id="fullName" type="text" placeholder="Enter full name" required></label>
+            <label><span class="field-label-row">Age <span class="required-star" aria-hidden="true">*</span></span><input id="age" type="number" min="10" max="100" placeholder="Enter age in years" required></label>
+            <label>Gender
+              <select id="gender">
+                <option>Prefer not to say</option>
+                <option>Female</option>
+                <option>Male</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label><span class="field-label-row">Village / Local area <span class="required-star" aria-hidden="true">*</span></span><input id="village" type="text" placeholder="Village or locality" required></label>
+            <label><span class="field-label-row">District <span class="required-star" aria-hidden="true">*</span></span><input id="district" type="text" placeholder="District name" required></label>
+            <label>Block / Subdivision <input id="block" type="text" placeholder="Block or subdivision"></label>
+            <label>Occupation <input id="occupation" type="text" placeholder="Current occupation"></label>
+            <label>Phone / reference number <input id="phone" type="text" placeholder="Optional contact"></label>
+            <label><span class="field-label-row">Assessor name <span class="required-star" aria-hidden="true">*</span></span><input id="assessor" type="text" placeholder="Health worker or counselor" required></label>
+            <div class="profile-consent-row">
+              <label class="checkbox-row profile-consent"><input id="consent" type="checkbox"><span class="field-label-row">Consent received for screening <span class="required-star" aria-hidden="true">*</span></span></label>
+              <button id="nextToQuestionnaire" class="primary-btn" type="button" disabled>Next</button>
+            </div>
+            <p class="consent-note">Consent is required before moving to the questionnaire.</p>
+          </div>
+        </article>
+        <div class="wizard-nav wizard-nav-start">
+          <a class="ghost-btn" href="/web/index.html#workspaceView">Back to Dashboard</a>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/web/wizard.js?v=20260626-6"></script>
+</body>
+</html>

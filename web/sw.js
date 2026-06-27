@@ -1,10 +1,9 @@
-const CACHE_NAME = "mh-dashboard-pwa-v5";
+const CACHE_NAME = "mh-dashboard-pwa-v6";
 const APP_SHELL = [
   "/",
   "/manifest.webmanifest",
   "/web/styles.css",
   "/web/app.js",
-  "/web/model-stats.json",
   "/web/assets/mental-health-icon.svg",
 ];
 

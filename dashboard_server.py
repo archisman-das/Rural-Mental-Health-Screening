@@ -455,9 +455,14 @@ def _blend_questionnaire_with_screening(questionnaire_score: float, screening_sc
     questionnaire_score = normalize_score(questionnaire_score)
     screening_score = normalize_score(screening_score)
     screening_confidence = normalize_score(screening_confidence)
-    # Keep the questionnaire as the anchor, and let strong multimodal evidence nudge the score gently.
-    evidence_weight = 0.10 + (0.16 * screening_confidence)
-    evidence_weight = max(0.10, min(evidence_weight, 0.26))
+    # Keep the questionnaire as the anchor, but let strong multimodal evidence
+    # influence the score enough to show a meaningful domain contrast.
+    evidence_weight = 0.22 + (0.34 * screening_confidence)
+    if screening_score > questionnaire_score:
+        evidence_weight += 0.06
+    else:
+        evidence_weight -= 0.04
+    evidence_weight = max(0.16, min(evidence_weight, 0.58))
     questionnaire_weight = 1.0 - evidence_weight
     return normalize_score((questionnaire_score * questionnaire_weight) + (screening_score * evidence_weight))
 

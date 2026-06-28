@@ -88,7 +88,6 @@
 
     <section class="tab-bar panel reveal">
       <button id="workspaceTabBtn" class="tab-btn active" data-view="workspaceView" type="button">Screening Wizard</button>
-      <button id="adaptiveTabBtn" class="tab-btn" data-view="adaptiveView" type="button">Adaptive Test</button>
       <button id="analyticsTabBtn" class="tab-btn" data-view="analyticsView" type="button">Analytics Hub</button>
       <button id="recordsTabBtn" class="tab-btn" data-view="recordsView" type="button">Records and Reports</button>
     </section>
@@ -356,9 +355,7 @@
         <button id="exportQualityCheckBtn" class="ghost-btn" type="button" disabled>Export Report</button>
         <button id="exportQualityCheckCsvBtn" class="ghost-btn" type="button" disabled>Export CSV</button>
         <button id="exportQualityCheckPdfBtn" class="ghost-btn" type="button" disabled>Export PDF</button>
-        <p id="qualityCheckHelperText" class="detail-muted">Compare saved assessments against the dashboard result and surface mismatches.</p>
       </div>
-      <div id="qualityCheckSummary" class="chart-stack empty-state">Run the quality check to review the latest saved assessments.</div>
 
       <section class="analytics-intro analytics-intro-compact">
         <div class="analytics-intro-main">
@@ -431,7 +428,7 @@
         </article>
       </section>
 
-      <section class="analytics-grid analytics-grid-primary reveal">
+      <section class="analytics-grid analytics-grid-primary analytics-nlp-row reveal">
         <article class="panel">
           <div class="section-heading">
             <h2 id="domainAnalysisTitle">Domain Analysis</h2>
@@ -448,7 +445,7 @@
         </article>
       </section>
 
-      <section class="analytics-grid analytics-grid-triple reveal">
+      <section class="analytics-grid analytics-grid-primary reveal">
         <article class="panel">
           <div class="section-heading">
             <h2 id="nlpSafetyTitle">NLP and Safety Signals</h2>
@@ -463,13 +460,14 @@
           </div>
           <div id="riskHotspots" class="chart-stack empty-state">No modality quality information available yet.</div>
         </article>
-        <article class="panel">
-          <div class="section-heading">
-            <h2 id="recommendationTitle">Recommendation and Follow-up</h2>
-            <p id="recommendationText">End-user explanation, follow-up note, and screening disclaimer</p>
-          </div>
-          <div id="nlpTrends" class="chart-stack empty-state">No recommendation details available yet.</div>
-        </article>
+      </section>
+
+      <section class="panel reveal analytics-recommendation-panel">
+        <div class="section-heading">
+          <h2 id="recommendationTitle">Recommendation and Follow-up</h2>
+          <p id="recommendationText">End-user explanation, follow-up note, and screening disclaimer</p>
+        </div>
+        <div id="nlpTrends" class="chart-stack empty-state">No recommendation details available yet.</div>
       </section>
 
       <div class="action-row analytics-next-row">

@@ -1082,8 +1082,16 @@ textarea {
 }
 
 .analytics-grid-triple {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 16px;
+}
+
+.analytics-grid-triple > .panel:last-child {
+  grid-column: 1 / -1;
+}
+
+.analytics-nlp-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
 }
 
 .records-detail-grid {
@@ -1510,6 +1518,57 @@ textarea {
   border-radius: 14px;
 }
 
+.analytics-intro-compact .score-weight-card .score-weight-item.mismatch-low {
+  border-color: rgba(80, 121, 61, 0.16);
+}
+
+.analytics-intro-compact .score-weight-card .score-weight-item.mismatch-medium {
+  border-color: rgba(189, 137, 46, 0.18);
+}
+
+.analytics-intro-compact .score-weight-card .score-weight-item.mismatch-high {
+  border-color: rgba(179, 71, 61, 0.2);
+}
+
+.analytics-intro-compact .info-card.mismatch-low {
+  border-color: rgba(80, 121, 61, 0.16);
+}
+
+.analytics-intro-compact .info-card.mismatch-medium {
+  border-color: rgba(189, 137, 46, 0.18);
+}
+
+.analytics-intro-compact .info-card.mismatch-high {
+  border-color: rgba(179, 71, 61, 0.2);
+}
+
+.analytics-intro-compact .info-card.mismatch-low h3,
+.analytics-intro-compact .info-card.mismatch-low .intake-kicker {
+  color: var(--ok);
+}
+
+.analytics-intro-compact .info-card.mismatch-medium h3,
+.analytics-intro-compact .info-card.mismatch-medium .intake-kicker {
+  color: var(--warn);
+}
+
+.analytics-intro-compact .info-card.mismatch-high h3,
+.analytics-intro-compact .info-card.mismatch-high .intake-kicker {
+  color: var(--danger);
+}
+
+.analytics-intro-compact .score-weight-card.mismatch-low {
+  border-color: rgba(80, 121, 61, 0.16);
+}
+
+.analytics-intro-compact .score-weight-card.mismatch-medium {
+  border-color: rgba(189, 137, 46, 0.18);
+}
+
+.analytics-intro-compact .score-weight-card.mismatch-high {
+  border-color: rgba(179, 71, 61, 0.2);
+}
+
 #adaptiveView .status-banner {
   margin-bottom: 18px;
 }
@@ -1585,6 +1644,173 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
   margin-top: 10px;
+}
+
+.contribution-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.compare-card {
+  display: grid;
+  gap: 10px;
+}
+
+.contribution-card .chart-note {
+  margin: 0;
+}
+
+.compare-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.compare-card-head h3 {
+  margin: 0;
+}
+
+.compare-diff-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(40, 121, 112, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(40, 121, 112, 0.14);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.compare-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.compare-score-block {
+  display: grid;
+  gap: 8px;
+  padding: 10px 11px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(82, 56, 24, 0.1);
+}
+
+.compare-score-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  color: var(--text);
+  font-size: 0.84rem;
+}
+
+.compare-score-head strong {
+  font-size: 0.98rem;
+}
+
+.compare-score-block .dual-track {
+  height: 12px;
+}
+
+.compare-score-block .dual-fill.questionnaire,
+.compare-score-block .dual-fill.multimodal {
+  border-radius: 999px;
+}
+
+.compare-card.mismatch-low .compare-diff-pill {
+  background: rgba(80, 121, 61, 0.12);
+  color: var(--ok);
+  border-color: rgba(80, 121, 61, 0.2);
+}
+
+.compare-card.mismatch-low .compare-score-block {
+  border-color: rgba(80, 121, 61, 0.14);
+}
+
+.compare-card.mismatch-medium .compare-diff-pill {
+  background: rgba(189, 137, 46, 0.14);
+  color: var(--warn);
+  border-color: rgba(189, 137, 46, 0.22);
+}
+
+.compare-card.mismatch-medium .compare-score-block {
+  border-color: rgba(189, 137, 46, 0.16);
+}
+
+.compare-card.mismatch-high .compare-diff-pill {
+  background: rgba(179, 71, 61, 0.14);
+  color: var(--danger);
+  border-color: rgba(179, 71, 61, 0.22);
+}
+
+.compare-card.mismatch-high .compare-score-block {
+  border-color: rgba(179, 71, 61, 0.18);
+}
+
+.compare-card.mismatch-high .compare-score-block.questionnaire-block .score-fill.questionnaire {
+  background: linear-gradient(90deg, #c46352, var(--danger));
+}
+
+.compare-card.mismatch-high .compare-score-block.multimodal-block .score-fill.multimodal {
+  background: linear-gradient(90deg, #68a79d, #2f8d83);
+}
+
+.modality-card.mismatch-low {
+  border-color: rgba(80, 121, 61, 0.16);
+}
+
+.modality-card.mismatch-medium {
+  border-color: rgba(189, 137, 46, 0.18);
+}
+
+.modality-card.mismatch-high {
+  border-color: rgba(179, 71, 61, 0.2);
+}
+
+.modality-card.mismatch-low .weight-pill {
+  background: rgba(80, 121, 61, 0.12);
+  color: var(--ok);
+}
+
+.modality-card.mismatch-medium .weight-pill {
+  background: rgba(189, 137, 46, 0.12);
+  color: var(--warn);
+}
+
+.modality-card.mismatch-high .weight-pill {
+  background: rgba(179, 71, 61, 0.12);
+  color: var(--danger);
+}
+
+.compare-card.mismatch-medium .compare-score-block.questionnaire-block .score-fill.questionnaire {
+  background: linear-gradient(90deg, #c68e3e, var(--warn));
+}
+
+.compare-card.mismatch-medium .compare-score-block.multimodal-block .score-fill.multimodal {
+  background: linear-gradient(90deg, #5b9488, #3c7f76);
+}
+
+.recommendation-card.mismatch-low {
+  border-color: rgba(80, 121, 61, 0.14);
+}
+
+.recommendation-card.mismatch-medium {
+  border-color: rgba(189, 137, 46, 0.16);
+}
+
+.recommendation-card.mismatch-high {
+  border-color: rgba(179, 71, 61, 0.18);
+}
+
+.recommendation-card .compare-card-head {
+  margin-bottom: 2px;
+}
+
+.recommendation-card .chart-note {
+  margin-top: 0;
 }
 
 .compare-card-tight {
@@ -1738,13 +1964,109 @@ textarea {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.nlp-signal-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
 .summary-tile {
   text-align: left;
   cursor: pointer;
 }
 
+.nlp-signal-tile {
+  min-height: 108px;
+}
+
+.nlp-signal-tile .tile-top {
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.nlp-signal-tile .tile-top strong {
+  text-align: right;
+  word-break: break-word;
+}
+
+.nlp-signal-tile .detail-muted {
+  margin-top: 8px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
 .summary-tile.active {
   outline: 2px solid rgba(158, 77, 41, 0.26);
+}
+
+.assessment-detail-card {
+  display: grid;
+  gap: 14px;
+}
+
+.assessment-mini-stats {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.assessment-profile-card,
+.assessment-detail-card .inner-card {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.assessment-profile-card h4,
+.assessment-detail-card .inner-card h4 {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+}
+
+.assessment-profile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.assessment-profile-grid .subtle-card {
+  min-height: 76px;
+  padding: 12px 13px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.assessment-profile-grid .subtle-card strong {
+  display: block;
+  margin-top: 4px;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.history-summary-card {
+  display: grid;
+  gap: 12px;
+}
+
+.history-chart-card {
+  padding: 14px 14px 8px;
+}
+
+.history-step-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.history-step-card,
+.domain-drift-card {
+  min-height: 100px;
+}
+
+.history-step-card .tile-top,
+.domain-drift-card .tile-top {
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.history-step-card .detail-muted,
+.domain-drift-card .detail-muted {
+  margin: 0;
+  line-height: 1.45;
 }
 
 .confidence-lift-card {
@@ -3112,6 +3434,10 @@ body::before {
     grid-template-columns: 1fr;
   }
 
+  .analytics-grid-triple > .panel:last-child {
+    grid-column: auto;
+  }
+
   .intake-strip {
     grid-template-columns: 1.45fr repeat(4, minmax(0, 1fr));
     align-items: stretch;
@@ -3124,6 +3450,10 @@ body::before {
 
   .analytics-grid-primary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-nlp-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
   .hero {

@@ -109,25 +109,25 @@ const TRAJECTORY_STATUS_LABELS = {
 
 const TRAJECTORY_SUMMARY_TEXTS = {
   English: {
-    insufficient_history: "This is the first screening for this person, so the baseline is established. Add a follow-up visit to start trend modeling.",
-    volatile: "Risk is fluctuating across visits, so closer monitoring may be needed.",
-    improving: "Recent visits suggest improving risk scores. Continue follow-up to confirm the recovery holds.",
-    stable: "Risk has stayed relatively stable across the available screenings.",
-    escalating: "Risk is rising over time. Compare this visit with the last one and plan follow-up quickly.",
+    insufficient_history: "First screening. Add a follow-up visit.",
+    volatile: "Risk is changing, so closer monitoring may help.",
+    improving: "Recent visits suggest lower risk.",
+    stable: "Risk has stayed fairly steady.",
+    escalating: "Risk is rising. Follow up quickly.",
   },
   Hindi: {
-    insufficient_history: "केवल एक स्क्रीनिंग उपलब्ध है। रुझान मॉडलिंग शुरू करने के लिए एक फॉलो-अप विज़िट दर्ज करें।",
-    volatile: "विभिन्न विज़िट के बीच जोखिम बदल रहा है, इसलिए अधिक नज़दीकी निगरानी की ज़रूरत हो सकती है।",
-    improving: "हाल की विज़िट जोखिम स्कोर में सुधार दिखाती हैं। सुधार बने रहने की पुष्टि के लिए फॉलो-अप जारी रखें।",
-    stable: "उपलब्ध स्क्रीनिंग में जोखिम अपेक्षाकृत स्थिर रहा है।",
-    escalating: "समय के साथ जोखिम बढ़ रहा है। इस विज़िट की पिछली विज़िट से तुलना करें और जल्दी फॉलो-अप की योजना बनाएं।",
+    insufficient_history: "पहली स्क्रीनिंग। फॉलो-अप जोड़ें।",
+    volatile: "जोखिम बदल रहा है, इसलिए नज़दीकी निगरानी रखें।",
+    improving: "हाल की विज़िट में जोखिम कम दिख रहा है।",
+    stable: "जोखिम लगभग स्थिर है।",
+    escalating: "जोखिम बढ़ रहा है। जल्दी फॉलो-अप करें।",
   },
   Bengali: {
-    insufficient_history: "শুধুমাত্র একটি স্ক্রিনিং উপলব্ধ আছে। ট্রেন্ড মডেলিং শুরু করতে একটি ফলো-আপ ভিজিট নথিভুক্ত করুন।",
-    volatile: "বিভিন্ন ভিজিটে ঝুঁকি ওঠানামা করছে, তাই আরও কাছ থেকে নজরদারি দরকার হতে পারে।",
-    improving: "সাম্প্রতিক ভিজিটগুলো ঝুঁকির স্কোর উন্নত হওয়ার ইঙ্গিত দিচ্ছে। উন্নতি বজায় আছে কিনা দেখতে ফলো-আপ চালিয়ে যান।",
-    stable: "উপলব্ধ স্ক্রিনিংগুলোতে ঝুঁকি তুলনামূলকভাবে স্থির রয়েছে।",
-    escalating: "সময়ের সাথে ঝুঁকি বাড়ছে। এই ভিজিটটি আগেরটির সাথে তুলনা করুন এবং দ্রুত ফলো-আপ পরিকল্পনা করুন।",
+    insufficient_history: "প্রথম স্ক্রিনিং। ফলো-আপ যোগ করুন।",
+    volatile: "ঝুঁকি বদলাচ্ছে, তাই কাছ থেকে নজর রাখুন।",
+    improving: "সাম্প্রতিক ভিজিটে ঝুঁকি কমছে।",
+    stable: "ঝুঁকি প্রায় স্থির আছে।",
+    escalating: "ঝুঁকি বাড়ছে। দ্রুত ফলো-আপ করুন।",
   },
 };
 
@@ -533,11 +533,11 @@ const UI_TRANSLATIONS = {
     assessorShortLabel: "Assessor",
     createdAtLabel: "Created At",
     analyticsIntroCurrent: "One assessment in focus",
-    analyticsIntroCurrentText: "Analytics Hub now explains the currently saved assessment and does not preload backend records automatically.",
+    analyticsIntroCurrentText: "Shows the saved assessment only.",
     analyticsIntroModel: "Model Insights",
-    analyticsIntroModelText: "Review domain-level scores, modality quality, calibrated confidence, evidence strength, transformer usage, and NLP signal interpretation for this assessment.",
+    analyticsIntroModelText: "Domain scores, confidence, and signal strength for this record.",
     analyticsIntroScope: "Prediction Scope",
-    analyticsIntroScopeText: "Depression, Anxiety, Stress, Sleep Disorder, Burnout, Loneliness, and Substance Abuse.",
+    analyticsIntroScopeText: "Depression, anxiety, stress, sleep, burnout, loneliness, and substance use.",
     analyticsIntroInstrumentKicker: "Validated instrument",
     analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "The saved record includes the localized validated instrument used during screening.",
@@ -546,23 +546,23 @@ const UI_TRANSLATIONS = {
     submissionTimeLabel: "Submission Time",
     analyticsNextPageBtn: "Next to Records and Reports",
     detailAnalysisTitle: "Detailed component-wise analysis for the current assessment.",
-    recordsHeadingText: "Fetch records, inspect individual predictions, and export a PDF report.",
+    recordsHeadingText: "Find a record and export its report.",
     recordsLoadedLabel: "Loaded records",
-    recordsLoadedText: "Records available in the dashboard cache and backend list.",
+    recordsLoadedText: "Saved records in the dashboard.",
     recordsSelectedLabel: "Selected record",
-    recordsSelectedText: "Choose a row to open the report details.",
+    recordsSelectedText: "Pick a row to open details.",
     recordsLatestLabel: "Latest record",
-    recordsLatestText: "Most recent assessment from the loaded dataset.",
-    refreshRecordsBtn: "Refresh Records",
-    exportFilteredRecordsBtn: "Export Filtered JSON",
-    recordLookupPlaceholder: "Enter assessment ID to fetch",
-    fetchRecordBtn: "Fetch Record",
-    downloadPdfBtn: "Download Selected PDF",
+    recordsLatestText: "Most recent saved record.",
+    refreshRecordsBtn: "Refresh",
+    exportFilteredRecordsBtn: "Export JSON",
+    recordLookupPlaceholder: "Assessment ID",
+    fetchRecordBtn: "Fetch",
+    downloadPdfBtn: "Download PDF",
     domainScoreComparisonTitle: "Domain Score Comparison",
     domainScoreComparisonText: "Questionnaire score versus combined AI score",
     modalityQualityShortText: "Availability, confidence, and processing quality",
-    modalityQualityHelperText: "Use this section to understand which inputs were strong enough to support the final decision.",
-    domainScoreComparisonDescription: "This section compares self-reported symptoms with the final multimodal backend score for each condition.",
+    modalityQualityHelperText: "Shows which inputs supported the final result.",
+    domainScoreComparisonDescription: "Self-report versus AI score.",
     domainAnalysisTitle: "Domain Analysis",
     domainAnalysisText: "Questionnaire versus combined AI score for each prediction domain",
     componentContributionTitle: "Component Contribution",
@@ -571,13 +571,14 @@ const UI_TRANSLATIONS = {
     exportQualityCheckButton: "Export Report",
     exportQualityCheckCsvButton: "Export CSV",
     exportQualityCheckPdfButton: "Export PDF",
-    qualityCheckTitle: "Saved Assessment Quality Check",
-    qualityCheckText: "Proxy metrics generated from the current saved assessments.",
-    qualityCheckEmpty: "Run the quality check to review agreement, calibration, and mismatch examples.",
+    qualityCheckTitle: "Assessment Quality",
+    qualityCheckText: "Quick check from saved records.",
+    qualityCheckEmpty: "Run the check to see matches.",
     qualityCheckLoading: "Running quality check...",
-    qualityCheckSummaryTitle: "Quality Summary",
-    qualityCheckGatePassed: "PASS",
-    qualityCheckGateFailed: "FAIL",
+    qualityCheckLoadingDetail: "This may take a few moments.",
+    qualityCheckSummaryTitle: "Quality summary",
+    qualityCheckGatePassed: "Pass",
+    qualityCheckGateFailed: "Fail",
     qualityCheckRecordsLabel: "Records",
     qualityCheckExamplesLabel: "Examples",
     qualityCheckAccuracyLabel: "Accuracy",
@@ -586,27 +587,27 @@ const UI_TRANSLATIONS = {
     qualityCheckRocAucLabel: "ROC AUC",
     qualityCheckGateLabel: "Quality gate",
     qualityCheckMismatchesLabel: "Top mismatches",
-    qualityCheckNoMismatches: "No mismatch examples available yet.",
+    qualityCheckNoMismatches: "No mismatches yet.",
     nlpSafetyTitle: "NLP and Safety Signals",
-    nlpSafetyText: "Sentiment, emotion, self-harm language, and narrative interpretation",
+    nlpSafetyText: "Sentiment, emotion, and safety signals",
     modalityQualityTitle: "Modality Quality",
-    modalityQualityText: "Availability, confidence, and processing quality for each input stream",
+    modalityQualityText: "Availability and confidence for each input",
     recommendationTitle: "Recommendation and Follow-up",
-    recommendationText: "End-user explanation, follow-up note, and screening disclaimer",
+    recommendationText: "Simple result, next step, and disclaimer",
     recordsExplorerTitle: "Assessment Explorer",
-    recordsExplorerText: "Click any row to inspect a single record in detail.",
+    recordsExplorerText: "Select a row to inspect a record.",
     assessmentDetailTitle: "Assessment Detail",
-    assessmentDetailText: "Candidate profile and risk summary",
+    assessmentDetailText: "Profile and risk",
     scoreComparisonTitle: "Score Comparison",
-    scoreComparisonText: "Questionnaire versus dashboard prediction",
+    scoreComparisonText: "Questionnaire versus AI",
     modalityBreakdownTitle: "Modality Breakdown",
-    modalityBreakdownText: "Text, audio metadata, and image metadata",
+    modalityBreakdownText: "Text, audio, image",
     featureSnapshotTitle: "Feature Snapshot",
-    featureSnapshotText: "NLP and record features for the selected assessment",
+    featureSnapshotText: "NLP and record features",
     patientHistoryTitle: "Patient History",
-    patientHistoryText: "Prior screenings and overall risk movement over time",
+    patientHistoryText: "Prior screenings and risk",
     domainTrajectoryTitle: "Domain Drift",
-    domainTrajectoryText: "Which risk domains are worsening, improving, or staying stable",
+    domainTrajectoryText: "Which domains are changing",
     questionnaireRiskTitle: "Questionnaire Risk",
     questionnaireOverall: "Questionnaire Overall",
     combinedResultTitle: "Combined Dashboard Result",
@@ -681,9 +682,36 @@ const UI_TRANSLATIONS = {
     recommendationAndDisclaimerTitle: "Recommendation and Disclaimer",
     recommendationTitle: "Recommendation",
     screeningDisclaimerTitle: "Screening Disclaimer",
+    comparisonGapLabel: "gap",
+    selfReportedAnswersLabel: "Self-reported answers",
+    questionnairePlusInputsLabel: "Questionnaire + inputs",
+    combinedCertaintyLabel: "Combined certainty",
+    modalitiesUsedSummaryLabel: "Text, audio, image",
+    comparisonCloseText: "The questionnaire and combined result are very close.",
+    comparisonHigherCombinedText: "The combined result is a little higher than the questionnaire.",
+    comparisonHigherQuestionnaireText: "The questionnaire is a little higher than the combined result.",
+    comparisonCloseMeaning: "This usually means the final inputs agree well.",
+    comparisonHigherCombinedMeaning: "This often means the text, audio, or image inputs added a bit more concern.",
+    comparisonHigherQuestionnaireMeaning: "This often means the self-reported answers were a little stronger than the extra inputs.",
+    comparisonCloseNext: "The record looks balanced, so use the overall summary when you talk with the person.",
+    comparisonHigherNext: "Use the full record together with the profile and notes before deciding the next step.",
+    baselineLabel: "Base",
+    latestLabel: "Latest",
+    changeLabel: "Change",
+    recentShiftLabel: "Recent",
+    sinceFirstScreeningLabel: "Since first",
+    sincePreviousScreeningLabel: "Since last",
+    mostChangedLabel: "Most changed",
+    systemSawLabel: "What the system saw",
+    recordFeatureSummaryLabel: "Record feature summary",
+    whatThisMeansLabel: "What this means",
+    whatToDoNextLabel: "What to do next",
+    whatToWatchForLabel: "What to watch for",
+    screeningGuideLabel: "This is a screening guide, not a final diagnosis.",
+    screeningGuideHelpLabel: "Use it to guide the conversation and decide on clinician review.",
     noRecommendationText: "No recommendation available.",
     noDisclaimerText: "No disclaimer available.",
-    recommendationOverviewText: "This area gives the end user the screening interpretation and the appropriate follow-up note.",
+    recommendationOverviewText: "Plain result and next step.",
     screeningCountLabel: "{status} across {count} screenings",
     statusTitle: "Status",
     noMoreDataLabel: "Need more data",
@@ -925,11 +953,11 @@ const UI_TRANSLATIONS = {
     assessorShortLabel: "आकलनकर्ता",
     createdAtLabel: "समय",
     analyticsIntroCurrent: "एक आकलन पर ध्यान",
-    analyticsIntroCurrentText: "Analytics Hub अब पुराने रिकॉर्ड स्वतः लोड करने के बजाय वर्तमान सहेजे गए आकलन की व्याख्या करता है।",
+    analyticsIntroCurrentText: "यह केवल सहेजे गए आकलन को दिखाता है।",
     analyticsIntroModel: "मॉडल अंतर्दृष्टि",
-    analyticsIntroModelText: "इस आकलन के लिए डोमेन स्कोर, मॉडेलिटी गुणवत्ता, कैलिब्रेटेड कॉन्फिडेंस, साक्ष्य शक्ति, ट्रांसफॉर्मर उपयोग और NLP संकेत देखें।",
+    analyticsIntroModelText: "इस रिकॉर्ड के डोमेन स्कोर, कॉन्फिडेंस और संकेत देखें।",
     analyticsIntroScope: "पूर्वानुमान क्षेत्र",
-    analyticsIntroScopeText: "डिप्रेशन, एंग्जायटी, तनाव, नींद संबंधी समस्या, बर्नआउट, अकेलापन और पदार्थ दुरुपयोग।",
+    analyticsIntroScopeText: "डिप्रेशन, एंग्जायटी, तनाव, नींद, बर्नआउट, अकेलापन और पदार्थ उपयोग।",
     analyticsIntroInstrumentKicker: "मान्यीकृत प्रश्नावली",
     analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "सहेजे गए रिकॉर्ड में स्क्रीनिंग के दौरान उपयोग की गई स्थानीयकृत मान्यीकृत प्रश्नावली शामिल है।",
@@ -938,42 +966,45 @@ const UI_TRANSLATIONS = {
     submissionTimeLabel: "जमा करने का समय",
     analyticsNextPageBtn: "रिकॉर्ड और रिपोर्ट पर जाएँ",
     detailAnalysisTitle: "वर्तमान आकलन का विस्तृत घटक-आधारित विश्लेषण।",
-    recordsHeadingText: "रिकॉर्ड खोजें, व्यक्तिगत परिणाम देखें और PDF रिपोर्ट निर्यात करें।",
-    recordLookupPlaceholder: "खोजने के लिए आकलन ID दर्ज करें",
-    fetchRecordBtn: "रिकॉर्ड खोजें",
-    downloadPdfBtn: "चयनित PDF डाउनलोड करें",
+    recordsHeadingText: "रिकॉर्ड खोजें और रिपोर्ट निर्यात करें।",
+    recordsLoadedText: "डैशबोर्ड में सहेजे गए रिकॉर्ड।",
+    recordsSelectedText: "विवरण खोलने के लिए पंक्ति चुनें।",
+    recordsLatestText: "सबसे नया सहेजा गया रिकॉर्ड।",
+    recordLookupPlaceholder: "आकलन ID",
+    fetchRecordBtn: "खोजें",
+    downloadPdfBtn: "PDF डाउनलोड",
     domainScoreComparisonTitle: "डोमेन स्कोर तुलना",
     domainScoreComparisonText: "प्रश्नावली स्कोर बनाम संयुक्त AI स्कोर",
     modalityQualityShortText: "उपलब्धता, कॉन्फिडेंस और प्रोसेसिंग गुणवत्ता",
-    modalityQualityHelperText: "यह अनुभाग समझने में मदद करता है कि कौन-से इनपुट अंतिम निर्णय के लिए पर्याप्त मज़बूत थे।",
-    domainScoreComparisonDescription: "यह अनुभाग हर स्थिति के लिए स्व-रिपोर्ट किए गए लक्षणों की अंतिम बहु-मॉडेल AI स्कोर से तुलना करता है।",
+    modalityQualityHelperText: "बताता है कौन-से इनपुट परिणाम को सहारा देते हैं।",
+    domainScoreComparisonDescription: "स्व-रिपोर्ट बनाम AI स्कोर।",
     domainAnalysisTitle: "डोमेन विश्लेषण",
-    domainAnalysisText: "हर पूर्वानुमान क्षेत्र के लिए प्रश्नावली बनाम संयुक्त AI स्कोर",
+    domainAnalysisText: "प्रश्नावली बनाम संयुक्त AI स्कोर",
     componentContributionTitle: "घटक योगदान",
-    componentContributionText: "टेक्स्ट, ऑडियो, इमेज और निष्क्रिय संकेत ने अंतिम आकलन को कैसे प्रभावित किया",
+    componentContributionText: "टेक्स्ट, ऑडियो, इमेज और निष्क्रिय संकेत का असर",
     exportQualityCheckButton: "रिपोर्ट निर्यात करें",
     exportQualityCheckCsvButton: "CSV निर्यात करें",
     exportQualityCheckPdfButton: "PDF निर्यात करें",
     nlpSafetyTitle: "NLP और सुरक्षा संकेत",
-    nlpSafetyText: "भाव, भावना, आत्म-हानि भाषा और वर्णन की व्याख्या",
+    nlpSafetyText: "भाव, भावना, और सुरक्षा संकेत",
     modalityQualityTitle: "मॉडेलिटी गुणवत्ता",
-    modalityQualityText: "हर इनपुट स्ट्रीम की उपलब्धता, कॉन्फिडेंस और प्रोसेसिंग गुणवत्ता",
+    modalityQualityText: "हर इनपुट स्ट्रीम की उपलब्धता और कॉन्फिडेंस",
     recommendationTitle: "सिफारिश और फॉलो-अप",
-    recommendationText: "उपयोगकर्ता व्याख्या, फॉलो-अप नोट और स्क्रीनिंग अस्वीकरण",
+    recommendationText: "सरल व्याख्या, अगला कदम, और अस्वीकरण",
     recordsExplorerTitle: "आकलन एक्सप्लोरर",
-    recordsExplorerText: "किसी एक रिकॉर्ड का विवरण देखने के लिए किसी पंक्ति पर क्लिक करें।",
+    recordsExplorerText: "रिकॉर्ड विवरण देखने के लिए पंक्ति चुनें।",
     assessmentDetailTitle: "आकलन विवरण",
-    assessmentDetailText: "उम्मीदवार प्रोफ़ाइल और जोखिम सारांश",
+    assessmentDetailText: "प्रोफ़ाइल और जोखिम सार",
     scoreComparisonTitle: "स्कोर तुलना",
-    scoreComparisonText: "प्रश्नावली बनाम डैशबोर्ड पूर्वानुमान",
+    scoreComparisonText: "प्रश्नावली बनाम AI",
     modalityBreakdownTitle: "मॉडेलिटी विवरण",
-    modalityBreakdownText: "टेक्स्ट, ऑडियो मेटाडेटा और इमेज मेटाडेटा",
+    modalityBreakdownText: "टेक्स्ट, ऑडियो, इमेज",
     featureSnapshotTitle: "फीचर स्नैपशॉट",
-    featureSnapshotText: "चयनित आकलन के NLP और रिकॉर्ड फीचर",
+    featureSnapshotText: "NLP और रिकॉर्ड फीचर",
     patientHistoryTitle: "रोगी इतिहास",
-    patientHistoryText: "पिछली स्क्रीनिंग और समय के साथ कुल जोखिम में बदलाव",
+    patientHistoryText: "पिछली स्क्रीनिंग और जोखिम",
     domainTrajectoryTitle: "डोमेन ड्रिफ्ट",
-    domainTrajectoryText: "कौन से जोखिम डोमेन बिगड़ रहे हैं, सुधर रहे हैं, या स्थिर हैं",
+    domainTrajectoryText: "कौन से डोमेन बदल रहे हैं",
     questionnaireRiskTitle: "प्रश्नावली जोखिम",
     questionnaireOverall: "प्रश्नावली कुल स्कोर",
     combinedResultTitle: "संयुक्त डैशबोर्ड परिणाम",
@@ -1048,9 +1079,36 @@ const UI_TRANSLATIONS = {
     recommendationAndDisclaimerTitle: "सिफारिश और अस्वीकरण",
     recommendationTitle: "सिफारिश",
     screeningDisclaimerTitle: "स्क्रीनिंग अस्वीकरण",
+    comparisonGapLabel: "अंतर",
+    selfReportedAnswersLabel: "स्व-रिपोर्ट किए गए उत्तर",
+    questionnairePlusInputsLabel: "प्रश्नावली + अन्य इनपुट",
+    combinedCertaintyLabel: "संयुक्त विश्वास",
+    modalitiesUsedSummaryLabel: "टेक्स्ट, ऑडियो, इमेज",
+    comparisonCloseText: "प्रश्नावली और संयुक्त परिणाम लगभग समान हैं।",
+    comparisonHigherCombinedText: "संयुक्त परिणाम प्रश्नावली से थोड़ा अधिक है।",
+    comparisonHigherQuestionnaireText: "प्रश्नावली संयुक्त परिणाम से थोड़ी अधिक है।",
+    comparisonCloseMeaning: "इसका मतलब है कि अंतिम इनपुट अच्छी तरह मेल खाते हैं।",
+    comparisonHigherCombinedMeaning: "इसका मतलब है कि टेक्स्ट, ऑडियो, या इमेज इनपुट ने थोड़ी और चिंता जोड़ी।",
+    comparisonHigherQuestionnaireMeaning: "इसका मतलब है कि स्व-रिपोर्ट किए गए उत्तर अतिरिक्त इनपुट से थोड़े मजबूत थे।",
+    comparisonCloseNext: "रिकॉर्ड संतुलित दिख रहा है, इसलिए व्यक्ति से बात करते समय कुल सारांश का उपयोग करें।",
+    comparisonHigherNext: "अगला कदम तय करने से पहले पूरे रिकॉर्ड को प्रोफ़ाइल और नोट्स के साथ देखें।",
+    baselineLabel: "आधार",
+    latestLabel: "नवीनतम",
+    changeLabel: "परिवर्तन",
+    recentShiftLabel: "हाल",
+    sinceFirstScreeningLabel: "पहले से",
+    sincePreviousScreeningLabel: "पिछले से",
+    mostChangedLabel: "सबसे अधिक",
+    systemSawLabel: "सिस्टम ने क्या देखा",
+    recordFeatureSummaryLabel: "रिकॉर्ड फीचर सारांश",
+    whatThisMeansLabel: "इसका क्या मतलब है",
+    whatToDoNextLabel: "अगला कदम क्या हो",
+    whatToWatchForLabel: "किस पर ध्यान दें",
+    screeningGuideLabel: "यह स्क्रीनिंग मार्गदर्शिका है, अंतिम निदान नहीं।",
+    screeningGuideHelpLabel: "इसे बातचीत और चिकित्सक समीक्षा तय करने में उपयोग करें।",
     noRecommendationText: "कोई सिफारिश उपलब्ध नहीं है।",
     noDisclaimerText: "कोई अस्वीकरण उपलब्ध नहीं है।",
-    recommendationOverviewText: "यह क्षेत्र उपयोगकर्ता को स्क्रीनिंग व्याख्या और उचित फॉलो-अप नोट देता है।",
+    recommendationOverviewText: "सरल परिणाम और अगला कदम।",
     screeningCountLabel: "{status} - {count} स्क्रीनिंग",
     statusTitle: "स्थिति",
     noMoreDataLabel: "और डेटा चाहिए",
@@ -1292,11 +1350,11 @@ const UI_TRANSLATIONS = {
     assessorShortLabel: "মূল্যায়নকারী",
     createdAtLabel: "সময়",
     analyticsIntroCurrent: "একটি মূল্যায়ন এখন কেন্দ্রে",
-    analyticsIntroCurrentText: "Analytics Hub আর আগের রেকর্ড নিজে থেকে টেনে আনে না; এখন এটি সদ্য সংরক্ষিত বর্তমান মূল্যায়নটিকেই ব্যাখ্যা করে।",
+    analyticsIntroCurrentText: "এখানে শুধু সংরক্ষিত মূল্যায়ন দেখানো হয়।",
     analyticsIntroModel: "মডেল বিশ্লেষণ",
-    analyticsIntroModelText: "এই মূল্যায়নের জন্য ডোমেইনভিত্তিক স্কোর, ইনপুটের মান, ক্যালিব্রেটেড কনফিডেন্স, প্রমাণ শক্তি, ট্রান্সফর্মার ব্যবহার এবং NLP সংকেত দেখুন।",
+    analyticsIntroModelText: "এই রেকর্ডের স্কোর, কনফিডেন্স, ও সংকেত দেখুন।",
     analyticsIntroScope: "পূর্বাভাসের ক্ষেত্র",
-    analyticsIntroScopeText: "বিষণ্নতা, উদ্বেগ, চাপ, ঘুমের সমস্যা, বার্নআউট, একাকীত্ব এবং পদার্থের অপব্যবহার।",
+    analyticsIntroScopeText: "বিষণ্নতা, উদ্বেগ, চাপ, ঘুম, বার্নআউট, একাকীত্ব ও পদার্থ ব্যবহার।",
     analyticsIntroInstrumentKicker: "মান্যতাপ্রাপ্ত প্রশ্নমালা",
     analyticsIntroInstrumentTitle: "PHQ-9",
     analyticsIntroInstrumentText: "সংরক্ষিত রেকর্ডে স্ক্রিনিংয়ের সময় ব্যবহৃত স্থানীয়কৃত মান্যতাপ্রাপ্ত প্রশ্নমালা অন্তর্ভুক্ত আছে।",
@@ -1305,42 +1363,45 @@ const UI_TRANSLATIONS = {
     submissionTimeLabel: "জমা দেওয়ার সময়",
     analyticsNextPageBtn: "রেকর্ড ও রিপোর্টে যান",
     detailAnalysisTitle: "বর্তমান মূল্যায়নের বিস্তারিত অংশভিত্তিক বিশ্লেষণ।",
-    recordsHeadingText: "রেকর্ড আনুন, ব্যক্তিগত ফলাফল দেখুন এবং PDF রিপোর্ট ডাউনলোড করুন।",
-    recordLookupPlaceholder: "রেকর্ড আনতে মূল্যায়ন আইডি লিখুন",
-    fetchRecordBtn: "রেকর্ড আনুন",
-    downloadPdfBtn: "নির্বাচিত PDF ডাউনলোড করুন",
+    recordsHeadingText: "রেকর্ড দেখুন এবং রিপোর্ট রপ্তানি করুন।",
+    recordsLoadedText: "ড্যাশবোর্ডে সংরক্ষিত রেকর্ড।",
+    recordsSelectedText: "বিস্তারিত দেখতে একটি সারি বেছে নিন।",
+    recordsLatestText: "সবচেয়ে নতুন সংরক্ষিত রেকর্ড।",
+    recordLookupPlaceholder: "মূল্যায়ন আইডি",
+    fetchRecordBtn: "আনুন",
+    downloadPdfBtn: "PDF ডাউনলোড",
     domainScoreComparisonTitle: "ডোমেইন স্কোর তুলনা",
     domainScoreComparisonText: "প্রশ্নমালা স্কোর বনাম যৌথ AI স্কোর",
     modalityQualityShortText: "প্রাপ্যতা, কনফিডেন্স এবং প্রসেসিং মান",
-    modalityQualityHelperText: "এই অংশটি বোঝাতে সাহায্য করে কোন ইনপুটগুলো চূড়ান্ত সিদ্ধান্তকে সমর্থন করার জন্য যথেষ্ট শক্তিশালী ছিল।",
-    domainScoreComparisonDescription: "এই অংশটি প্রতিটি অবস্থার জন্য স্ব-প্রতিবেদিত উপসর্গের সাথে চূড়ান্ত বহুমাত্রিক backend স্কোর তুলনা করে।",
+    modalityQualityHelperText: "কোন ইনপুট ফলকে সমর্থন করেছে তা দেখায়।",
+    domainScoreComparisonDescription: "স্ব-প্রতিবেদন বনাম AI স্কোর।",
     domainAnalysisTitle: "ডোমেইন বিশ্লেষণ",
-    domainAnalysisText: "প্রতিটি পূর্বাভাস ক্ষেত্রের জন্য প্রশ্নমালা ও যৌথ AI স্কোরের তুলনা",
+    domainAnalysisText: "প্রশ্নমালা বনাম যৌথ AI স্কোর",
     componentContributionTitle: "উপাদানের অবদান",
-    componentContributionText: "টেক্সট, অডিও, ইমেজ ও নিষ্ক্রিয় সংকেত কীভাবে চূড়ান্ত মূল্যায়নকে প্রভাবিত করেছে",
+    componentContributionText: "টেক্সট, অডিও, ইমেজ, ও নিষ্ক্রিয় সংকেত",
     exportQualityCheckButton: "রিপোর্ট রপ্তানি করুন",
     exportQualityCheckCsvButton: "CSV রপ্তানি করুন",
     exportQualityCheckPdfButton: "PDF রপ্তানি করুন",
     nlpSafetyTitle: "NLP ও নিরাপত্তা সংকেত",
-    nlpSafetyText: "সেন্টিমেন্ট, আবেগ, আত্মক্ষতির ভাষা এবং বর্ণনার ব্যাখ্যা",
+    nlpSafetyText: "সেন্টিমেন্ট, আবেগ, ও নিরাপত্তা",
     modalityQualityTitle: "ইনপুটের মান",
-    modalityQualityText: "প্রতিটি ইনপুট উৎসের প্রাপ্যতা, কনফিডেন্স এবং প্রসেসিং মান",
+    modalityQualityText: "প্রতিটি ইনপুটের প্রাপ্যতা ও কনফিডেন্স",
     recommendationTitle: "পরামর্শ ও পরবর্তী পদক্ষেপ",
-    recommendationText: "ব্যবহারকারী-বান্ধব ব্যাখ্যা, ফলো-আপ নোট এবং স্ক্রিনিং সতর্কীকরণ",
+    recommendationText: "সহজ ফল, পরের পদক্ষেপ, ও সতর্কীকরণ",
     recordsExplorerTitle: "মূল্যায়ন অনুসন্ধান",
-    recordsExplorerText: "একটি নির্দিষ্ট রেকর্ডের বিস্তারিত দেখতে যে কোনো সারিতে ক্লিক করুন।",
+    recordsExplorerText: "রেকর্ড দেখতে একটি সারি বেছে নিন।",
     assessmentDetailTitle: "মূল্যায়নের বিস্তারিত",
-    assessmentDetailText: "প্রার্থীর প্রোফাইল ও ঝুঁকির সারাংশ",
+    assessmentDetailText: "প্রোফাইল ও ঝুঁকি",
     scoreComparisonTitle: "স্কোরের তুলনা",
-    scoreComparisonText: "প্রশ্নমালা বনাম ড্যাশবোর্ড পূর্বাভাস",
+    scoreComparisonText: "প্রশ্নমালা বনাম AI",
     modalityBreakdownTitle: "ইনপুটভিত্তিক বিশ্লেষণ",
-    modalityBreakdownText: "টেক্সট, অডিও মেটাডেটা এবং ইমেজ মেটাডেটা",
+    modalityBreakdownText: "টেক্সট, অডিও, ইমেজ",
     featureSnapshotTitle: "ফিচার স্ন্যাপশট",
-    featureSnapshotText: "নির্বাচিত মূল্যায়নের NLP ও রেকর্ড ফিচার",
+    featureSnapshotText: "NLP ও রেকর্ড",
     patientHistoryTitle: "রোগীর ইতিহাস",
-    patientHistoryText: "পূর্ববর্তী স্ক্রিনিং এবং সময়ের সঙ্গে সামগ্রিক ঝুঁকির পরিবর্তন",
+    patientHistoryText: "পূর্ববর্তী স্ক্রিনিং ও ঝুঁকি",
     domainTrajectoryTitle: "ডোমেইন ড্রিফট",
-    domainTrajectoryText: "কোন ঝুঁকির ডোমেইনগুলো খারাপ হচ্ছে, উন্নত হচ্ছে, বা স্থিতিশীল আছে",
+    domainTrajectoryText: "কোন ডোমেইন বদলাচ্ছে",
     questionnaireRiskTitle: "প্রশ্নমালার ঝুঁকি",
     questionnaireOverall: "প্রশ্নমালার সামগ্রিক স্কোর",
     combinedResultTitle: "সমন্বিত ড্যাশবোর্ড ফলাফল",
@@ -1415,9 +1476,36 @@ const UI_TRANSLATIONS = {
     recommendationAndDisclaimerTitle: "সুপারিশ ও সতর্কীকরণ",
     recommendationTitle: "সুপারিশ",
     screeningDisclaimerTitle: "স্ক্রিনিং সতর্কীকরণ",
+    comparisonGapLabel: "পার্থক্য",
+    selfReportedAnswersLabel: "স্ব-জানানো উত্তর",
+    questionnairePlusInputsLabel: "প্রশ্নমালা + অন্যান্য ইনপুট",
+    combinedCertaintyLabel: "সমন্বিত আত্মবিশ্বাস",
+    modalitiesUsedSummaryLabel: "টেক্সট, অডিও, ইমেজ",
+    comparisonCloseText: "প্রশ্নমালা ও সমন্বিত ফলাফল প্রায় একই।",
+    comparisonHigherCombinedText: "সমন্বিত ফলাফল প্রশ্নমালার চেয়ে একটু বেশি।",
+    comparisonHigherQuestionnaireText: "প্রশ্নমালা সমন্বিত ফলাফলের চেয়ে একটু বেশি।",
+    comparisonCloseMeaning: "এর মানে হলো শেষের ইনপুটগুলো ভালোভাবে মিলে গেছে।",
+    comparisonHigherCombinedMeaning: "এর মানে হলো টেক্সট, অডিও, বা ছবির ইনপুট একটু বেশি উদ্বেগ যোগ করেছে।",
+    comparisonHigherQuestionnaireMeaning: "এর মানে হলো স্ব-জানানো উত্তরগুলো অতিরিক্ত ইনপুটের তুলনায় একটু বেশি শক্তিশালী ছিল।",
+    comparisonCloseNext: "রেকর্ডটি ভারসাম্যপূর্ণ দেখাচ্ছে, তাই ব্যক্তির সঙ্গে কথা বলার সময় সামগ্রিক সারাংশ ব্যবহার করুন।",
+    comparisonHigherNext: "পরবর্তী পদক্ষেপ ঠিক করার আগে পুরো রেকর্ড, প্রোফাইল ও নোটগুলো দেখুন।",
+    baselineLabel: "বেস",
+    latestLabel: "সর্বশেষ",
+    changeLabel: "পরিবর্তন",
+    recentShiftLabel: "সাম্প্রতিক",
+    sinceFirstScreeningLabel: "প্রথম থেকে",
+    sincePreviousScreeningLabel: "শেষ থেকে",
+    mostChangedLabel: "সবচেয়ে বেশি",
+    systemSawLabel: "সিস্টেম কী দেখেছে",
+    recordFeatureSummaryLabel: "রেকর্ড ফিচার সারাংশ",
+    whatThisMeansLabel: "এর মানে কী",
+    whatToDoNextLabel: "এরপর কী করবেন",
+    whatToWatchForLabel: "কী লক্ষ্য রাখবেন",
+    screeningGuideLabel: "এটি একটি স্ক্রিনিং গাইড, চূড়ান্ত রোগ নির্ণয় নয়।",
+    screeningGuideHelpLabel: "আলাপ করতে ও ক্লিনিশিয়ান রিভিউ দরকার কি না বুঝতে ব্যবহার করুন।",
     noRecommendationText: "কোনো সুপারিশ নেই।",
     noDisclaimerText: "কোনো সতর্কীকরণ নেই।",
-    recommendationOverviewText: "এই অংশে ব্যবহারকারীর জন্য স্ক্রিনিং ব্যাখ্যা ও উপযুক্ত ফলো-আপ নোট দেওয়া হয়।",
+    recommendationOverviewText: "সহজ ফল ও পরের পদক্ষেপ।",
     screeningCountLabel: "{status} — {count}টি স্ক্রিনিং",
     statusTitle: "অবস্থা",
     noMoreDataLabel: "আরও তথ্য প্রয়োজন",
@@ -4917,6 +5005,8 @@ function renderOverview() {
 
   const modalitiesUsed = ["text", "audio", "image"].filter((key) => record.multimodal?.[key]?.available).length;
   const dominant = strongestDomain(record);
+  const overallRisk = overallRiskLabel(record);
+  const riskToneClass = overallRisk === "High" ? "mismatch-high" : overallRisk === "Moderate" ? "mismatch-medium" : "mismatch-low";
   elements.analysisAssessmentId.textContent = record.assessment_id;
   elements.analysisConfidence.textContent = formatPercent(record.multimodal?.overall?.confidence || 0);
   if (elements.analysisEvidenceStrength) {
@@ -4925,7 +5015,13 @@ function renderOverview() {
   elements.analysisStrongestDomain.textContent = dominant ? localizedDomainLabel(dominant) : t("noDataLabel");
   elements.analysisCoverage.textContent = `${modalitiesUsed}/3`;
   elements.analysisSubmissionTime.textContent = formatDate(record.created_at);
-  elements.analysisOverallRisk.textContent = overallRiskLabel(record);
+  elements.analysisOverallRisk.textContent = overallRisk;
+  const assessmentCard = elements.analysisAssessmentId.closest(".metric-card");
+  const riskCard = elements.analysisOverallRisk.closest(".metric-card");
+  assessmentCard?.classList.remove("mismatch-low", "mismatch-medium", "mismatch-high");
+  riskCard?.classList.remove("mismatch-low", "mismatch-medium", "mismatch-high");
+  assessmentCard?.classList.add(riskToneClass);
+  riskCard?.classList.add(riskToneClass);
   const comorbidity = record.multimodal?.comorbidity || {};
   const topPair = comorbidity.top_pairs?.[0] || null;
   const comorbidityText = topPair?.domains?.length === 2
@@ -4976,13 +5072,18 @@ function buildAnalyticsStatStrip(items) {
 }
 
 function renderScoreWeightSummary() {
+  const record = getAnalysisRecord();
+  const dominant = record ? strongestDomain(record) : null;
+  const overallRiskLevel = record ? (record.multimodal?.overall?.[dominant] || "low") : "low";
+  const summaryClass = overallRiskLevel === "high" ? "mismatch-high" : overallRiskLevel === "moderate" ? "mismatch-medium" : "mismatch-low";
   const items = ["text", "audio", "image"].map((modality) => {
     const label = localizedModalityLabel(modality);
     const weight = finalScoreWeight(modality);
     const weightPct = Math.round(weight * 100);
+    const weightClass = weightPct >= 40 ? "mismatch-high" : weightPct >= 30 ? "mismatch-medium" : "mismatch-low";
     const className = "score-weight-item";
     return `
-      <div class="${className}">
+      <div class="${className} ${weightClass}">
         <div class="score-weight-row">
           <span class="score-weight-label">
             ${label}
@@ -4994,6 +5095,8 @@ function renderScoreWeightSummary() {
     `;
   }).join("");
   if (elements.scoreWeightSummary) {
+    elements.scoreWeightSummary.classList.remove("mismatch-low", "mismatch-medium", "mismatch-high");
+    elements.scoreWeightSummary.classList.add(summaryClass);
     const weightSummary = ["text", "audio", "image"]
       .map((modality) => `${localizedModalityLabel(modality)} ${Math.round(finalScoreWeight(modality) * 100)}%`)
       .join(", ");
@@ -5392,8 +5495,8 @@ function renderRiskDistribution() {
     elements.riskDistribution.className = "chart-stack empty-state";
     elements.riskDistribution.innerHTML = buildPromptCard(
       t("domainAnalysisTitle"),
-      t("workspacePredictionEmpty"),
-      [t("workspaceReadinessEmpty"), t("analyticsBannerDefault")]
+      t("analyticsBannerDefault"),
+      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty"), t("analyticsIntroCurrentText")]
     );
     return;
   }
@@ -5415,15 +5518,31 @@ function renderRiskDistribution() {
   const highestGap = domainRows.slice().sort((a, b) => b.gap - a.gap)[0] || null;
   const averageGap = average(domainRows.map((row) => row.gap));
   const highRiskDomains = domainRows.filter((row) => row.risk === "high").length;
+  const closeMatches = domainRows.filter((row) => row.gap <= 0.35).length;
   const comparisonCards = domainRows.map((row) => `
-    <div class="compare-card compare-card-tight">
-      <div class="score-header">
-        <span>${row.label}</span>
-        <strong>${String(row.risk).toUpperCase()}</strong>
+    <div class="compare-card compare-card-tight ${row.gap < 0.15 ? "mismatch-low" : row.gap < 0.35 ? "mismatch-medium" : "mismatch-high"}">
+      <div class="compare-card-head">
+        <h3>${row.label}</h3>
+        <span class="compare-diff-pill">${formatPercent(row.gap)}</span>
       </div>
-      ${scoreLine(t("questionnaireLabel"), row.questionnaireScore)}
-      ${scoreLine(t("combinedAiLabel"), row.combinedScore)}
-      <p class="chart-note">${t("scoreLabel")}: ${formatMetricNumber(row.gap, 3)} | ${t("overallRiskLabel")}: ${localizedRiskLevel(row.risk)}</p>
+      <p class="chart-note">${row.gap <= 0.35 ? "Close agreement" : row.combinedScore > row.questionnaireScore ? "AI is higher" : "Questionnaire is higher"}</p>
+      <div class="compare-score-grid compare-score-grid-domain">
+        <div class="compare-score-block questionnaire-block">
+          <div class="compare-score-head">
+            <span>${t("questionnaireLabel")}</span>
+            <strong>${formatPercent(row.questionnaireScore)}</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill questionnaire" style="width:${clamp01(row.questionnaireScore) * 100}%"></div></div>
+        </div>
+        <div class="compare-score-block multimodal-block">
+          <div class="compare-score-head">
+            <span>${t("combinedAiLabel")}</span>
+            <strong>${formatPercent(row.combinedScore)}</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill multimodal" style="width:${clamp01(row.combinedScore) * 100}%"></div></div>
+        </div>
+      </div>
+      <p class="chart-note">${t("scoreLabel")}: ${formatPercent(row.gap)} | ${t("overallRiskLabel")}: ${localizedRiskLevel(row.risk)}</p>
     </div>
   `).join("");
 
@@ -5435,14 +5554,15 @@ function renderRiskDistribution() {
       ${buildAnalyticsStatStrip([
         { label: "Domains", value: String(domainRows.length) },
         { label: "High risk", value: String(highRiskDomains) },
-        { label: "Avg gap", value: formatMetricNumber(averageGap, 3) },
-        { label: "Top gap", value: highestGap ? highestGap.label : t("noDataLabel"), detail: highestGap ? formatMetricNumber(highestGap.gap, 3) : "" },
+        { label: "Close matches", value: String(closeMatches) },
+        { label: "Avg gap", value: formatPercent(averageGap) },
+        { label: "Top gap", value: highestGap ? highestGap.label : t("noDataLabel"), detail: highestGap ? formatPercent(highestGap.gap) : "" },
       ])}
       <div class="compare-grid compare-grid-tight">
         ${comparisonCards}
       </div>
     `,
-    t("domainScoreComparisonDescription")
+    "A smaller gap means the questionnaire and combined AI score are in closer agreement."
   );
 }
 
@@ -5452,56 +5572,97 @@ function renderSubmissionTrend() {
     elements.submissionTrend.className = "chart-stack empty-state";
     elements.submissionTrend.innerHTML = buildPromptCard(
       t("componentContributionTitle"),
-      t("workspaceNlpEmpty"),
-      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty")]
+      t("analyticsBannerDefault"),
+      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty"), t("analyticsIntroCurrentText")]
     );
     return;
   }
-  const modalityRows = ["text", "audio", "image"].map((modality) => {
+  const modalityRows = ["text", "audio", "image", "passive_biomarkers"].map((modality) => {
     const payload = record.multimodal?.[modality] || {};
+    const features = payload.features || {};
     const avgScore = average(DOMAINS.map((domain) => Number(payload[`${domain}_score`] || 0)));
+    const confidence = modalityDisplayConfidence(modality, payload);
+    const usable = modalityHasUsableSignal(modality, payload) || confidence > 0 || Boolean(features.file_name || features.upload_received || features.typing_event_count);
     const weight = finalScoreWeight(modality);
+    const label = localizedModalityLabel(modality);
+    const scoreText = usable ? `${formatPercent(confidence)} confidence` : "Not captured";
+    const contributionText = modality === "passive_biomarkers"
+      ? (usable ? (features.file_name ? `File: ${formatCompactPath(features.file_name)}` : features.typing_event_count ? `Typing events: ${features.typing_event_count}` : "Captured as additional input") : "No additional input captured")
+      : (usable ? `${avgScore.toFixed(2)} average domain score` : "No signal captured");
+    const statusLabel = !usable
+      ? "Not captured"
+      : confidence >= 0.66
+        ? "Primary signal"
+        : confidence >= 0.33
+          ? "Supporting signal"
+          : "Metadata only";
+    const statusTone = !usable
+      ? "mismatch-high"
+      : confidence >= 0.66
+        ? "mismatch-low"
+        : confidence >= 0.33
+          ? "mismatch-medium"
+          : "mismatch-high";
     return {
       modality,
-      label: modality.charAt(0).toUpperCase() + modality.slice(1),
-      value: Number(payload.confidence || 0),
-      display: `${formatPercent(payload.confidence || 0)} conf | ${avgScore.toFixed(2)} avg score | ${Math.round(weight * 100)}% weight`,
-      emphasis: false,
-      barColor: "#287970",
-      trackColor: "rgba(107,45,25,0.08)",
+      label,
+      statusLabel,
+      statusTone,
+      scoreText,
+      contributionText,
+      weight,
+      averageScore: avgScore,
+      confidence,
+      usable,
     };
   });
-  const dominantRow = modalityRows.slice().sort((a, b) => b.value - a.value)[0] || null;
-  const activeModalities = modalityRows.filter((row) => row.value > 0).length;
-  const weightedAverage = average(modalityRows.map((row) => Number(row.display.split(" conf")[0].replace("%", "")) || 0));
-  const modalityCards = modalityRows.map((row) => `
-    <div class="compare-card compare-card-tight">
-      <div class="score-header">
-        <span>${row.label}</span>
-        <strong>${formatPercent(row.value)}</strong>
+  const dominantRow = modalityRows.filter((row) => row.usable).slice().sort((a, b) => b.confidence - a.confidence)[0] || null;
+  const activeModalities = modalityRows.filter((row) => row.usable).length;
+  const weightedAverage = average(modalityRows.map((row) => row.confidence || 0));
+  const primarySignalSummary = dominantRow ? `${dominantRow.label} is leading the final contribution.` : "No active modality contribution detected yet.";
+  const contributionCards = modalityRows.map((row) => `
+    <div class="compare-card compare-card-tight contribution-card ${row.statusTone}">
+      <div class="compare-card-head">
+        <h3>${row.label}</h3>
+        <span class="compare-diff-pill">${row.statusLabel}</span>
       </div>
-      <p class="chart-note">${row.display}</p>
-      ${scoreLine("Average score", average(DOMAINS.map((domain) => Number(record.multimodal?.[row.modality]?.[`${domain}_score`] || 0))) || 0)}
-      ${scoreLine("Final weight", finalScoreWeight(row.modality))}
+      <p class="chart-note">${row.contributionText}</p>
+      <div class="compare-score-grid compare-score-grid-domain">
+        <div class="compare-score-block questionnaire-block">
+          <div class="compare-score-head">
+            <span>Confidence</span>
+            <strong>${row.scoreText}</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill questionnaire" style="width:${clamp01(row.confidence) * 100}%"></div></div>
+        </div>
+        <div class="compare-score-block multimodal-block">
+          <div class="compare-score-head">
+            <span>Final weight</span>
+            <strong>${Math.round(row.weight * 100)}%</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill multimodal" style="width:${clamp01(row.weight) * 100}%"></div></div>
+        </div>
+      </div>
+      <p class="chart-note">Average score: ${row.averageScore.toFixed(2)} | ${row.modality === "passive_biomarkers" ? "Additional input only" : "Domain score contribution"}</p>
     </div>
   `).join("");
   elements.submissionTrend.className = "chart-stack";
   elements.submissionTrend.innerHTML = buildChartCard(
     "Component Contribution",
-    "Confidence, average signal strength, and final score weight by modality",
+    "How each modality influenced the saved assessment",
     `
       ${buildAnalyticsStatStrip([
         { label: "Active", value: String(activeModalities) },
         { label: "Top modality", value: dominantRow ? dominantRow.label : t("noDataLabel") },
-        { label: "Top conf", value: dominantRow ? formatPercent(dominantRow.value) : t("noDataLabel") },
-        { label: "Avg conf", value: formatPercent(clamp01(weightedAverage / 100)) },
+        { label: "Top conf", value: dominantRow ? formatPercent(dominantRow.confidence) : t("noDataLabel") },
+        { label: "Avg conf", value: formatPercent(clamp01(weightedAverage)) },
       ])}
-      ${buildHorizontalMetricSvg(modalityRows, "#287970")}
-      <div class="compare-grid compare-grid-tight">
-        ${modalityCards}
+      <p class="chart-note">${primarySignalSummary}</p>
+      <div class="compare-grid compare-grid-tight contribution-grid">
+        ${contributionCards}
       </div>
     `,
-    "Text, audio, and image are shown with the active final weighting."
+    "Text, audio, image, and additional input are shown with the active final weighting."
   );
 }
 
@@ -5517,12 +5678,13 @@ function renderRiskHotspots() {
     return;
   }
 
-  const cards = ["text", "audio", "image"].map((modality) => {
+  const cards = ["text", "audio", "image", "passive_biomarkers"].map((modality) => {
     const payload = record.multimodal?.[modality] || {};
     const features = payload.features || {};
     const displayConfidence = modalityDisplayConfidence(modality, payload);
     const available = modalityHasUsableSignal(modality, payload) || displayConfidence > 0;
     const weightPct = Math.round(finalScoreWeight(modality) * 100);
+    const qualityClass = available && displayConfidence >= 0.66 ? "mismatch-low" : available && displayConfidence >= 0.33 ? "mismatch-medium" : "mismatch-high";
     const emphasisClass = modality === "image" ? " image-emphasis" : "";
     const sourceBadge = features.model_source === "bundle_label_source_mismatch"
       ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">Metadata mode</span>'
@@ -5533,34 +5695,34 @@ function renderRiskHotspots() {
       : features.model_source === "unsupported_bundle_format"
         ? '<span class="risk-pill instrument-pill weight-pill metadata-only-pill">Unsupported bundle</span>'
           : "";
-    const metadata = [];
-    if (features.model_type) metadata.push(features.model_type);
-    if (features.model_source && features.model_source !== "trained_bundle") metadata.push(features.model_source);
-    if (features.training_strategy) metadata.push(features.training_strategy);
-    if (features.trained_samples !== undefined && features.trained_samples !== null) metadata.push(`samples ${features.trained_samples}`);
-    if (Array.isArray(features.trained_domains) && features.trained_domains.length) metadata.push(`domains ${features.trained_domains.join(", ")}`);
-    if (Array.isArray(features.label_sources) && features.label_sources.length) metadata.push(`labels ${features.label_sources.join(", ")}`);
-    if (Array.isArray(features.source_datasets) && features.source_datasets.length) metadata.push(features.source_datasets.join(", "));
-    if (features.file_name) metadata.push(features.file_name);
-    if (features.file_size_kb !== undefined && features.file_size_kb !== null) metadata.push(`${features.file_size_kb} KB`);
-    if (features.mime_type) metadata.push(features.mime_type);
-    if (features.precheck_reason) metadata.push(features.precheck_reason);
-    if (features.transformer_model && features.transformer_model !== "unavailable") metadata.push(features.transformer_model);
-    if (features.vision_backend) metadata.push(features.vision_backend);
-    if (features.duration) metadata.push(`${Number(features.duration).toFixed(1)}s`);
-    if (features.voiced_ratio !== undefined) metadata.push(`voiced ${Math.round(Number(features.voiced_ratio) * 100)}%`);
-    const cleanedMetadata = metadata.filter(Boolean);
+    const summaryText = modality === "text"
+      ? (features.sentiment_label ? `Sentiment: ${features.sentiment_label}` : "Narrative text was analyzed.")
+      : modality === "audio"
+        ? (features.file_name ? `Audio file: ${formatCompactPath(features.file_name)}` : "Audio metadata was captured.")
+        : modality === "image"
+          ? (features.file_name ? `Image file: ${formatCompactPath(features.file_name)}` : "Image metadata was captured.")
+          : (features.file_name
+              ? `Additional input: ${formatCompactPath(features.file_name)}`
+              : features.typing_event_count
+                ? `Typing events: ${features.typing_event_count}`
+                : "Additional input was captured.");
+    const statusText = available
+      ? (displayConfidence >= 0.66 ? "Primary signal" : displayConfidence >= 0.33 ? "Supporting signal" : "Metadata only")
+      : "Not captured";
+    const qualityText = modality === "passive_biomarkers"
+      ? (available ? "Supportive context from the extra input stream." : "No extra input captured.")
+      : (available ? `${formatPercent(displayConfidence)} confidence` : "No usable signal captured.");
     return `
-      <div class="detail-card modality-card${emphasisClass}">
-        <div class="detail-inline"><h3>${localizedModalityLabel(modality)}</h3><strong>${available ? t("usableLabel") : t("limitedLabel")}</strong></div>
+      <div class="detail-card modality-card ${qualityClass}${emphasisClass}">
+        <div class="detail-inline"><h3>${localizedModalityLabel(modality)}</h3><strong>${statusText}</strong></div>
         <div class="modality-weight-row">
           <span class="risk-pill instrument-pill weight-pill">${weightPct}% final weight</span>
           ${sourceBadge}
           ${modality === "image" ? '<span class="risk-pill instrument-pill image-focus-pill">Image emphasized</span>' : ""}
         </div>
-        ${scoreLine(t("confidenceLabel"), displayConfidence)}
-        <p class="detail-muted">${payload.notes || t("noModalityNoteLabel")}</p>
-        <p class="detail-muted">${cleanedMetadata.join(" | ") || t("noAdditionalProcessingStatsLabel")}</p>
+        ${scoreLine("Confidence", displayConfidence)}
+        <p class="detail-muted">${summaryText}</p>
+        <p class="detail-muted">${qualityText}</p>
       </div>
     `;
   }).join("");
@@ -5569,7 +5731,7 @@ function renderRiskHotspots() {
   elements.riskHotspots.innerHTML = buildChartCard(
     t("modalityQualityTitle"),
     t("modalityQualityShortText"),
-    cards,
+    `<div class="compare-grid compare-grid-tight contribution-grid">${cards}</div>`,
     t("modalityQualityHelperText")
   );
 }
@@ -5597,21 +5759,106 @@ function renderNlpTrends() {
   const narrativeSummary = modalityHasUsableSignal("text", record.multimodal?.text || {})
     ? recommendationSummary.narrativeAvailable
     : recommendationSummary.narrativeUnavailable;
+  const dominantDomain = dominantRisk(record);
+  const dominantRiskLevel = record.multimodal?.overall?.[dominantDomain] || "low";
+  const recommendationSeverityClass = dominantRiskLevel === "high"
+    ? "mismatch-high"
+    : dominantRiskLevel === "moderate"
+      ? "mismatch-medium"
+      : "mismatch-low";
+  const plainLanguageGuidance = {
+    English: {
+      high: {
+        meaning: `Main concern: ${localizedDomainLabel(dominantDomain)}.`,
+        next: "Review soon, ask about safety, and arrange support.",
+        watch: "Watch for worse mood, sleep trouble, withdrawal, or self-harm talk.",
+      },
+      moderate: {
+        meaning: `Some signs point to ${localizedDomainLabel(dominantDomain)}.`,
+        next: "Follow up soon, talk through stress, and repeat if needed.",
+        watch: "Watch for more sadness, worry, tiredness, or trouble coping.",
+      },
+      low: {
+        meaning: "No strong warning signs right now.",
+        next: "Share routine wellbeing advice and rescreen if things change.",
+        watch: "Watch for new stress, poor sleep, low mood, or a drop in daily function.",
+      },
+    },
+    Hindi: {
+      high: {
+        meaning: `${localizedDomainLabel(dominantDomain)} मुख्य चिंता है।`,
+        next: "जल्द समीक्षा करें, सुरक्षा पूछें, और सहायता दें।",
+        watch: "मूड, नींद, अलगाव, या आत्म-क्षति के संकेत देखें।",
+      },
+      moderate: {
+        meaning: `${localizedDomainLabel(dominantDomain)} के कुछ संकेत हैं।`,
+        next: "जल्दी फॉलो-अप करें, तनाव पर बात करें, और ज़रूरत हो तो दोबारा जाँचें।",
+        watch: "उदासी, चिंता, थकान, या सामना करने में कठिनाई देखें।",
+      },
+      low: {
+        meaning: "अभी कोई मजबूत चेतावनी संकेत नहीं है।",
+        next: "सामान्य सलाह दें और बदलाव पर फिर से स्क्रीनिंग करें।",
+        watch: "नया तनाव, खराब नींद, कम मूड, या कामकाज में गिरावट देखें।",
+      },
+    },
+    Bengali: {
+      high: {
+        meaning: `${localizedDomainLabel(dominantDomain)}-ই মূল উদ্বেগ।`,
+        next: "দ্রুত পর্যালোচনা করুন, নিরাপত্তা জিজ্ঞাসা করুন, সহায়তা দিন।",
+        watch: "মেজাজ, ঘুম, একাকীত্ব, বা আত্মক্ষতির কথা দেখুন।",
+      },
+      moderate: {
+        meaning: `${localizedDomainLabel(dominantDomain)}-এ কিছু সংকেত আছে।`,
+        next: "শীঘ্রই ফলো-আপ করুন, চাপ নিয়ে কথা বলুন, দরকার হলে আবার পরীক্ষা করুন।",
+        watch: "দুঃখ, উদ্বেগ, ক্লান্তি, বা সামলাতে কষ্ট দেখুন।",
+      },
+      low: {
+        meaning: "এখন শক্তিশালী সতর্ক সংকেত নেই।",
+        next: "সাধারণ পরামর্শ দিন এবং পরিবর্তন হলে আবার স্ক্রিনিং করুন।",
+        watch: "নতুন চাপ, খারাপ ঘুম, কম মেজাজ, বা কাজকর্মে অবনতি দেখুন।",
+      },
+    },
+  }[language] || {
+    high: {
+      meaning: `The main concern is ${localizedDomainLabel(dominantDomain)}.`,
+      next: "Please review the person soon, ask about safety, and arrange support without delay.",
+      watch: "Watch for worsening mood, sleep problems, withdrawal, or any self-harm talk.",
+    },
+    moderate: {
+      meaning: `There are some signs in ${localizedDomainLabel(dominantDomain)} that deserve attention.`,
+      next: "Please follow up soon, talk through current stress, and repeat the check if things change.",
+      watch: "Watch for increasing sadness, worry, tiredness, or trouble coping.",
+    },
+    low: {
+      meaning: "The result does not show strong warning signs right now.",
+      next: "Share routine wellbeing advice and repeat screening if symptoms grow or the situation changes.",
+      watch: "Watch for new stress, poor sleep, low mood, or a clear drop in daily functioning.",
+    },
+  };
+  const guidance = plainLanguageGuidance[dominantRiskLevel] || plainLanguageGuidance.low;
 
   elements.nlpTrends.className = "chart-stack";
   elements.nlpTrends.innerHTML = buildChartCard(
     t("recommendationAndDisclaimerTitle"),
     overallRiskLabel(record),
     `
-      <div class="detail-card">
-        <h3>${t("recommendationTitle")}</h3>
-        <p>${recommendationText}</p>
+      <div class="detail-card recommendation-card ${recommendationSeverityClass}">
+        <div class="compare-card-head">
+          <h3>${t("recommendationTitle")}</h3>
+          <span class="compare-diff-pill">${localizedRiskLevel(dominantRiskLevel)}</span>
+        </div>
+        <p class="chart-note">${localizedDomainLabel(dominantDomain)}</p>
+        <p><strong>${t("whatThisMeansLabel")}:</strong> ${guidance.meaning}</p>
+        <p><strong>${t("whatToDoNextLabel")}:</strong> ${guidance.next}</p>
+        <p><strong>${t("whatToWatchForLabel")}:</strong> ${guidance.watch}</p>
         <p class="detail-muted">${sourceSummary}</p>
       </div>
       <div class="detail-card">
         <h3>${t("screeningDisclaimerTitle")}</h3>
-        <p>${disclaimerText}</p>
+        <p>${t("screeningGuideLabel")}</p>
+        <p>${t("screeningGuideHelpLabel")}</p>
         <p class="detail-muted">${narrativeSummary}</p>
+        <p class="detail-muted">${disclaimerText}</p>
       </div>
     `,
     t("recommendationOverviewText")
@@ -5683,8 +5930,18 @@ function renderNlpSignalSummary() {
 
   const features = record.multimodal?.text?.features || {};
   const modelRows = getModelComparisonRows(record).filter((item) => item.sampleCount > 0 || item.source === "trained_bundle");
+  const availableModalities = ["text", "audio", "image"].filter((key) => modalityHasUsableSignal(key, record.multimodal?.[key] || {}));
+  const trainedModalities = ["text", "audio", "image"]
+    .filter((key) => record.multimodal?.[key]?.features?.model_source === "trained_bundle")
+    .map((key) => localizedModalityLabel(key));
   const trainedDomainTotal = modelRows.reduce((sum, item) => sum + item.domains.length, 0);
-  const hasTextNarrative = modalityHasUsableSignal("text", record.multimodal?.text || {}) || Boolean(features.word_count || features.sentiment_label || features.dominant_emotion);
+  const hasTextNarrative = modalityHasUsableSignal("text", record.multimodal?.text || {}) || Boolean(
+    features.word_count ||
+    features.sentiment_label ||
+    features.dominant_emotion ||
+    (features.self_harm_keyword_matches || []).length ||
+    (features.distress_phrase_matches || []).length
+  );
   const intensity = getEmotionIntensitySummary(features);
   const language = currentLanguage();
   const analyticsSummary = ANALYTICS_SUMMARY_HINTS[language] || ANALYTICS_SUMMARY_HINTS.English;
@@ -5745,19 +6002,41 @@ function renderNlpSignalSummary() {
     domainAvailable: "Total trained domains contributing to the NLP summary.",
     domainMissing: "No domain coverage available yet.",
   };
-  if (!hasTextNarrative && !modelRows.length) {
+  if (!hasTextNarrative && !trainedModalities.length && !availableModalities.length) {
     elements.assessorSummary.className = "tile-grid empty-state";
     elements.assessorSummary.textContent = t("noNlpSummary");
     return;
   }
 
-  const cards = [];
-  if (hasTextNarrative) {
-    cards.push({ label: t("sentimentLabel"), value: features.sentiment_label || t("unknownLabel"), detail: features.sentiment_model ? `${t("analysisEngineLabel")}: ${features.sentiment_model}` : "" });
-    cards.push({ label: t("emotionLabel"), value: features.dominant_emotion || t("unknownLabel"), detail: features.emotion_model ? `${t("analysisEngineLabel")}: ${features.emotion_model}` : "" });
-    cards.push({
+  const sentimentLabel = features.sentiment_label || t("noDataLabel");
+  const sentimentConfidence = Number(features.sentiment_confidence || Math.abs(features.sentiment_compound || 0) || 0);
+  const dominantEmotion = features.dominant_emotion || t("noDataLabel");
+  const safetyKeywords = Array.isArray(features.self_harm_keyword_matches) ? features.self_harm_keyword_matches : [];
+  const distressMatches = Array.isArray(features.distress_phrase_matches) ? features.distress_phrase_matches : [];
+  const narrativeWordCount = Number(features.word_count || 0);
+  const domainCoverageDomains = DOMAINS.filter((domain) => Number(record.multimodal?.overall?.scores?.[domain] ?? record.questionnaire?.[`${domain}_score`] ?? 0) > 0);
+  const domainCoverageCount = domainCoverageDomains.length;
+  const domainCoverageLabel = `${domainCoverageCount}/${DOMAINS.length}`;
+  const domainCoverageDetail = domainCoverageDomains.length
+    ? domainCoverageDomains.map((domain) => localizedDomainLabel(domain)).join(", ")
+    : analysisSummary.domainMissing;
+
+  const cards = [
+    {
+      label: t("sentimentLabel"),
+      value: sentimentLabel,
+      detail: `${formatPercent(sentimentConfidence)} confidence${features.sentiment_model ? ` · ${features.sentiment_model}` : ""}`,
+      tone: sentimentLabel.toLowerCase() === "negative" ? "mismatch-high" : "mismatch-low",
+    },
+    {
+      label: t("emotionLabel"),
+      value: dominantEmotion,
+      detail: features.emotion_model ? `${t("analysisEngineLabel")}: ${features.emotion_model}` : analysisSummary.missing,
+      tone: dominantEmotion === "neutral" ? "mismatch-low" : "mismatch-medium",
+    },
+    {
       label: t("emotionIntensityLabel"),
-      value: intensity.value !== null ? formatMetricNumber(intensity.value, 2) : t("noDataLabel"),
+      value: intensity.value !== null ? formatPercent(intensity.value) : t("noDataLabel"),
       detail: intensity.source === "direct"
         ? analysisSummary.direct
         : intensity.source === "emotion_scores"
@@ -5765,17 +6044,43 @@ function renderNlpSignalSummary() {
           : intensity.source === "sentiment_distress"
             ? analysisSummary.sentimentDistress
             : analysisSummary.missing,
-    });
-    cards.push({ label: t("safetyKeywordsLabel"), value: features.self_harm_keyword_detected ? t("detectedLabel") : t("notDetectedLabel"), detail: (features.self_harm_keyword_matches || []).length ? `${t("keywordMatchesLabel")}: ${(features.self_harm_keyword_matches || []).join(", ")}` : "" });
-    cards.push({ label: t("distressPhraseLabel"), value: (features.distress_phrase_matches || []).join(", ") || t("noneLabel"), detail: features.distress_phrase_detected ? analysisSummary.distressMatched : analysisSummary.distressMissing });
-    cards.push({ label: t("narrativeWordCountLabel"), value: features.word_count || 0, detail: features.available ? analysisSummary.narrativeAnalyzed : analysisSummary.narrativeMissing });
-  }
-  cards.push({ label: t("trainedModalitiesLabel"), value: String(modelRows.length), detail: modelRows.length ? analysisSummary.bundleAvailable : analysisSummary.bundleMissing });
-  cards.push({ label: t("domainCoverageLabel"), value: String(trainedDomainTotal), detail: trainedDomainTotal ? analysisSummary.domainAvailable : analysisSummary.domainMissing });
+      tone: intensity.value !== null && intensity.value >= 0.66 ? "mismatch-high" : intensity.value !== null && intensity.value >= 0.33 ? "mismatch-medium" : "mismatch-low",
+    },
+    {
+      label: t("safetyKeywordsLabel"),
+      value: safetyKeywords.length ? t("detectedLabel") : t("notDetectedLabel"),
+      detail: safetyKeywords.length ? `${t("keywordMatchesLabel")}: ${safetyKeywords.join(", ")}` : "No self-harm keywords detected",
+      tone: safetyKeywords.length ? "mismatch-high" : "mismatch-low",
+    },
+    {
+      label: t("distressPhraseLabel"),
+      value: distressMatches.length ? `${distressMatches.length}` : t("noneLabel"),
+      detail: distressMatches.length ? distressMatches.join(", ") : analysisSummary.distressMissing,
+      tone: distressMatches.length ? "mismatch-high" : "mismatch-low",
+    },
+    {
+      label: t("narrativeWordCountLabel"),
+      value: formatMetricNumber(narrativeWordCount, 0),
+      detail: narrativeWordCount > 0 ? analysisSummary.narrativeAnalyzed : analysisSummary.narrativeMissing,
+      tone: narrativeWordCount > 0 ? "mismatch-low" : "mismatch-high",
+    },
+    {
+      label: t("trainedModalitiesLabel"),
+      value: trainedModalities.length ? trainedModalities.join(", ") : availableModalities.length ? availableModalities.map((key) => localizedModalityLabel(key)).join(", ") : t("noDataLabel"),
+      detail: trainedModalities.length ? analysisSummary.bundleAvailable : modelRows.length ? `${availableModalities.length} modalities captured` : analysisSummary.bundleMissing,
+      tone: trainedModalities.length ? "mismatch-low" : "mismatch-medium",
+    },
+    {
+      label: t("domainCoverageLabel"),
+      value: domainCoverageLabel,
+      detail: domainCoverageDetail,
+      tone: domainCoverageCount >= DOMAINS.length ? "mismatch-low" : domainCoverageCount >= DOMAINS.length / 2 ? "mismatch-medium" : "mismatch-high",
+    },
+  ];
 
-  elements.assessorSummary.className = "tile-grid";
+  elements.assessorSummary.className = "tile-grid nlp-signal-grid";
   elements.assessorSummary.innerHTML = cards.map((item) => `
-    <div class="summary-tile">
+    <div class="summary-tile nlp-signal-tile ${item.tone}">
       <div class="tile-top"><span>${item.label}</span><strong>${item.value}</strong></div>
       ${item.detail ? `<p class="detail-muted">${item.detail}</p>` : ""}
     </div>
@@ -6032,28 +6337,44 @@ async function runQualityCheck() {
 
   state.qualityCheckLoading = true;
   elements.runQualityCheckBtn.disabled = true;
-  elements.runQualityCheckBtn.textContent = t("qualityCheckLoading");
-  setBanner(elements.analysisStatusBanner, t("qualityCheckLoading"), "neutral");
+  elements.runQualityCheckBtn.textContent = currentLanguage() === "Bengali" ? "চেক চলছে..." : currentLanguage() === "Hindi" ? "जांच चल रही है..." : "Checking...";
+  const loadingRecord = getAnalysisRecord() || state.selectedRecord || state.latestCreatedRecord || null;
+  const loadingLabel = loadingRecord?.assessment_id ? `${t("qualityCheckLoading")} ${loadingRecord.assessment_id}` : t("qualityCheckLoading");
+  const loadingDetail = t("qualityCheckLoadingDetail") || (currentLanguage() === "Bengali"
+    ? "এতে কয়েক মুহূর্ত লাগতে পারে।"
+    : currentLanguage() === "Hindi"
+      ? "इसमें कुछ क्षण लग सकते हैं।"
+      : "This may take a few moments.");
+  setBanner(elements.analysisStatusBanner, `${loadingLabel}. ${loadingDetail}`, "neutral");
 
   try {
-    const record = getAnalysisRecord();
-    const recordParam = record?.assessment_id ? `&assessment_id=${encodeURIComponent(record.assessment_id)}` : "";
-    const response = await fetch(`/api/quality-check?mismatches=5${recordParam}`, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    const record = getAnalysisRecord() || state.selectedRecord || state.latestCreatedRecord || null;
+    const requestReport = async (assessmentId) => apiJson(
+      `/api/quality-check?mismatches=5${assessmentId ? `&assessment_id=${encodeURIComponent(assessmentId)}` : ""}`,
+      { method: "GET" },
+      { timeoutMs: 60000 },
+    );
+    try {
+      state.qualityCheckReport = await requestReport(record?.assessment_id || "");
+    } catch (firstError) {
+      if (record?.assessment_id) {
+        state.qualityCheckReport = await requestReport("");
+      } else {
+        throw firstError;
+      }
     }
-    state.qualityCheckReport = await response.json();
     renderQualityCheckSummary();
     setBanner(elements.analysisStatusBanner, `${t("qualityCheckSummaryTitle")}: ${(state.qualityCheckReport?.assessment_id || record?.assessment_id || t("unknownLabel"))}`, "success");
   } catch (error) {
     console.error("Quality check failed", error);
     state.qualityCheckReport = null;
     renderQualityCheckSummary();
-    setBanner(elements.analysisStatusBanner, currentLanguage() === "Bengali"
+    const message = error?.payload?.error || error?.message || "";
+    setBanner(elements.analysisStatusBanner, message || (currentLanguage() === "Bengali"
       ? "কোয়ালিটি চেক চালানো যায়নি।"
       : currentLanguage() === "Hindi"
         ? "क्वालिटी चेक चलाया नहीं जा सका।"
-        : "Quality check could not be completed.", "error");
+        : "Quality check could not be completed."), "error");
   } finally {
     state.qualityCheckLoading = false;
     elements.runQualityCheckBtn.disabled = false;
@@ -6236,16 +6557,127 @@ function renderSelectedAssessment() {
   }
   const questionnairePills = DOMAINS.map((domain) => `<span class="risk-pill ${record.questionnaire[`${domain}_risk`]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.questionnaire[`${domain}_risk`])}</span>`).join("");
   const overallPills = DOMAINS.map((domain) => `<span class="risk-pill ${record.multimodal.overall[domain]}">${localizedDomainLabel(domain)} ${localizedRiskLevel(record.multimodal.overall[domain])}</span>`).join("");
+  const strongestDomain = dominantRisk(record);
+  const strongestRiskLevel = record.multimodal?.overall?.[strongestDomain] || "low";
+  const questionnaireOverallScore = Number(record.questionnaire?.overall_score || 0);
+  const overallConfidence = Number(record.multimodal?.overall?.confidence || 0);
+  const modalitiesUsed = ["text", "audio", "image"].filter((key) => modalityHasUsableSignal(key, record.multimodal?.[key] || {})).length;
+  const validatedInstrumentLabel = validatedInstrument?.localized_label || validatedInstrument?.label || validatedInstrument?.id || t("noDataMetricLabel");
+  const validatedInstrumentDescription = validatedInstrument?.localized_description || validatedInstrument?.description || t("noDataMetricLabel");
+  const questionnaireSummary = Number(record.questionnaire.overall_score || 0);
+  const combinedSummary = averageOverallScore(record);
+  const scoreGap = combinedSummary - questionnaireSummary;
+  const scoreGapAbs = Math.abs(scoreGap);
+  const comparisonTone = scoreGapAbs < 0.15 ? "mismatch-low" : scoreGapAbs < 0.35 ? "mismatch-medium" : "mismatch-high";
+  const comparisonText = scoreGapAbs < 0.15
+    ? t("comparisonCloseText")
+    : scoreGap > 0
+      ? t("comparisonHigherCombinedText")
+      : t("comparisonHigherQuestionnaireText");
+  const comparisonMeaning = scoreGapAbs < 0.15
+    ? t("comparisonCloseMeaning")
+    : scoreGap > 0
+      ? t("comparisonHigherCombinedMeaning")
+      : t("comparisonHigherQuestionnaireMeaning");
+  const comparisonNext = scoreGapAbs < 0.15
+    ? t("comparisonCloseNext")
+    : t("comparisonHigherNext");
   elements.selectedAssessment.className = "detail-stack";
   elements.selectedAssessment.innerHTML = `
-    <div class="detail-card">
-      <div class="detail-inline"><h3>${record.profile.full_name || t("unknownUserLabel")}</h3><strong>${record.assessment_id}</strong></div>
-      <p class="detail-muted">${record.profile.village || t("unknownLocationLabel")} | ${t("districtLabel")}: ${record.profile.district || t("noDataMetricLabel")} | ${t("blockLabel")}: ${record.profile.block || t("noDataMetricLabel")}</p>
-      <p class="detail-muted">${t("occupationLabel")}: ${record.profile.occupation || t("noDataMetricLabel")} | ${t("ageLabel")}: ${record.profile.age || t("noDataMetricLabel")} | ${record.profile.gender || t("notStatedLabel")}</p>
-      <p class="detail-muted">${t("assessorLabel")}: ${record.profile.assessor || t("noDataMetricLabel")} | ${t("languageLabel")}: ${record.profile.language || t("noDataMetricLabel")} | ${t("phoneLabel")}: ${record.profile.phone || t("noDataMetricLabel")}</p>
-      ${validatedInstrument ? `<p class="detail-muted">${t("validatedInstrumentLabel")}: <span class="risk-pill instrument-pill">${validatedInstrument.localized_label || validatedInstrument.label || validatedInstrument.id || t("noDataMetricLabel")}</span> | ${t("languageLabel")}: ${validatedInstrument.language || t("noDataMetricLabel")}</p>` : ""}
-      <p class="detail-muted">${t("createdAtLabel")}: ${formatDate(record.created_at)}</p>
-      ${renderAgrarianDistressSummary(record.multimodal?.text?.features || {})}
+    <div class="detail-card assessment-detail-card">
+      <div class="detail-inline">
+        <div>
+          <h3>${record.profile.full_name || t("unknownUserLabel")}</h3>
+          <p class="detail-muted">${record.assessment_id}</p>
+        </div>
+        <span class="compare-diff-pill">${localizedRiskLevel(strongestRiskLevel)}</span>
+      </div>
+
+      <div class="analytics-mini-stats assessment-mini-stats">
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("overallRiskLabel")}</span>
+          <span class="analytics-mini-stat-value">${overallRiskLabel(record)}</span>
+          <span class="analytics-mini-stat-detail">${localizedDomainLabel(strongestDomain)}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("confidenceLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatPercent(overallConfidence)}</span>
+          <span class="analytics-mini-stat-detail">${t("combinedAiLabel")} ${t("scoreLabel").toLowerCase()}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("questionnaireOverall")}</span>
+          <span class="analytics-mini-stat-value">${formatMetricNumber(questionnaireOverallScore, 2)}</span>
+          <span class="analytics-mini-stat-detail">${t("selfReportedAnswersLabel")}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("modalitiesUsedLabel")}</span>
+          <span class="analytics-mini-stat-value">${modalitiesUsed}/3</span>
+          <span class="analytics-mini-stat-detail">${t("modalitiesUsedSummaryLabel")}</span>
+        </div>
+      </div>
+
+      <div class="detail-card inner-card assessment-profile-card">
+        <h4>Profile</h4>
+        <div class="detail-grid assessment-profile-grid">
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("villageLabel")}</p>
+            <strong>${record.profile.village || t("unknownLocationLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("districtLabel")}</p>
+            <strong>${record.profile.district || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("blockLabel")}</p>
+            <strong>${record.profile.block || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("ageLabel")}</p>
+            <strong>${record.profile.age || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("genderLabel")}</p>
+            <strong>${record.profile.gender || t("notStatedLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("occupationLabel")}</p>
+            <strong>${record.profile.occupation || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("assessorLabel")}</p>
+            <strong>${record.profile.assessor || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("languageLabel")}</p>
+            <strong>${record.profile.language || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("phoneLabel")}</p>
+            <strong>${record.profile.phone || t("noDataMetricLabel")}</strong>
+          </div>
+          <div class="detail-card subtle-card">
+            <p class="detail-muted">${t("createdAtLabel")}</p>
+            <strong>${formatDate(record.created_at)}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-card inner-card">
+        <h4>${t("validatedInstrumentLabel")}</h4>
+        <div class="detail-inline">
+          <span class="risk-pill instrument-pill">${validatedInstrumentLabel}</span>
+          <span class="detail-muted">${validatedInstrument?.language || record.profile.language || t("noDataMetricLabel")}</span>
+        </div>
+        <p class="detail-muted">${validatedInstrumentDescription}</p>
+      </div>
+
+      <div class="detail-card inner-card">
+        <h4>Screening summary</h4>
+        <p class="detail-muted">${t("questionnaireLabel")}: ${questionnairePills}</p>
+        <p class="detail-muted">${t("dashboardLabel")}: ${overallPills}</p>
+        ${renderAgrarianDistressSummary(record.multimodal?.text?.features || {})}
+      </div>
+
       <div class="action-row">
         <div class="record-action-group">
           <button id="recordActionsBtn" class="ghost-btn small-btn" type="button">${t("deleteRecordReport")}</button>
@@ -6257,15 +6689,46 @@ function renderSelectedAssessment() {
       </div>
     </div>
     <div class="detail-card">
-      <h3>${t("questionnaireRiskTitle")}</h3>
-      <div class="detail-inline">${questionnairePills}</div>
-      ${scoreLine(t("questionnaireOverall"), record.questionnaire.overall_score)}
-    </div>
-    <div class="detail-card">
-      <h3>${t("combinedResultTitle")}</h3>
-      <div class="detail-inline">${overallPills}</div>
-      ${scoreLine(t("confidenceLabel"), record.multimodal.overall.confidence)}
-      ${DOMAINS.map((domain) => scoreLine(`${localizedDomainLabel(domain)} ${t("scoreLabel")}`, record.multimodal.overall.scores[domain])).join("")}
+      <h3>${t("scoreComparisonTitle")}</h3>
+      <div class="detail-inline">
+        <span class="risk-pill ${comparisonTone}">${comparisonText}</span>
+        <span class="detail-muted">${formatMetricNumber(scoreGapAbs, 2)} ${t("comparisonGapLabel")}</span>
+      </div>
+      <div class="analytics-mini-stats assessment-mini-stats">
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("questionnaireOverall")}</span>
+          <span class="analytics-mini-stat-value">${formatMetricNumber(questionnaireSummary, 2)}</span>
+          <span class="analytics-mini-stat-detail">${t("selfReportedAnswersLabel")}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("combinedResultTitle")}</span>
+          <span class="analytics-mini-stat-value">${formatMetricNumber(combinedSummary, 2)}</span>
+          <span class="analytics-mini-stat-detail">${t("questionnairePlusInputsLabel")}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("confidenceLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatPercent(overallConfidence)}</span>
+          <span class="analytics-mini-stat-detail">${t("combinedCertaintyLabel")}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("topComorbidityLabel")}</span>
+          <span class="analytics-mini-stat-value">${localizedDomainLabel(strongestDomain)}</span>
+          <span class="analytics-mini-stat-detail">${localizedRiskLevel(strongestRiskLevel)}</span>
+        </div>
+      </div>
+      <div class="detail-card inner-card">
+        <h4>${t("questionnaireRiskTitle")}</h4>
+        <div class="detail-inline">${questionnairePills}</div>
+        ${scoreLine(t("questionnaireOverall"), questionnaireSummary)}
+      </div>
+      <div class="detail-card inner-card">
+        <h4>${t("combinedResultTitle")}</h4>
+        <div class="detail-inline">${overallPills}</div>
+        ${scoreLine(t("confidenceLabel"), overallConfidence)}
+        ${DOMAINS.map((domain) => scoreLine(`${localizedDomainLabel(domain)} ${t("scoreLabel")}`, record.multimodal.overall.scores[domain])).join("")}
+      </div>
+      <p class="detail-muted">${comparisonMeaning}</p>
+      <p class="detail-muted">${comparisonNext}</p>
     </div>
     <div class="detail-card">
       ${renderAgrarianDistressSummary(record.multimodal?.text?.features || {})}
@@ -6298,17 +6761,68 @@ function renderSelectedAssessment() {
 function comparisonRow(label, questionnaireValue, multimodalValue) {
   const safeQuestionnaire = Number(questionnaireValue || 0);
   const safeMultimodal = Number(multimodalValue || 0);
+  const difference = safeMultimodal - safeQuestionnaire;
+  const language = currentLanguage();
+  const gap = Math.abs(difference);
+  const severityClass = gap < 0.15 ? "mismatch-low" : gap < 0.35 ? "mismatch-medium" : "mismatch-high";
+  let directionLabel = "Close match";
+  let directionDetail = "The questionnaire and AI scores are similar.";
+  let diffLabel = gap > 0 ? `${difference > 0 ? "+" : "-"}${gap.toFixed(2)}` : "0.00";
+  if (gap >= 0.35) {
+    if (difference > 0) {
+      directionLabel = language === "Hindi" ? "एआई थोड़ा ऊपर" : language === "Bengali" ? "এআই একটু বেশি" : "AI slightly higher";
+      directionDetail = language === "Hindi"
+        ? "संयुक्त AI स्कोर प्रश्नावली से थोड़ा अधिक है।"
+        : language === "Bengali"
+          ? "সমন্বিত AI স্কোর প্রশ্নমালার চেয়ে কিছুটা বেশি।"
+          : "The combined AI score is a little higher than the questionnaire.";
+    } else {
+      directionLabel = language === "Hindi" ? "प्रश्नावली थोड़ा ऊपर" : language === "Bengali" ? "প্রশ্নমালা একটু বেশি" : "Questionnaire slightly higher";
+      directionDetail = language === "Hindi"
+        ? "प्रश्नावली स्कोर संयुक्त AI स्कोर से थोड़ा अधिक है।"
+        : language === "Bengali"
+          ? "প্রশ্নমালার স্কোর সমন্বিত AI স্কোরের চেয়ে কিছুটা বেশি।"
+          : "The questionnaire score is a little higher than the combined AI score.";
+    }
+  } else if (difference > 0) {
+    directionLabel = language === "Hindi" ? "करीबी मिलान, एआई थोड़ा ऊपर" : language === "Bengali" ? "মিল কাছাকাছি, এআই একটু বেশি" : "Close match, AI a touch higher";
+    directionDetail = language === "Hindi"
+      ? "दोनों स्कोर लगभग समान हैं, केवल हल्का अंतर है।"
+      : language === "Bengali"
+        ? "দুটি স্কোর প্রায় একই, শুধু সামান্য পার্থক্য আছে।"
+        : "Both scores are nearly the same, with only a small difference.";
+  } else if (difference < 0) {
+    directionLabel = language === "Hindi" ? "करीबी मिलान, प्रश्नावली थोड़ा ऊपर" : language === "Bengali" ? "মিল কাছাকাছি, প্রশ্নমালা একটু বেশি" : "Close match, questionnaire a touch higher";
+    directionDetail = language === "Hindi"
+      ? "दोनों स्कोर लगभग समान हैं, केवल हल्का अंतर है।"
+      : language === "Bengali"
+        ? "দুটি স্কোর প্রায় একই, শুধু সামান্য পার্থক্য আছে।"
+        : "Both scores are nearly the same, with only a small difference.";
+  }
   return `
-    <div class="compare-card">
-      <h3>${label}</h3>
-      <div class="score-line">
-        <div class="score-header"><span>${t("questionnaireLabel")}</span><strong>${safeQuestionnaire.toFixed(2)}</strong></div>
-        <div class="dual-track"><div class="score-fill dual-fill questionnaire" style="width:${clamp01(safeQuestionnaire) * 100}%"></div></div>
+    <div class="compare-card ${severityClass}">
+      <div class="compare-card-head">
+        <h3>${label}</h3>
+        <span class="compare-diff-pill">${diffLabel}</span>
       </div>
-      <div class="score-line">
-        <div class="score-header"><span>${t("dashboardLabel")}</span><strong>${safeMultimodal.toFixed(2)}</strong></div>
-        <div class="dual-track"><div class="score-fill dual-fill multimodal" style="width:${clamp01(safeMultimodal) * 100}%"></div></div>
+      <p class="chart-note">${directionLabel}</p>
+      <div class="compare-score-grid">
+        <div class="compare-score-block questionnaire-block">
+          <div class="compare-score-head">
+            <span>${t("questionnaireLabel")}</span>
+            <strong>${safeQuestionnaire.toFixed(2)}</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill questionnaire" style="width:${clamp01(safeQuestionnaire) * 100}%"></div></div>
+        </div>
+        <div class="compare-score-block multimodal-block">
+          <div class="compare-score-head">
+            <span>${t("dashboardLabel")}</span>
+            <strong>${safeMultimodal.toFixed(2)}</strong>
+          </div>
+          <div class="dual-track"><div class="score-fill dual-fill multimodal" style="width:${clamp01(safeMultimodal) * 100}%"></div></div>
+        </div>
       </div>
+      <p class="chart-note">${directionDetail}</p>
     </div>
   `;
 }
@@ -6319,17 +6833,33 @@ function renderScoreComparison() {
     elements.scoreComparison.className = "chart-stack empty-state";
     elements.scoreComparison.innerHTML = buildPromptCard(
       t("domainScoreComparisonTitle"),
-      t("noRecordSelected"),
-      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty")]
+      t("analyticsBannerDefault"),
+      [t("workspacePredictionEmpty"), t("workspaceReadinessEmpty"), t("analyticsIntroCurrentText")]
     );
     return;
   }
+  const domainRows = DOMAINS.map((domain) => ({
+    domain,
+    questionnaireScore: Number(record.questionnaire?.[`${domain}_score`] || 0),
+    combinedScore: Number(record.multimodal?.overall?.scores?.[domain] || 0),
+  }));
+  const averageQuestionnaire = average(domainRows.map((row) => row.questionnaireScore));
+  const averageCombined = average(domainRows.map((row) => row.combinedScore));
+  const largerCombined = domainRows.filter((row) => row.combinedScore > row.questionnaireScore + 0.35).length;
+  const largerQuestionnaire = domainRows.filter((row) => row.questionnaireScore > row.combinedScore + 0.35).length;
+  const closeMatchCount = domainRows.length - largerCombined - largerQuestionnaire;
   elements.scoreComparison.className = "compare-grid";
   elements.scoreComparison.innerHTML = `
     <div class="compare-legend">
       <span><span class="legend-dot questionnaire"></span>${t("questionnaireLabel")}</span>
       <span><span class="legend-dot multimodal"></span>${t("dashboardLabel")}</span>
     </div>
+    ${buildAnalyticsStatStrip([
+      { label: "Questionnaire avg", value: averageQuestionnaire.toFixed(2) },
+      { label: "AI avg", value: averageCombined.toFixed(2) },
+      { label: "Close matches", value: String(closeMatchCount) },
+      { label: "Larger gaps", value: String(largerCombined + largerQuestionnaire) },
+    ])}
     ${DOMAINS.map((domain) => comparisonRow(localizedDomainLabel(domain), record.questionnaire[`${domain}_score`], record.multimodal.overall.scores[domain])).join("")}
   `;
 }
@@ -6337,13 +6867,37 @@ function renderScoreComparison() {
 function modalityCard(title, payload) {
   const available = modalityHasUsableSignal(payload?.modality || "text", payload) || Boolean(payload?.confidence > 0);
   const uploadReceived = payload?.features?.upload_received;
-  const notes = payload?.notes || t("noDataModality");
   const statusText = available ? t("availableLabel") : uploadReceived ? t("uploadReceivedLabel") : t("notAvailableLabel");
+  const confidence = Number(payload?.confidence || 0);
+  const sourceLabel = payload?.features?.model_source || t("unknownLabel");
+  const fileName = payload?.features?.file_name ? formatCompactPath(payload.features.file_name) : "";
+  const fileSize = payload?.features?.file_size_kb !== undefined && payload?.features?.file_size_kb !== null ? `${payload.features.file_size_kb} KB` : "";
+  const mimeType = payload?.features?.mime_type || "";
+  const metadata = [fileName, fileSize].filter(Boolean).join(" | ") || mimeType;
+  const textSummary = payload?.modality === "text"
+    ? [
+        payload?.features?.sentiment_label ? `${payload.features.sentiment_label}` : "",
+        payload?.features?.dominant_emotion ? `${payload.features.dominant_emotion}` : "",
+        payload?.features?.word_count !== undefined ? `${payload.features.word_count} words` : "",
+      ].filter(Boolean).join(" | ")
+    : "";
+  const safetySummary = payload?.modality === "text"
+    ? [
+        Array.isArray(payload?.features?.self_harm_keyword_matches) && payload.features.self_harm_keyword_matches.length
+          ? `${t("safetyKeywordsLabel")}: ${payload.features.self_harm_keyword_matches.join(", ")}`
+          : "",
+        Array.isArray(payload?.features?.distress_phrase_matches) && payload.features.distress_phrase_matches.length
+          ? `${t("distressPhraseLabel")}: ${payload.features.distress_phrase_matches.join(", ")}`
+          : "",
+      ].filter(Boolean).join(" | ")
+    : "";
+  const extraLines = [textSummary, safetySummary, metadata].filter(Boolean);
   return `
     <div class="modality-card ${available ? "" : "unavailable"}">
       <h3>${title}</h3>
       <p class="detail-muted">${statusText}</p>
-      <p>${notes}</p>
+      <p class="detail-muted">${formatPercent(confidence)} | ${sourceLabel}</p>
+      ${extraLines.map((line) => `<p class="detail-muted">${line}</p>`).join("")}
     </div>
   `;
 }
@@ -6359,12 +6913,25 @@ function renderModalityBreakdown() {
     );
     return;
   }
-  elements.modalityBreakdown.className = "modality-grid";
-  elements.modalityBreakdown.innerHTML = [
-    modalityCard(localizedModalityLabel("text"), record.multimodal.text),
-    modalityCard(localizedModalityLabel("audio"), record.multimodal.audio),
-    modalityCard(localizedModalityLabel("image"), record.multimodal.image),
-  ].join("");
+  const modalitiesUsed = ["text", "audio", "image"].filter((key) => modalityHasUsableSignal(key, record.multimodal?.[key] || {})).length;
+  const trainedModalities = ["text", "audio", "image"].filter((key) => record.multimodal?.[key]?.features?.model_source === "trained_bundle");
+  const cards = [
+    modalityCard(localizedModalityLabel("text"), { ...record.multimodal.text, modality: "text" }),
+    modalityCard(localizedModalityLabel("audio"), { ...record.multimodal.audio, modality: "audio" }),
+    modalityCard(localizedModalityLabel("image"), { ...record.multimodal.image, modality: "image" }),
+  ];
+  elements.modalityBreakdown.className = "detail-stack";
+  elements.modalityBreakdown.innerHTML = `
+    <div class="detail-card">
+      <div class="detail-inline">
+        <h3>${t("modalityBreakdownTitle")}</h3>
+        <strong>${modalitiesUsed}/3</strong>
+      </div>
+      <p class="detail-muted">${t("modalitiesUsedLabel")}: ${modalitiesUsed}/3</p>
+      <p class="detail-muted">${t("trainedModalitiesLabel")}: ${trainedModalities.length ? trainedModalities.map((key) => localizedModalityLabel(key)).join(", ") : t("noneLabel")}</p>
+    </div>
+    ${cards.join("")}
+  `;
 }
 
 function renderFeatureSnapshot() {
@@ -6378,47 +6945,148 @@ function renderFeatureSnapshot() {
     );
     return;
   }
-  const featureCards = ["text", "audio", "image"]
-    .filter((key) => record.multimodal[key]?.features)
-    .map((key) => {
-      const items = Object.entries(record.multimodal[key].features).map(([name, value]) => {
-        let label = name;
-        if (name === "transformer_model") label = t("textTransformerLabel");
-        else if (name === "transformer_family") label = t("transformerModelFamilyLabel");
-        else if (name === "transformer_preferred_family") label = t("transformerFamilyLabel");
-        else if (name === "distress_phrase_matches" || name === "distress_phrase_count" || name === "distress_phrase_detected" || name === "distress_phrase_risk_score") label = t("distressPhraseLabel");
-        else if (name === "agrarian_distress_detected" || name === "agrarian_distress_matches" || name === "agrarian_distress_risk_score") label = t("sdohLayerTitle");
-        else if (name === "crop_failure_detected" || name === "crop_failure_matches" || name === "crop_failure_risk_score") label = t("cropFailureLabel");
-        else if (name === "debt_distress_detected" || name === "debt_distress_matches" || name === "debt_distress_risk_score") label = t("debtLabel");
-        else if (name === "food_security_detected" || name === "food_security_matches" || name === "food_security_risk_score") label = t("foodSecurityLabel");
+  const textPayload = record.multimodal?.text || {};
+  const audioPayload = record.multimodal?.audio || {};
+  const imagePayload = record.multimodal?.image || {};
+  const passivePayload = record.multimodal?.passive_biomarkers || {};
+  const textFeatures = textPayload.features || {};
+  const audioFeatures = audioPayload.features || {};
+  const imageFeatures = imagePayload.features || {};
+  const passiveFeatures = passivePayload.features || {};
 
-        let renderedValue = formatFeatureValue(value);
-        if (name === "transformer_family" || name === "transformer_preferred_family") {
-          renderedValue = localizedTransformerFamilyLabel(value);
-        } else if (name === "distress_phrase_matches") {
-          renderedValue = (value || []).join(", ") || t("noneLabel");
-        } else if (name === "distress_phrase_detected") {
-          renderedValue = value ? t("detectedLabel") : t("notDetectedLabel");
-        } else if (name === "distress_phrase_risk_score") {
-          renderedValue = Number(value || 0).toFixed(2);
-        } else if (name === "agrarian_distress_matches" || name === "crop_failure_matches" || name === "debt_distress_matches" || name === "food_security_matches") {
-          renderedValue = (value || []).join(", ") || t("noneLabel");
-        } else if (name === "agrarian_distress_detected" || name === "crop_failure_detected" || name === "debt_distress_detected" || name === "food_security_detected") {
-          renderedValue = value ? t("detectedLabel") : t("notDetectedLabel");
-        } else if (name === "agrarian_distress_risk_score" || name === "crop_failure_risk_score" || name === "debt_distress_risk_score" || name === "food_security_risk_score") {
-          renderedValue = Number(value || 0).toFixed(2);
-        }
-        return `<li>${label}: ${renderedValue}</li>`;
-      }).join("");
-      return `<div class="feature-card"><h3>${localizedModalityLabel(key)} ${t("featuresLabel")}</h3><ul class="feature-list">${items}</ul></div>`;
-    });
-  if (!featureCards.length) {
-    elements.featureSnapshot.className = "empty-state";
-    elements.featureSnapshot.textContent = t("noFeaturesLabel");
-    return;
-  }
-  elements.featureSnapshot.className = "feature-grid";
-  elements.featureSnapshot.innerHTML = featureCards.join("");
+  const availableModalities = ["text", "audio", "image", "passive_biomarkers"].filter((key) => modalityHasUsableSignal(key, record.multimodal?.[key] || {}));
+  const trainedModalities = ["text", "audio", "image", "passive_biomarkers"].filter((key) => record.multimodal?.[key]?.features?.model_source === "trained_bundle");
+  const domainCoverageCount = DOMAINS.filter((domain) => Number(record.multimodal?.overall?.scores?.[domain] ?? record.questionnaire?.[`${domain}_score`] ?? 0) > 0).length;
+  const strongest = dominantRisk(record);
+  const strongestRiskLevel = record.multimodal?.overall?.[strongest] || "low";
+  const overallConfidence = Number(record.multimodal?.overall?.confidence || 0);
+  const overallRisk = overallRiskLabel(record);
+  const validatedInstrument = record.questionnaire?.validated_instrument || null;
+  const validatedInstrumentLabel = validatedInstrument?.localized_label || validatedInstrument?.label || validatedInstrument?.id || t("noDataLabel");
+  const validatedInstrumentSummary = validatedInstrument
+    ? [
+        validatedInstrument.language ? `${t("languageLabel")}: ${validatedInstrument.language}` : "",
+        validatedInstrument.localized_description || validatedInstrument.description || "",
+      ].filter(Boolean).join(" | ")
+    : t("noDataLabel");
+  const textSummary = [
+    textFeatures.sentiment_label ? `${t("sentimentLabel")}: ${textFeatures.sentiment_label}` : "",
+    textFeatures.dominant_emotion ? `${t("emotionLabel")}: ${textFeatures.dominant_emotion}` : "",
+    textFeatures.emotion_intensity !== undefined ? `${t("emotionIntensityLabel")}: ${Math.round(Number(textFeatures.emotion_intensity || 0) * 100)}%` : "",
+    textFeatures.word_count !== undefined ? `${t("narrativeWordCountLabel")}: ${textFeatures.word_count}` : "",
+  ].filter(Boolean).join(" | ") || t("noDataLabel");
+  const safetySummary = [
+    Array.isArray(textFeatures.self_harm_keyword_matches) && textFeatures.self_harm_keyword_matches.length ? `${t("safetyKeywordsLabel")}: ${textFeatures.self_harm_keyword_matches.join(", ")}` : "",
+    Array.isArray(textFeatures.distress_phrase_matches) && textFeatures.distress_phrase_matches.length ? `${t("distressPhraseLabel")}: ${textFeatures.distress_phrase_matches.join(", ")}` : "",
+    textFeatures.sentiment_confidence !== undefined ? `${t("confidenceLabel")}: ${formatPercent(textFeatures.sentiment_confidence || 0)}` : "",
+  ].filter(Boolean).join(" | ") || t("noDataLabel");
+  const audioSummary = [
+    audioPayload.available ? t("availableLabel") : t("notAvailableLabel"),
+    audioFeatures.file_name ? formatCompactPath(audioFeatures.file_name) : "",
+    audioFeatures.file_size_kb !== undefined ? `${audioFeatures.file_size_kb} KB` : "",
+  ].filter(Boolean).join(" | ") || t("noDataLabel");
+  const imageSummary = [
+    imagePayload.available ? t("availableLabel") : t("notAvailableLabel"),
+    imageFeatures.file_name ? formatCompactPath(imageFeatures.file_name) : "",
+    imageFeatures.file_size_kb !== undefined ? `${imageFeatures.file_size_kb} KB` : "",
+  ].filter(Boolean).join(" | ") || t("noDataLabel");
+  const passiveSummary = [
+    passivePayload.available ? t("availableLabel") : t("notAvailableLabel"),
+    passiveFeatures.file_name ? formatCompactPath(passiveFeatures.file_name) : "",
+    passiveFeatures.typing_event_count !== undefined ? `${passiveFeatures.typing_event_count} events` : "",
+  ].filter(Boolean).join(" | ") || t("noDataLabel");
+  const systemSawSummary = [
+    `${t("modalitiesUsedLabel")}: ${availableModalities.length}/4`,
+    `${t("overallRiskLabel")}: ${overallRisk}`,
+    `${t("confidenceLabel")}: ${formatPercent(overallConfidence)}`,
+  ].join(" | ");
+
+  const cards = [
+    {
+      title: t("recordFeatureSummaryLabel"),
+      value: t("systemSawLabel"),
+      detail: systemSawSummary,
+      tone: strongestRiskLevel === "high" ? "mismatch-high" : strongestRiskLevel === "moderate" ? "mismatch-medium" : "mismatch-low",
+    },
+    {
+      title: t("validatedInstrumentLabel"),
+      value: validatedInstrumentLabel,
+      detail: validatedInstrumentSummary,
+      tone: validatedInstrument ? "mismatch-low" : "mismatch-medium",
+    },
+    {
+      title: t("sentimentLabel"),
+      value: textFeatures.sentiment_label || t("noDataLabel"),
+      detail: textSummary,
+      tone: textFeatures.sentiment_label && String(textFeatures.sentiment_label).toLowerCase() === "negative" ? "mismatch-high" : "mismatch-low",
+    },
+    {
+      title: t("emotionLabel"),
+      value: textFeatures.dominant_emotion || t("noDataLabel"),
+      detail: [
+        textFeatures.emotion_model ? `${t("analysisEngineLabel")}: ${textFeatures.emotion_model}` : "",
+        textFeatures.emotion_intensity !== undefined ? `${t("emotionIntensityLabel")}: ${Math.round(Number(textFeatures.emotion_intensity || 0) * 100)}%` : "",
+      ].filter(Boolean).join(" | ") || t("noDataLabel"),
+      tone: textFeatures.dominant_emotion === "neutral" ? "mismatch-low" : "mismatch-medium",
+    },
+    {
+      title: t("safetyKeywordsLabel"),
+      value: Array.isArray(textFeatures.self_harm_keyword_matches) && textFeatures.self_harm_keyword_matches.length ? String(textFeatures.self_harm_keyword_matches.length) : t("noneLabel"),
+      detail: safetySummary,
+      tone: Array.isArray(textFeatures.self_harm_keyword_matches) && textFeatures.self_harm_keyword_matches.length ? "mismatch-high" : "mismatch-low",
+    },
+    {
+      title: t("narrativeWordCountLabel"),
+      value: `${Number(textFeatures.word_count || 0)}`,
+      detail: textFeatures.word_count > 0 ? `${textFeatures.word_count} words captured` : "No narrative text saved",
+      tone: Number(textFeatures.word_count || 0) > 0 ? "mismatch-low" : "mismatch-high",
+    },
+    {
+      title: t("audioModalityLabel"),
+      value: audioPayload.available ? formatPercent(Number(audioPayload.confidence || 0)) : t("notAvailableLabel"),
+      detail: audioSummary,
+      tone: audioPayload.available ? (Number(audioPayload.confidence || 0) >= 0.66 ? "mismatch-low" : Number(audioPayload.confidence || 0) >= 0.33 ? "mismatch-medium" : "mismatch-high") : "mismatch-high",
+    },
+    {
+      title: t("imageModalityLabel"),
+      value: imagePayload.available ? formatPercent(Number(imagePayload.confidence || 0)) : t("notAvailableLabel"),
+      detail: imageSummary,
+      tone: imagePayload.available ? (Number(imagePayload.confidence || 0) >= 0.66 ? "mismatch-low" : Number(imagePayload.confidence || 0) >= 0.33 ? "mismatch-medium" : "mismatch-high") : "mismatch-high",
+    },
+    {
+      title: t("trainedModalitiesLabel"),
+      value: trainedModalities.length ? trainedModalities.map((key) => localizedModalityLabel(key)).join(", ") : t("noneLabel"),
+      detail: `${t("modalitiesUsedLabel")}: ${availableModalities.length}/4 | ${t("domainCoverageLabel")}: ${domainCoverageCount}/${DOMAINS.length}`,
+      tone: trainedModalities.length ? "mismatch-low" : "mismatch-medium",
+    },
+    {
+      title: t("domainCoverageLabel"),
+      value: `${domainCoverageCount}/${DOMAINS.length}`,
+      detail: [
+        `${t("overallRiskLabel")}: ${overallRisk}`,
+        `${t("confidenceLabel")}: ${formatPercent(overallConfidence)}`,
+        `${t("topComorbidityLabel")}: ${strongest ? localizedDomainLabel(strongest) : t("noDataLabel")}`,
+      ].join(" | "),
+      tone: domainCoverageCount >= DOMAINS.length ? "mismatch-low" : domainCoverageCount >= DOMAINS.length / 2 ? "mismatch-medium" : "mismatch-high",
+    },
+    {
+      title: t("combinedResultTitle"),
+      value: formatPercent(overallConfidence),
+      detail: `${t("overallRiskLabel")}: ${overallRisk}`,
+      tone: strongestRiskLevel === "high" ? "mismatch-high" : strongestRiskLevel === "moderate" ? "mismatch-medium" : "mismatch-low",
+    },
+  ];
+
+  elements.featureSnapshot.className = "feature-grid nlp-feature-grid";
+  elements.featureSnapshot.innerHTML = cards.map((card) => `
+    <div class="feature-card nlp-signal-card ${card.tone}">
+      <div class="detail-inline">
+        <h3>${card.title}</h3>
+        <strong>${card.value}</strong>
+      </div>
+      <p class="chart-note">${card.detail}</p>
+    </div>
+  `).join("");
 }
 
 function renderPatientHistory() {
@@ -6437,43 +7105,103 @@ function renderPatientHistory() {
     return;
   }
 
-  if (trajectory.history_count < 2) {
-    elements.patientHistory.className = "empty-state";
-    elements.patientHistory.textContent = "";
-  } else {
-    const timelinePoints = trajectory.points.map((point) => ({
-      label: point.created_at,
-      count: Math.round(Number(point.overall_score || 0) * 100),
-    }));
-    const visitCards = trajectory.points.map((point) => `
-      <div class="summary-tile">
-        <div class="tile-top"><span>${formatShortDateLabel(point.created_at)}</span><strong>${Math.round(Number(point.overall_score || 0) * 100)}%</strong></div>
-        <p class="detail-muted">${point.assessment_id} | ${localizedDomainLabel(point.strongest_domain)}</p>
+  const latestPoint = trajectory.points[trajectory.points.length - 1];
+  const baselinePoint = trajectory.points[0];
+  const previousPoint = trajectory.points[trajectory.points.length - 2] || baselinePoint;
+  const linePoints = trajectory.points.map((point) => ({
+    label: point.created_at,
+    count: Math.round(Number(point.overall_score || 0) * 100),
+  }));
+  const historyCards = trajectory.points.slice().reverse().map((point) => `
+    <div class="summary-tile history-step-card">
+      <div class="tile-top">
+        <span>${formatShortDateLabel(point.created_at)}</span>
+        <strong>${Math.round(Number(point.overall_score || 0) * 100)}%</strong>
       </div>
-    `).join("");
-    elements.patientHistory.className = "chart-stack";
-    elements.patientHistory.innerHTML = `
-      ${buildLineTrendSvg(timelinePoints)}
-      <div class="tile-grid">${visitCards}</div>
-    `;
-  }
+      <p class="detail-muted">${t("assessmentDetailTitle")}: ${point.assessment_id}</p>
+      <p class="detail-muted">${localizedDomainLabel(point.strongest_domain)} · ${localizedRiskLevel(point.overall_risk)}</p>
+    </div>
+  `).join("");
+  const patientTrendTone = trajectory.status === "improving" ? "mismatch-low" : trajectory.status === "worsening" || trajectory.status === "escalating" ? "mismatch-high" : "mismatch-medium";
+  elements.patientHistory.className = "chart-stack";
+  elements.patientHistory.innerHTML = `
+    <div class="detail-card history-summary-card ${patientTrendTone}">
+      <div class="compare-card-head">
+        <h3>${trajectoryStatusLabel(trajectory.status)}</h3>
+        <span class="compare-diff-pill">${trajectory.history_count} screenings</span>
+      </div>
+      <p class="chart-note">${trajectory.summary}</p>
+      <div class="analytics-mini-stats assessment-mini-stats">
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("baselineLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatPercent(baselinePoint.overall_score || 0)}</span>
+          <span class="analytics-mini-stat-detail">${formatShortDateLabel(baselinePoint.created_at)}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("latestLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatPercent(latestPoint.overall_score || 0)}</span>
+          <span class="analytics-mini-stat-detail">${formatShortDateLabel(latestPoint.created_at)}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("changeLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatMetricNumber((latestPoint.overall_score || 0) - (baselinePoint.overall_score || 0), 2)}</span>
+          <span class="analytics-mini-stat-detail">${t("sinceFirstScreeningLabel")}</span>
+        </div>
+        <div class="analytics-mini-stat">
+          <span class="analytics-mini-stat-label">${t("recentShiftLabel")}</span>
+          <span class="analytics-mini-stat-value">${formatMetricNumber((latestPoint.overall_score || 0) - (previousPoint.overall_score || 0), 2)}</span>
+          <span class="analytics-mini-stat-detail">${t("sincePreviousScreeningLabel")}</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-card history-chart-card">
+      ${buildLineTrendSvg(linePoints)}
+    </div>
+    <div class="detail-grid history-step-grid">
+      ${historyCards}
+    </div>
+  `;
 
-  const domainRows = DOMAINS.map((domain) => {
+  const mostChanged = DOMAINS.map((domain) => {
+    const info = trajectory.domains?.[domain] || {};
+    return {
+      domain,
+      label: localizedDomainLabel(domain),
+      delta: Number(info.change_from_baseline || 0),
+      direction: info.direction || "stable",
+      latest: Number(info.latest_score || 0),
+      baseline: Number(info.baseline_score || 0),
+    };
+  }).sort((left, right) => Math.abs(right.delta) - Math.abs(left.delta))[0];
+  const domainCards = DOMAINS.map((domain) => {
     const info = trajectory.domains?.[domain] || {};
     const delta = Number(info.change_from_baseline || 0);
-    return {
-      label: localizedDomainLabel(domain),
-      value: Math.abs(delta),
-      display: `${localizedTrajectoryStatus(info.direction || "stable")} | ${delta >= 0 ? "+" : ""}${delta.toFixed(2)}`,
-    };
-  });
+    const direction = info.direction || "stable";
+    const tone = direction === "worsening" ? "mismatch-high" : direction === "improving" ? "mismatch-low" : "mismatch-medium";
+    return `
+      <div class="summary-tile domain-drift-card ${tone}">
+      <div class="tile-top">
+          <span>${localizedDomainLabel(domain)}</span>
+          <strong>${delta >= 0 ? "+" : ""}${formatMetricNumber(delta, 2)}</strong>
+        </div>
+        <p class="detail-muted">${localizedTrajectoryStatus(direction)}</p>
+        <p class="detail-muted">${t("baselineLabel")}: ${formatPercent(info.baseline_score || 0)} · ${t("latestLabel")}: ${formatPercent(info.latest_score || 0)}</p>
+      </div>
+    `;
+  }).join("");
   elements.domainTrajectory.className = "chart-stack";
   elements.domainTrajectory.innerHTML = `
-    <div class="detail-card">
-      <h3>${trajectoryStatusLabel(trajectory.status)}</h3>
-      <p>${trajectory.summary}</p>
+    <div class="detail-card history-summary-card ${mostChanged ? (mostChanged.delta > 0 ? "mismatch-high" : mostChanged.delta < 0 ? "mismatch-low" : "mismatch-medium") : "mismatch-medium"}">
+      <div class="compare-card-head">
+        <h3>${trajectoryStatusLabel(trajectory.status)}</h3>
+        <span class="compare-diff-pill">${trajectory.history_count} screenings</span>
+      </div>
+      <p class="chart-note">${trajectory.summary}</p>
+      <p class="detail-muted">${t("mostChangedLabel")}: ${mostChanged ? `${mostChanged.label} ${mostChanged.delta >= 0 ? "+" : ""}${formatMetricNumber(mostChanged.delta, 2)}` : t("noDataLabel")}</p>
     </div>
-    ${buildHorizontalMetricSvg(domainRows, "#ad4a21")}
+    <div class="detail-grid history-step-grid">
+      ${domainCards}
+    </div>
   `;
 }
 
@@ -7760,6 +8488,3 @@ async function bootstrapDashboard() {
 }
 
 bootstrapDashboard();
-
-
-
